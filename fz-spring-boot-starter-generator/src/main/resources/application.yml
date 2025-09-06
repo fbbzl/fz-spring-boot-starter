@@ -1,0 +1,19 @@
+#######################################################################################################################
+#                                                fz代码生成器配置                                                       #
+#  @fengbinbin                                                                                                        #
+#                                                                                                                     #
+#                                                                                                                     #
+#######################################################################################################################
+
+spring:
+  freemarker:
+    template-loader-path: classpath:/templates/
+    suffix: .ftl
+    cache: false
+    charset: UTF-8
+    content-type: text/plain
+  config:
+    import:
+      - classpath:application-db.yml
+      - classpath:application-generator.yml
+

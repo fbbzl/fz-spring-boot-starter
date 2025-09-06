@@ -1,0 +1,13 @@
+code:
+  generator:
+    output:
+      path: ${user.dir}/generated-sources  # 输出路径
+    #需要生成的表所在的库
+    schema: lj_cloud
+    table-prefix: lj_
+    #需要生成的表名,基本上只需要配置要生成的表名就可以了, 其他一般不用修改
+    tables: lj_enterprise_apply,lj_enterprise
+    #生成的代码 注释中的作者
+    author: fengbinbin
+    module-package: com.fz.admin.modules
+
