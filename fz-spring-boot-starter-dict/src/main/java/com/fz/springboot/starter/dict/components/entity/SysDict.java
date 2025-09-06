@@ -9,7 +9,6 @@ import jakarta.validation.constraints.NotNull;
 import lombok.*;
 import lombok.experimental.Accessors;
 import lombok.experimental.FieldDefaults;
-import lombok.experimental.FieldNameConstants;
 import org.hibernate.annotations.Comment;
 import org.hibernate.annotations.SQLRestriction;
 import org.hibernate.validator.constraints.Length;
@@ -30,13 +29,13 @@ import static com.fz.springboot.starter.jpa.SqlConstants.NOT_DELETED;
 @SQLRestriction(NOT_DELETED)
 @NoArgsConstructor
 @AllArgsConstructor
-@FieldNameConstants
+
 @Accessors(chain = true)
 @Comment("系统字典表")
 @Schema(description = "系统字典表")
 @FieldDefaults(level = AccessLevel.PRIVATE)
 @Table(name = "lj_sys_dict", schema = "lj_cloud",
-       uniqueConstraints = {@UniqueConstraint(name = "uk_code", columnNames = SysDict.Fields.code)})
+       uniqueConstraints = { @UniqueConstraint(name = "uk_code", columnNames = "code") })
 public class SysDict extends BaseEntity {
 
     @NotNull(message = "{SysDict.code}")

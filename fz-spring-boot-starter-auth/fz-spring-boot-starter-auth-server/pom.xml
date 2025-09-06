@@ -4,7 +4,7 @@
     <modelVersion>4.0.0</modelVersion>
 
     <parent>
-        <groupId>com.fz.boot</groupId>
+        <groupId>io.github.fbbzl</groupId>
         <artifactId>fz-spring-boot-starter-auth</artifactId>
         <version>${reversion}</version>
     </parent>

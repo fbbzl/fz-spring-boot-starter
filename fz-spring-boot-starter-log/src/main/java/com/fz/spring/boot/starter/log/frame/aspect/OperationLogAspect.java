@@ -16,7 +16,6 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import static java.util.concurrent.CompletableFuture.runAsync;
 
 /**
- *
  * @author fz
  * @version 1.0
  * @since 2025/9/4
@@ -26,7 +25,7 @@ import static java.util.concurrent.CompletableFuture.runAsync;
 @RequiredArgsConstructor
 @ConditionalOnBean(annotation = EnableOperationLog.class)
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
-public class OperationLogAspect {
+public abstract class OperationLogAspect {
 
     OperationLogRepository operationLogRepo;
 
@@ -58,23 +57,7 @@ public class OperationLogAspect {
         runAsync(() -> operationLogRepo.save(operationLog));
     }
 
-    private Long getCurrentUserId() {
-        // TODO: 根据实际认证方式获取用户ID
-        // 示例: 从Spring Security上下文获取
-        // Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        // if (authentication != null && authentication.getPrincipal() instanceof UserDetails) {
-        //     return ((UserDetails) authentication.getPrincipal()).getId();
-        // }
-        return 1L;
-    }
+    protected abstract Long getCurrentUserId();
 
-    private String getCurrentUserName() {
-        // TODO: 根据实际认证方式获取用户名
-        // 示例: 从Spring Security上下文获取
-        // Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        // if (authentication != null) {
-        //     return authentication.getName();
-        // }
-        return "system";
-    }
+    protected abstract String getCurrentUserName();
 }

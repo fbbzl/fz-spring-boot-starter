@@ -3,7 +3,7 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>com.fz.boot</groupId>
+    <groupId>io.github.fbbzl</groupId>
     <artifactId>fz-spring-boot-starter-dependencies</artifactId>
     <version>${reversion}</version>
     <packaging>pom</packaging>
@@ -25,50 +25,50 @@
             </dependency>
 
             <dependency>
-                <groupId>com.fz.boot</groupId>
+                <groupId>io.github.fbbzl</groupId>
                 <artifactId>fz-spring-boot-starter-jpa</artifactId>
                 <version>${reversion}</version>
             </dependency>
 
             <dependency>
-                <groupId>com.fz.boot</groupId>
+                <groupId>io.github.fbbzl</groupId>
                 <artifactId>fz-spring-boot-starter-web</artifactId>
                 <version>${reversion}</version>
             </dependency>
 
             <dependency>
-                <groupId>com.fz.boot</groupId>
+                <groupId>io.github.fbbzl</groupId>
                 <artifactId>fz-spring-boot-starter-core</artifactId>
                 <version>${reversion}</version>
             </dependency>
 
             <dependency>
-                <groupId>com.fz.boot</groupId>
+                <groupId>io.github.fbbzl</groupId>
                 <artifactId>fz-spring-boot-starter-log</artifactId>
                 <version>${reversion}</version>
             </dependency>
 
             <dependency>
-                <groupId>com.fz.boot</groupId>
+                <groupId>io.github.fbbzl</groupId>
                 <artifactId>fz-spring-boot-starter-auth-client</artifactId>
                 <version>${reversion}</version>
             </dependency>
 
             <dependency>
-                <groupId>com.fz.boot</groupId>
+                <groupId>io.github.fbbzl</groupId>
                 <artifactId>fz-spring-boot-starter-auth-server</artifactId>
                 <version>${reversion}</version>
             </dependency>
 
 
             <dependency>
-                <groupId>com.fz.boot</groupId>
+                <groupId>io.github.fbbzl</groupId>
                 <artifactId>fz-spring-boot-starter-openapi</artifactId>
                 <version>${reversion}</version>
             </dependency>
 
             <dependency>
-                <groupId>com.fz.boot</groupId>
+                <groupId>io.github.fbbzl</groupId>
                 <artifactId>fz-spring-boot-starter-dict</artifactId>
                 <version>${reversion}</version>
             </dependency>

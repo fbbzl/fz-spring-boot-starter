@@ -4,7 +4,7 @@
     <modelVersion>4.0.0</modelVersion>
 
     <parent>
-        <groupId>com.fz.boot</groupId>
+        <groupId>io.github.fbbzl</groupId>
         <artifactId>fz-spring-boot-starter</artifactId>
         <version>${reversion}</version>
     </parent>
@@ -13,19 +13,19 @@
 
     <dependencies>
         <dependency>
-            <groupId>com.fz.boot</groupId>
+            <groupId>io.github.fbbzl</groupId>
             <artifactId>fz-spring-boot-starter-jpa</artifactId>
             <version>${reversion}</version>
         </dependency>
 
         <dependency>
-            <groupId>com.fz.boot</groupId>
+            <groupId>io.github.fbbzl</groupId>
             <artifactId>fz-spring-boot-starter-web</artifactId>
             <version>${reversion}</version>
         </dependency>
 
         <dependency>
-            <groupId>com.fz.boot</groupId>
+            <groupId>io.github.fbbzl</groupId>
             <artifactId>fz-spring-boot-starter-openapi</artifactId>
             <version>${reversion}</version>
         </dependency>
