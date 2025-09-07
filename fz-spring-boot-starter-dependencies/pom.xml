@@ -54,7 +54,6 @@
                 <version>${reversion}</version>
             </dependency>
 
-
             <dependency>
                 <groupId>io.github.fbbzl</groupId>
                 <artifactId>fz-spring-boot-starter-openapi</artifactId>
