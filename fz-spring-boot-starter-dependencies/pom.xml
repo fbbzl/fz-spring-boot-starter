@@ -44,12 +44,6 @@
 
             <dependency>
                 <groupId>io.github.fbbzl</groupId>
-                <artifactId>fz-spring-boot-starter-log</artifactId>
-                <version>${reversion}</version>
-            </dependency>
-
-            <dependency>
-                <groupId>io.github.fbbzl</groupId>
                 <artifactId>fz-spring-boot-starter-auth-client</artifactId>
                 <version>${reversion}</version>
             </dependency>
