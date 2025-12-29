@@ -36,7 +36,7 @@ public class R<T> {
             DEFAULT_SUCCESS_MESSAGE = "ok",
             DEFAULT_FAIL_MESSAGE    = "fail";
 
-    private static final R<?>
+    private static final R<Object>
             DEFAULT_R_SUCCESS = ok(DEFAULT_SUCCESS_MESSAGE),
             DEFAULT_R_FAIL    = fail(DEFAULT_FAIL_MESSAGE);
 
@@ -64,7 +64,7 @@ public class R<T> {
     @Schema(description = "响应业务数据")
     T data;
 
-    public static R<?> ok() {
+    public static R<Object> ok() {
         return DEFAULT_R_SUCCESS;
     }
 
@@ -84,7 +84,7 @@ public class R<T> {
         return new R<>(code, true, message, data);
     }
 
-    public static R<?> fail() {
+    public static R<Object> fail() {
         return DEFAULT_R_FAIL;
     }
 
@@ -102,10 +102,6 @@ public class R<T> {
 
     public static <T> R<T> fail(String code, String message, T data) {
         return new R<>(code, false, message, data);
-    }
-
-    public static <T> R<T> bad(String message) {
-        return fail(String.valueOf(HttpStatus.BAD_REQUEST.value()), message, null);
     }
 
     @Getter

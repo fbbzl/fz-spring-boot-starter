@@ -46,19 +46,23 @@ public class Q<T> {
     @Schema(description = "日志追踪id")
     @Length(max = 1024)
     String traceId;
-
-    /**
-     * source micro server
-     */
-    @Schema(description = "服务调用方", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
-    @Length(max = 1024)
-    String source;
-
     /**
      * request timestamp
      */
     @Schema(description = "请求时间戳")
-    Long timestamp;
+    Long   timestamp;
+
+    public static <T> Q<T> of(T data, String traceId, Long timestamp) {
+        Q<T> q = new Q<>();
+        q.setData(data);
+        q.setTraceId(traceId);
+        q.setTimestamp(timestamp);
+        return q;
+    }
+
+    public static <T> Q<T> of(T data, String traceId) {
+        return of(data, traceId, System.currentTimeMillis());
+    }
 
     /**
      * page request
@@ -81,9 +85,21 @@ public class Q<T> {
         @Schema(description = "分页参数, 页码从0开始")
         private Pagination pagination;
 
+        public static <T> PQ<T> of(T data, Pagination pagination, String traceId, Long timestamp) {
+            PQ<T> pq = new PQ<>();
+            pq.setData(data);
+            pq.setPagination(pagination);
+            pq.setTraceId(traceId);
+            pq.setTimestamp(timestamp);
+            return pq;
+        }
+
+        public static <T> PQ<T> of(T data, Pagination pagination, String traceId) {
+            return of(data, pagination, traceId, System.currentTimeMillis());
+        }
+
         public Pageable toPageable() {
-            Sorts sort = pagination.getSort();
-            return PageRequest.of(pagination.getPageNumber(), pagination.getPageSize(), Sort.by(sort.direction, sort.properties));
+            return PageRequest.of(pagination.getPageNumber(), pagination.getPageSize(), pagination.getSort());
         }
 
         @Getter
@@ -94,27 +110,17 @@ public class Q<T> {
 
             private static final Integer DEFAULT_PAGE_NUMBER = 0;
             private static final Integer DEFAULT_PAGE_SIZE   = 10;
-            static               Sorts   DEFAULT_SORT        = new Sorts(new String[] {Fields.id}, Direction.ASC);
 
             @Schema(description = "页码, 从0开始")
             Integer pageNumber = DEFAULT_PAGE_NUMBER;
 
             @Schema(description = "页宽")
-            Integer pageSize   = DEFAULT_PAGE_SIZE;
+            Integer pageSize = DEFAULT_PAGE_SIZE;
 
             @Valid
             @Schema(description = "排序规则")
-            Sorts   sort       = DEFAULT_SORT;
+            Sort sort = Sort.by(Direction.ASC, Fields.id);
         }
-
-        @Schema(description = "分页参数, 页码从0开始")
-        public record Sorts(
-                @Size(min = 1, max = 8, message = "{Sorts.properties}")
-                @Schema(description = "排序字段")
-                String[] properties,
-                @Schema(description = "排序顺序, ASC:正序,DESC:倒序")
-                Direction direction
-        ) {}
     }
 
     /**

@@ -29,12 +29,12 @@ public abstract class OperationLogAspect {
 
     OperationLogRepository operationLogRepo;
 
-    @Around("@annotation(operateLog)")
-    public Object recordLog(ProceedingJoinPoint joinPoint, Log operateLog) throws Throwable {
+    @Around("@annotation(log)")
+    public Object recordLog(ProceedingJoinPoint joinPoint, Log log) throws Throwable {
         OperationLog.OperationLogBuilder logBuilder =
                 OperationLog.builder()
-                            .type(operateLog.type())
-                            .description(operateLog.description())
+                            .type(log.type())
+                            .description(log.description())
                             .operatorId(getCurrentUserId())
                             .operatorName(getCurrentUserName());
 

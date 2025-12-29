@@ -7,8 +7,6 @@ import com.fz.springboot.starter.jpa.repository.BaseRepository;
 import lombok.AccessLevel;
 import lombok.experimental.FieldDefaults;
 import org.fz.erwin.exception.Throws;
-import org.springframework.beans.BeanWrapper;
-import org.springframework.beans.BeanWrapperImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Example;
 import org.springframework.data.domain.ExampleMatcher;
@@ -16,9 +14,10 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.beans.FeatureDescriptor;
-import java.util.*;
-import java.util.stream.Stream;
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 
 /**
  *
@@ -60,7 +59,7 @@ public abstract class ServiceImpl<R extends BaseRepository<T>, T extends BaseEnt
 
     @Override
     public T update(T entity) {
-        Throws.ifNull(entity.getId(), BizExceptionVerb.ILLEGAL_PARAMETER.on(entity.getClass()));
+        Throws.ifNull(entity.getId(), BizExceptionVerb.INVALID_INPUT.on(entity.getClass()));
         return repo.saveAndFlush(entity);
     }
 
@@ -105,14 +104,6 @@ public abstract class ServiceImpl<R extends BaseRepository<T>, T extends BaseEnt
     @Override
     public void deleteByIds(Collection<Long> ids) {
         repo.logicalDeleteAll(ids);
-    }
-
-    //************************************************ private start *************************************************//
-
-    private String[] getNullValueProperties(Object source) {
-        final BeanWrapper wrapped = new BeanWrapperImpl(source);
-        return Stream.of(wrapped.getPropertyDescriptors()).map(FeatureDescriptor::getName)
-                     .filter(propertyName -> Objects.isNull(wrapped.getPropertyValue(propertyName))).toArray(String[]::new);
     }
 
 }

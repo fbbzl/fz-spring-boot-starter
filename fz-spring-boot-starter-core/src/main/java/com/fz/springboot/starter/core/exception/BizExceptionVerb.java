@@ -21,15 +21,22 @@ import static cn.hutool.core.text.CharSequenceUtil.format;
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public enum BizExceptionVerb {
 
-    NOT_LOGIN("000000", "not login"),
-    UNAUTHORIZED("000001", "unauthorized"),
-    NOT_FOUND("000002", "not found"),
-    UN_SUPPORT_OPERATION("000003", "un support operation"),
-    DUPLICATE("000004", "duplicate data"),
-    TIMEOUT("000005", "operation timeout"),
-    CONFLICT("000006", "data conflict"),
-    ILLEGAL_PARAMETER("000007", "illegal parameter"),
-    UN_KNOWN("999999", "un known error"),
+    NOT_AUTHENTICATED("000000", "Not authenticated"),
+    ACCESS_DENIED("000001", "Access denied"),
+
+    INVALID_INPUT("000002", "Invalid input"),
+    MISSING_REQUIRED_INPUT("000003", "Missing required input"),
+    ILLEGAL_STATE("000004", "Illegal state"),
+    UNSUPPORTED_OPERATION("000005", "Unsupported operation"),
+    RESOURCE_NOT_FOUND("000006", "Resource not found"),
+    DATA_CONFLICT("000007", "Data conflict"),
+    DUPLICATE_ENTRY("000008", "Duplicate entry"),
+    OPERATION_TIMEOUT("000009", "Operation timeout"),
+
+    INTERNAL_ERROR("000010", "Internal error"),
+    SERVICE_UNAVAILABLE("000011", "Service unavailable"),
+
+    UNKNOWN("999999", "Unknown error");
     ;
 
     /**

@@ -61,9 +61,8 @@ public abstract class BaseController<S extends IService<T>, T extends BaseEntity
     @Operation(description = "根据id查询, 不包含已经逻辑删除的数据", summary = "根据id查询")
     @GetMapping("{id}")
     public R<T> id(
-            @NotNull
-            @Parameter(name = "id", description = "查询的id", required = true, example = "1")
-            @PathVariable("id") Long id)
+            @PathVariable @NotNull
+            @Parameter(name = "id", description = "查询的id", required = true, example = "1") Long id)
     {
         return R.ok(service.findById(id).orElseGet(() -> ReflectUtil.newInstance(entityClass)));
     }
@@ -102,11 +101,10 @@ public abstract class BaseController<S extends IService<T>, T extends BaseEntity
     @Operation(description = "指定id数据是否存在", summary = "指定id数据是否存在")
     @GetMapping("exists/{id}")
     public R<Boolean> exists(
-            @NotNull
-            @Parameter(name = "id", description = "查询的id", required = true, example = "1")
-            @PathVariable("id") Long id)
+            @PathVariable @NotNull
+            @Parameter(name = "id", description = "查询的id", required = true, example = "1") Long id)
     {
-        return PR.ok(service.exists(id));
+        return R.ok(service.exists(id));
     }
 
     @Operation(description = "指定条件数据是否存在, null的字段不会参与查询", summary = "指定条件数据是否存在")
@@ -117,7 +115,7 @@ public abstract class BaseController<S extends IService<T>, T extends BaseEntity
             @Parameter(description = "请求对象", required = true)
             @RequestBody Q<T> req)
     {
-        return PR.ok(service.exists(req.getData()));
+        return R.ok(service.exists(req.getData()));
     }
 
     @Operation(description = "新增数据", summary = "新增数据")
@@ -134,9 +132,8 @@ public abstract class BaseController<S extends IService<T>, T extends BaseEntity
     @Operation(description = "全量更新数据, 主键为路径参数", summary = "全量更新数据")
     @PutMapping("{id}")
     public R<T> update(
-            @NotNull
-            @Parameter(name = "id", description = "需要更新的记录ID", required = true, example = "1")
-            @PathVariable("id") Long id,
+            @PathVariable @NotNull
+            @Parameter(name = "id", description = "需要更新的记录ID", required = true, example = "1") Long id,
             @NotNull
             @Validated(CRUD.U.class)
             @Parameter(name = "req", description = "全量更新的数据", required = true)
@@ -149,10 +146,9 @@ public abstract class BaseController<S extends IService<T>, T extends BaseEntity
 
     @Operation(description = "删除数据, 为逻辑删除, 但此逻辑删除等于物理删除, 逻辑删除只是为了发挥数据最大价值", summary = "逻辑删除数据")
     @DeleteMapping("{id}")
-    public R<?> delete(
-            @NotNull
-            @Parameter(name = "id", description = "需要删除的记录ID", required = true, example = "1")
-            @PathVariable("id") Long id)
+    public R<Object> delete(
+            @PathVariable @NotNull
+            @Parameter(name = "id", description = "需要删除的记录ID", required = true, example = "1") Long id)
     {
         service.deleteById(id);
         return R.ok();
@@ -160,7 +156,7 @@ public abstract class BaseController<S extends IService<T>, T extends BaseEntity
 
     @Operation(description = "删除数据, 为逻辑删除, 但此逻辑删除等于物理删除, 逻辑删除只是为了发挥数据最大价值", summary = "逻辑删除数据")
     @DeleteMapping("ids")
-    public R<?> deleteByIds(
+    public R<Object> deleteByIds(
             @NotNull
             @Parameter(description = "请求对象", required = true)
             @RequestBody Q<List<Long>> req)

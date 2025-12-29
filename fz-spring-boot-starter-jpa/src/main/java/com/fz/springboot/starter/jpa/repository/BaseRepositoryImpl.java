@@ -126,8 +126,10 @@ public class BaseRepositoryImpl<T extends BaseEntity> extends SimpleJpaRepositor
     private Predicate[] mapToPredicates(Map<String, Object> map, CriteriaBuilder cb, Root<T> root) {
         List<Predicate> predicates = new ArrayList<>();
         map.forEach((k, v) -> {
-            boolean notNull = Objects.nonNull(v), stringType = notNull && v.getClass() == String.class, enumType =
-                    notNull && v.getClass().isEnum(), otherType = notNull && !stringType && !enumType;
+            boolean notNull    = Objects.nonNull(v);
+            boolean stringType = notNull && v.getClass() == String.class;
+            boolean enumType   = notNull && v.getClass().isEnum();
+            boolean otherType  = notNull && !stringType && !enumType;
 
             // string 使用like 匹配方式, 并添加到条件列表中
             if (stringType) {

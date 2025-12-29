@@ -31,7 +31,6 @@ import java.util.Map;
 import static cn.hutool.core.collection.CollUtil.isEmpty;
 import static cn.hutool.core.text.CharSequenceUtil.*;
 import static java.lang.Boolean.TRUE;
-import static java.util.stream.Collectors.toList;
 
 /**
  * @author fengbinbin
@@ -112,8 +111,7 @@ public class CodeGeneratorApplication implements CommandLineRunner {
         // 遍历索引，将列名从下划线命名法转换为驼峰命名法
         indexes.forEach(index -> index.setColumns(
                 index.getColumns().stream()
-                     .map(this::underscoreToCamelCase)
-                     .collect(toList())));
+                     .map(this::underscoreToCamelCase).toList()));
 
         // 将索引信息放入模板上下文中
         ftlContext.put("indexes", indexes);
@@ -121,11 +119,10 @@ public class CodeGeneratorApplication implements CommandLineRunner {
 
         // 区分唯一索引和普通索引
         List<Index> uniqueIndexes = indexes.stream()
-                                           .filter(Index::getUnique)
-                                           .collect(toList());
+                                           .filter(Index::getUnique).toList();
         List<Index> normalIndexes = indexes.stream()
-                                           .filter(index -> !index.getUnique())
-                                           .collect(toList());
+                                           .filter(index -> !index.getUnique()).toList()
+                ;
 
         ftlContext.put("uniqueIndexes", uniqueIndexes);
         ftlContext.put("hasUniqueIndexes", CollUtil.isNotEmpty(uniqueIndexes));

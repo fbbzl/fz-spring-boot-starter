@@ -5,6 +5,7 @@ import freemarker.template.Configuration;
 import freemarker.template.Template;
 import lombok.Data;
 import lombok.Getter;
+import lombok.NonNull;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.BeanNameAware;
@@ -31,7 +32,7 @@ public abstract class Generator implements BeanNameAware {
     @Getter volatile                    String        generatorName;
 
     @Override
-    public void setBeanName(String name) {
+    public void setBeanName(@NonNull String name) {
         generatorName = name;
     }
 
