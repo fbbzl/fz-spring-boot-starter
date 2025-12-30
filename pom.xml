@@ -38,7 +38,6 @@
         <module>fz-spring-boot-starter-openapi</module>
         <module>fz-spring-boot-starter-generator</module>
         <module>fz-spring-boot-starter-dict</module>
-        <module>fz-spring-boot-starter-log</module>
     </modules>
 
     <properties>
