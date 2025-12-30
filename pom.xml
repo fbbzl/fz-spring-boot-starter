@@ -35,9 +35,7 @@
         <module>fz-spring-boot-starter-web</module>
         <module>fz-spring-boot-starter-jpa</module>
         <module>fz-spring-boot-starter-core</module>
-        <module>fz-spring-boot-starter-openapi</module>
         <module>fz-spring-boot-starter-generator</module>
-        <module>fz-spring-boot-starter-dict</module>
     </modules>
 
     <properties>
