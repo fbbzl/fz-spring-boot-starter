@@ -30,9 +30,8 @@
         </dependency>
 
         <dependency>
-            <groupId>io.github.fbbzl</groupId>
-            <artifactId>fz-spring-boot-starter-openapi</artifactId>
-            <version>${reversion}</version>
+            <groupId>org.springdoc</groupId>
+            <artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
         </dependency>
 
         <dependency>

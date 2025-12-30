@@ -35,15 +35,14 @@
         <module>fz-spring-boot-starter-web</module>
         <module>fz-spring-boot-starter-jpa</module>
         <module>fz-spring-boot-starter-core</module>
-        <module>fz-spring-boot-starter-openapi</module>
         <module>fz-spring-boot-starter-generator</module>
-        <module>fz-spring-boot-starter-dict</module>
     </modules>
 
     <properties>
         <java.version>17</java.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <reversion>3.4.9</reversion>
+
         <flatten-maven-plugin.version>1.2.7</flatten-maven-plugin.version>
         <maven-compiler-plugin-version>3.8.1</maven-compiler-plugin-version>
         <maven-javadoc-plugin-version>2.9.1</maven-javadoc-plugin-version>
@@ -190,7 +189,7 @@
                 <version>${flatten-maven-plugin.version}</version>
                 <configuration>
                     <updatePomFile>true</updatePomFile>
-                    <flattenMode>resolveCiFriendliesOnly</flattenMode>
+                    <flattenMode>oss</flattenMode>
                 </configuration>
                 <executions>
                     <execution>
