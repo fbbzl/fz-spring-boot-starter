@@ -27,12 +27,6 @@
             <artifactId>spring-boot-autoconfigure</artifactId>
         </dependency>
 
-        <dependency>
-            <groupId>io.github.fbbzl</groupId>
-            <artifactId>fz-spring-boot-starter-jpa</artifactId>
-            <version>${reversion}</version>
-        </dependency>
-
     </dependencies>
 
 </project>
