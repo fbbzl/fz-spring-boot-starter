@@ -4,7 +4,7 @@
     <modelVersion>4.0.0</modelVersion>
 
     <parent>
-        <groupId>com.fz.boot</groupId>
+        <groupId>io.github.fbbzl</groupId>
         <artifactId>fz-spring-boot-starter</artifactId>
         <version>${reversion}</version>
     </parent>
@@ -25,12 +25,6 @@
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-autoconfigure</artifactId>
-        </dependency>
-
-        <dependency>
-            <groupId>com.fz.boot</groupId>
-            <artifactId>fz-spring-boot-starter-jpa</artifactId>
-            <version>${reversion}</version>
         </dependency>
 
     </dependencies>

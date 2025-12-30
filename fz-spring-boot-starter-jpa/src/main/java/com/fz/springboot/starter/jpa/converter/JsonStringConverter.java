@@ -6,6 +6,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.persistence.AttributeConverter;
 import jakarta.persistence.Converter;
 
+import java.util.Collections;
 import java.util.Map;
 
 /**
@@ -25,18 +26,18 @@ public class JsonStringConverter implements AttributeConverter<Map<String, Objec
             return objectMapper.writeValueAsString(attribute);
         }
         catch (JsonProcessingException e) {
-            throw new RuntimeException("Failed to convert Map to JSON string", e);
+            throw new UnsupportedOperationException("Failed to convert Map to JSON string", e);
         }
     }
 
     @Override
     public Map<String, Object> convertToEntityAttribute(String dbData) {
-        if (dbData == null) return null;
+        if (dbData == null) return Collections.emptyMap();
         try {
             return objectMapper.readValue(dbData, new TypeReference<>() {});
         }
         catch (JsonProcessingException e) {
-            throw new RuntimeException("Failed to convert JSON string to Map", e);
+            throw new UnsupportedOperationException("Failed to convert JSON string to Map", e);
         }
     }
 }

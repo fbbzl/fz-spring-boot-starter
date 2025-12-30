@@ -14,7 +14,7 @@ import java.util.Map;
  */
 
 @Slf4j
-@Component("service-impl")
+@Component
 public class ServiceImplGenerator extends Generator {
 
     @Override

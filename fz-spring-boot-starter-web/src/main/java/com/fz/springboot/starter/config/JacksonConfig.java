@@ -17,6 +17,8 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.TimeZone;
 
+import static cn.hutool.core.date.DatePattern.NORM_DATETIME_PATTERN;
+
 /**
  * @author fengbinbin
  * @version 1.0
@@ -30,7 +32,7 @@ public class JacksonConfig {
         return Jackson2ObjectMapperBuilder.json()
                                           // basic config
                                           .timeZone(TimeZone.getTimeZone("GMT+8"))
-                                          .dateFormat(new SimpleDateFormat("yyyy-MM-dd HH:mm:ss"))
+                                          .dateFormat(new SimpleDateFormat(NORM_DATETIME_PATTERN))
 
                                           // Serialization
                                           .featuresToDisable(

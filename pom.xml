@@ -3,7 +3,7 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>com.fz.boot</groupId>
+    <groupId>io.github.fbbzl</groupId>
     <artifactId>fz-spring-boot-starter</artifactId>
     <version>${reversion}</version>
     <packaging>pom</packaging>
@@ -18,7 +18,7 @@
     </developers>
 
     <scm>
-        <url>hhttps://github.com/fbbzl/fz-spring-boot-starter</url>
+        <url>https://github.com/fbbzl/fz-spring-boot-starter</url>
         <connection>scm:git@github.com:fbbzl/fz-spring-boot-starter.git</connection>
         <developerConnection>scm:git@github.com:fbbzl/fz-spring-boot-starter.git</developerConnection>
     </scm>
@@ -38,7 +38,6 @@
         <module>fz-spring-boot-starter-openapi</module>
         <module>fz-spring-boot-starter-generator</module>
         <module>fz-spring-boot-starter-dict</module>
-        <module>fz-spring-boot-starter-log</module>
     </modules>
 
     <properties>
@@ -51,7 +50,7 @@
         <maven-gpg-plugin-version>1.5</maven-gpg-plugin-version>
         <maven-deploy-plugin-version>2.8.2</maven-deploy-plugin-version>
         <maven-source-plugin-version>2.2.1</maven-source-plugin-version>
-        <nexus-staging-maven-plugin-version>1.6.7</nexus-staging-maven-plugin-version>
+        <nexus-staging-maven-plugin-version>1.7.0</nexus-staging-maven-plugin-version>
 
         <springboot.version>${reversion}</springboot.version>
 
