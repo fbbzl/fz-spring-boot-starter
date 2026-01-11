@@ -1,4 +1,4 @@
-package com.fz.springboot.starter;
+package com.fz.springboot.starter.web;
 
 
 import com.fz.springboot.starter.jpa.BaseEntity.Fields;

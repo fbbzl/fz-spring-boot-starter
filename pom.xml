@@ -36,6 +36,7 @@
         <module>fz-spring-boot-starter-jpa</module>
         <module>fz-spring-boot-starter-core</module>
         <module>fz-spring-boot-starter-generator</module>
+        <module>fz-spring-boot-starter-webflux</module>
     </modules>
 
     <properties>

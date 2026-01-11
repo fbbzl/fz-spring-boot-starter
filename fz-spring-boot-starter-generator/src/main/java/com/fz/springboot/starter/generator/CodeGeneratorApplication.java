@@ -9,6 +9,11 @@ import com.fz.springboot.starter.generator.frame.Generator;
 import com.fz.springboot.starter.generator.frame.context.Field;
 import com.fz.springboot.starter.generator.frame.context.Index;
 import com.fz.springboot.starter.generator.frame.context.Table;
+import com.fz.springboot.starter.generator.modules.controller.ControllerGenerator;
+import com.fz.springboot.starter.generator.modules.entity.EntityGenerator;
+import com.fz.springboot.starter.generator.modules.repository.RepositoryGenerator;
+import com.fz.springboot.starter.generator.modules.service.ServiceGenerator;
+import com.fz.springboot.starter.generator.modules.service.ServiceImplGenerator;
 import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
 import org.fz.erwin.exception.Throws;
@@ -51,11 +56,11 @@ public class CodeGeneratorApplication implements CommandLineRunner {
     @Value("${code.generator.author:}")          String author;
 
     /**
-     * @see com.fz.springboot.starter.generator.modules.entity.EntityGenerator 实体类生成器
-     * @see com.fz.springboot.starter.generator.modules.controller.ControllerGenerator web controller生成器
-     * @see com.fz.springboot.starter.generator.modules.service.ServiceGenerator 业务接口生成器
-     * @see com.fz.springboot.starter.generator.modules.service.ServiceImplGenerator 业务实现类生成器
-     * @see com.fz.springboot.starter.generator.modules.repository.RepositoryGenerator 持久层接口生成器
+     * @see EntityGenerator 实体类生成器
+     * @see ControllerGenerator web controller生成器
+     * @see ServiceGenerator 业务接口生成器
+     * @see ServiceImplGenerator 业务实现类生成器
+     * @see RepositoryGenerator 持久层接口生成器
      */
     @Resource List<? extends Generator> generators;
 
@@ -145,7 +150,7 @@ public class CodeGeneratorApplication implements CommandLineRunner {
     }
 
     public static void main(String[] args) {
-        SpringApplication.run(com.fz.springboot.starter.generator.CodeGeneratorApplication.class, args);
+        SpringApplication.run(CodeGeneratorApplication.class, args);
     }
 
 

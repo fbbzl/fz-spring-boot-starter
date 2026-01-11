@@ -1,4 +1,4 @@
-package com.fz.springboot.starter.domain;
+package com.fz.springboot.starter.web.domain;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.AccessLevel;

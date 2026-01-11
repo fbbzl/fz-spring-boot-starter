@@ -1,11 +1,11 @@
-package com.fz.springboot.starter;
+package com.fz.springboot.starter.web;
 
 import cn.hutool.core.util.ReflectUtil;
-import com.fz.springboot.starter.Q.PQ;
-import com.fz.springboot.starter.R.PR;
 import com.fz.springboot.starter.jpa.BaseEntity;
 import com.fz.springboot.starter.jpa.validation.CRUD;
-import com.fz.springboot.starter.service.IService;
+import com.fz.springboot.starter.web.Q.PQ;
+import com.fz.springboot.starter.web.R.PR;
+import com.fz.springboot.starter.web.service.IService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import jakarta.servlet.http.HttpServletRequest;
