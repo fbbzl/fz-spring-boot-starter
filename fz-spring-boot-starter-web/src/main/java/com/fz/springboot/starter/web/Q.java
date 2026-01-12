@@ -1,21 +1,17 @@
 package com.fz.springboot.starter.web;
 
 
-import com.fz.springboot.starter.jpa.BaseEntity.Fields;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
-import org.hibernate.validator.constraints.Length;
 import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
-import org.springframework.data.domain.Sort.Direction;
 import org.springframework.web.multipart.MultipartFile;
 
-import static lombok.AccessLevel.*;
+import static lombok.AccessLevel.PRIVATE;
+import static lombok.AccessLevel.PROTECTED;
 
 /**
  *
@@ -41,27 +37,20 @@ public class Q<T> {
     T data;
 
     /**
-     * traceId
-     */
-    @Schema(description = "日志追踪id")
-    @Length(max = 1024)
-    String traceId;
-    /**
      * request timestamp
      */
     @Schema(description = "请求时间戳")
-    Long   timestamp;
+    Long timestamp;
 
-    public static <T> Q<T> of(T data, String traceId, Long timestamp) {
+    public static <T> Q<T> of(T data, long timestamp) {
         Q<T> q = new Q<>();
         q.setData(data);
-        q.setTraceId(traceId);
         q.setTimestamp(timestamp);
         return q;
     }
 
-    public static <T> Q<T> of(T data, String traceId) {
-        return of(data, traceId, System.currentTimeMillis());
+    public static <T> Q<T> of(T data) {
+        return of(data, System.currentTimeMillis());
     }
 
     /**
@@ -79,47 +68,18 @@ public class Q<T> {
     @FieldDefaults(level = PRIVATE)
     public static class PQ<T> extends Q<T> {
 
-        @Valid
-        @Getter(NONE)
-        @NotNull(message = "{PQ.pagination}")
-        @Schema(description = "分页参数, 页码从0开始")
-        private Pagination pagination;
+        PageRequest pagination;
 
-        public static <T> PQ<T> of(T data, Pagination pagination, String traceId, Long timestamp) {
+        public static <T> PQ<T> of(T data, PageRequest pagination, Long timestamp) {
             PQ<T> pq = new PQ<>();
             pq.setData(data);
             pq.setPagination(pagination);
-            pq.setTraceId(traceId);
             pq.setTimestamp(timestamp);
             return pq;
         }
 
-        public static <T> PQ<T> of(T data, Pagination pagination, String traceId) {
-            return of(data, pagination, traceId, System.currentTimeMillis());
-        }
-
-        public Pageable toPageable() {
-            return PageRequest.of(pagination.getPageNumber(), pagination.getPageSize(), pagination.getSort());
-        }
-
-        @Getter
-        @Setter
-        @Schema(description = "分页参数, 页码从0开始")
-        @FieldDefaults(level = PRIVATE)
-        public static class Pagination {
-
-            private static final Integer DEFAULT_PAGE_NUMBER = 0;
-            private static final Integer DEFAULT_PAGE_SIZE   = 10;
-
-            @Schema(description = "页码, 从0开始")
-            Integer pageNumber = DEFAULT_PAGE_NUMBER;
-
-            @Schema(description = "页宽")
-            Integer pageSize = DEFAULT_PAGE_SIZE;
-
-            @Valid
-            @Schema(description = "排序规则")
-            Sort sort = Sort.by(Direction.ASC, Fields.id);
+        public static <T> PQ<T> of(T data, PageRequest pagination) {
+            return of(data, pagination, System.currentTimeMillis());
         }
     }
 
