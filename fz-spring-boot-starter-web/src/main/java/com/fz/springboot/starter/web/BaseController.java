@@ -95,7 +95,7 @@ public abstract class BaseController<S extends IService<T>, T extends BaseEntity
             @Parameter(description = "分页请求对象", required = true)
             @RequestBody PQ<T> req)
     {
-        return PR.ok(service.find(req.getData(), req.toPageable()));
+        return PR.ok(service.find(req.getData(), req.getPagination()));
     }
 
     @Operation(description = "指定id数据是否存在", summary = "指定id数据是否存在")
