@@ -1,6 +1,8 @@
 package com.fz.springboot.starter.web;
 
+import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.util.ReflectUtil;
+import com.fz.springboot.starter.core.exception.BizExceptionVerb;
 import com.fz.springboot.starter.jpa.BaseEntity;
 import com.fz.springboot.starter.jpa.validation.CRUD;
 import com.fz.springboot.starter.web.Q.PQ;
@@ -18,6 +20,7 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
 import static lombok.AccessLevel.PROTECTED;
 
@@ -142,6 +145,22 @@ public abstract class BaseController<S extends IService<T>, T extends BaseEntity
         T data = req.getData();
         data.setId(id);
         return R.ok(service.update(data));
+    }
+
+    @Operation(description = "部分更新数据, 主键为路径参数", summary = "部分更新数据")
+    @PatchMapping("{id}")
+    public R<T> edit(
+            @PathVariable @NotNull
+            @Parameter(name = "id", description = "需要更新的记录ID", required = true, example = "1") Long id,
+            @NotNull
+            @Validated(CRUD.U.class)
+            @Parameter(name = "req", description = "部分更新的数据", required = true)
+            @RequestBody Q<Map<String, Object>> req)
+    {
+        Map<String, Object> data = req.getData();
+        T                   byId = service.findById(id).orElseThrow(BizExceptionVerb.RESOURCE_NOT_FOUND.on(entityClass));
+        BeanUtil.copyProperties(data, byId);
+        return R.ok(service.update(byId));
     }
 
     @Operation(description = "删除数据, 为逻辑删除, 但此逻辑删除等于物理删除, 逻辑删除只是为了发挥数据最大价值", summary = "逻辑删除数据")
