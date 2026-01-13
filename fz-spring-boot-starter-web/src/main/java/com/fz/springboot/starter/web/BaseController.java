@@ -31,39 +31,18 @@ import static lombok.AccessLevel.PROTECTED;
  */
 
 @Validated
-@SuppressWarnings("unchecked")
 @FieldDefaults(level = PROTECTED)
-public abstract class BaseController<S extends IService<T>, T extends BaseEntity> {
+public abstract class BaseController<S extends IService<E>, E extends BaseEntity> {
 
     @Autowired S                   service;
     @Autowired HttpServletRequest  request;
     @Autowired HttpServletResponse response;
 
-    Class<T> entityClass;
-
-    {
-        ResolvableType currentType = ResolvableType.forClass(this.getClass());
-
-        while (true) {
-            currentType.getSuperType();
-            ResolvableType superType = currentType.getSuperType();
-
-            if (superType.getRawClass() == BaseController.class) {
-                ResolvableType entityType = superType.getGeneric(1);
-
-                this.entityClass = (Class<T>) entityType.resolve();
-
-                // break if found BaseController is super class
-                break;
-            }
-
-            currentType = superType;
-        }
-    }
+    Class<E> entityClass = this.getGenericEntity(1);
 
     @Operation(description = "根据id查询, 不包含已经逻辑删除的数据", summary = "根据id查询")
     @GetMapping("{id}")
-    public R<T> id(
+    public R<E> id(
             @PathVariable @NotNull
             @Parameter(name = "id", description = "查询的id", required = true, example = "1") Long id)
     {
@@ -72,7 +51,7 @@ public abstract class BaseController<S extends IService<T>, T extends BaseEntity
 
     @Operation(description = "根据id集合进行查询", summary = "根据id集合进行查询")
     @PostMapping("ids")
-    public R<List<T>> findByIds(
+    public R<List<E>> findByIds(
             @NotNull
             @RequestBody Q<List<Long>> req)
     {
@@ -81,22 +60,22 @@ public abstract class BaseController<S extends IService<T>, T extends BaseEntity
 
     @Operation(description = "列表查询, null字段不参与查询", summary = "查询列表")
     @PostMapping("list")
-    public R<List<T>> list(
+    public R<List<E>> list(
             @NotNull
             @Validated({CRUD.R.class})
             @Parameter(description = "请求对象", required = true)
-            @RequestBody Q<T> req)
+            @RequestBody Q<E> req)
     {
         return R.ok(service.find(req.getData()));
     }
 
     @Operation(description = "分页查询, null字段不参与查询", summary = "分页查询")
     @PostMapping("page")
-    public PR<T> page(
+    public PR<E> page(
             @NotNull
             @Validated({CRUD.R.class})
             @Parameter(description = "分页请求对象", required = true)
-            @RequestBody PQ<T> req)
+            @RequestBody PQ<E> req)
     {
         return PR.ok(service.find(req.getData(), req.getPagination()));
     }
@@ -116,40 +95,40 @@ public abstract class BaseController<S extends IService<T>, T extends BaseEntity
             @NotNull
             @Validated({CRUD.R.class})
             @Parameter(description = "请求对象", required = true)
-            @RequestBody Q<T> req)
+            @RequestBody Q<E> req)
     {
         return R.ok(service.exists(req.getData()));
     }
 
     @Operation(description = "新增数据", summary = "新增数据")
     @PostMapping
-    public R<T> create(
+    public R<E> create(
             @NotNull
             @Validated({CRUD.C.class})
             @Parameter(description = "新增请求对象", required = true)
-            @RequestBody Q<T> req)
+            @RequestBody Q<E> req)
     {
         return R.ok(service.create(req.getData()));
     }
 
     @Operation(description = "全量更新数据, 主键为路径参数", summary = "全量更新数据")
     @PutMapping("{id}")
-    public R<T> update(
+    public R<E> update(
             @PathVariable @NotNull
             @Parameter(name = "id", description = "需要更新的记录ID", required = true, example = "1") Long id,
             @NotNull
             @Validated(CRUD.U.class)
             @Parameter(name = "req", description = "全量更新的数据", required = true)
-            @RequestBody Q<T> req)
+            @RequestBody Q<E> req)
     {
-        T data = req.getData();
+        E data = req.getData();
         data.setId(id);
         return R.ok(service.update(data));
     }
 
     @Operation(description = "部分更新数据, 主键为路径参数", summary = "部分更新数据")
     @PatchMapping("{id}")
-    public R<T> edit(
+    public R<E> edit(
             @PathVariable
             @NotNull
             @Parameter(name = "id", description = "需要更新的记录ID", required = true, example = "1") Long id,
@@ -158,7 +137,7 @@ public abstract class BaseController<S extends IService<T>, T extends BaseEntity
             @RequestBody Q<Map<String, Object>> req)
     {
         Map<String, Object> data = req.getData();
-        T                   byId = service.findById(id).orElseThrow(BizExceptionVerb.RESOURCE_NOT_FOUND.on(entityClass));
+        E                   byId = service.findById(id).orElseThrow(BizExceptionVerb.RESOURCE_NOT_FOUND.on(entityClass));
         BeanUtil.copyProperties(data, byId);
         return R.ok(service.update(byId));
     }
@@ -182,5 +161,24 @@ public abstract class BaseController<S extends IService<T>, T extends BaseEntity
     {
         service.deleteByIds(req.getData());
         return R.ok();
+    }
+
+    @SuppressWarnings("unchecked")
+    private Class<E> getGenericEntity(int genericIndex) {
+        ResolvableType currentType = ResolvableType.forClass(this.getClass());
+
+        while (true) {
+            currentType.getSuperType();
+            ResolvableType superType = currentType.getSuperType();
+
+            if (superType.getRawClass() == BaseController.class) {
+                ResolvableType entityType = superType.getGeneric(genericIndex);
+
+                return  (Class<E>) entityType.resolve();
+                // break if found BaseController is super class
+            }
+
+            currentType = superType;
+        }
     }
 }
