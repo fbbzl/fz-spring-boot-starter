@@ -1,4 +1,4 @@
-package com.fz.springboot.starter;
+package com.fz.springboot.starter.web;
 
 
 import cn.hutool.core.exceptions.ExceptionUtil;

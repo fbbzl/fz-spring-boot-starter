@@ -1,4 +1,4 @@
-package com.fz.springboot.starter.service;
+package com.fz.springboot.starter.web.service;
 
 import com.fz.springboot.starter.jpa.BaseEntity;
 import org.springframework.data.domain.Page;

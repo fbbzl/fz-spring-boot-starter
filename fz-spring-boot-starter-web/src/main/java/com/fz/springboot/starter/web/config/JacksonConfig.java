@@ -1,4 +1,4 @@
-package com.fz.springboot.starter.config;
+package com.fz.springboot.starter.web.config;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.core.JsonParser;
@@ -14,9 +14,9 @@ import org.springframework.http.converter.json.Jackson2ObjectMapperBuilder;
 
 import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.TimeZone;
 
+import static cn.hutool.core.date.DatePattern.NORM_DATETIME_FORMATTER;
 import static cn.hutool.core.date.DatePattern.NORM_DATETIME_PATTERN;
 
 /**
@@ -60,10 +60,10 @@ public class JacksonConfig {
                                                   JsonParser.Feature.ALLOW_YAML_COMMENTS)
                                           .serializationInclusion(JsonInclude.Include.NON_NULL)
                                           .modulesToInstall(new JavaTimeModule())
-                                          .serializerByType(LocalDateTime.class, new LocalDateTimeSerializer(
-                                                  DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")))
-                                          .deserializerByType(LocalDateTime.class, new LocalDateTimeDeserializer(
-                                                  DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")));
+                                          .serializerByType(
+                                                  LocalDateTime.class, new LocalDateTimeSerializer(NORM_DATETIME_FORMATTER))
+                                          .deserializerByType(
+                                                  LocalDateTime.class, new LocalDateTimeDeserializer(NORM_DATETIME_FORMATTER));
     }
 
 }
