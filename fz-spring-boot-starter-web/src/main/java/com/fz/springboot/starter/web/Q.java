@@ -96,7 +96,7 @@ public class Q<T> {
     @EqualsAndHashCode(callSuper = false)
     public static class FQ<T> extends Q<T> {
 
-        @Size(max = 8, message = "{FQ.files}")
+        @Size(max = 32, message = "{FQ.files}")
         @Schema(description = "上传的文件", minLength = 1, maxLength = 8)
         MultipartFile[] files;
 

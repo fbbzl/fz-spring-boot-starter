@@ -36,7 +36,7 @@ public class R<T> {
             DEFAULT_SUCCESS_MESSAGE = "ok",
             DEFAULT_FAIL_MESSAGE    = "fail";
 
-    private static final R<Object>
+    private static final R<Void>
             DEFAULT_R_SUCCESS = ok(DEFAULT_SUCCESS_MESSAGE),
             DEFAULT_R_FAIL    = fail(DEFAULT_FAIL_MESSAGE);
 
@@ -64,7 +64,7 @@ public class R<T> {
     @Schema(description = "响应业务数据")
     T data;
 
-    public static R<Object> ok() {
+    public static R<Void> ok() {
         return DEFAULT_R_SUCCESS;
     }
 

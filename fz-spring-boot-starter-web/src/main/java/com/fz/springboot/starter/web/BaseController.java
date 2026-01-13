@@ -150,10 +150,10 @@ public abstract class BaseController<S extends IService<T>, T extends BaseEntity
     @Operation(description = "部分更新数据, 主键为路径参数", summary = "部分更新数据")
     @PatchMapping("{id}")
     public R<T> edit(
-            @PathVariable @NotNull
+            @PathVariable
+            @NotNull
             @Parameter(name = "id", description = "需要更新的记录ID", required = true, example = "1") Long id,
             @NotNull
-            @Validated(CRUD.U.class)
             @Parameter(name = "req", description = "部分更新的数据", required = true)
             @RequestBody Q<Map<String, Object>> req)
     {
@@ -165,7 +165,7 @@ public abstract class BaseController<S extends IService<T>, T extends BaseEntity
 
     @Operation(description = "删除数据, 为逻辑删除, 但此逻辑删除等于物理删除, 逻辑删除只是为了发挥数据最大价值", summary = "逻辑删除数据")
     @DeleteMapping("{id}")
-    public R<Object> delete(
+    public R<Void> delete(
             @PathVariable @NotNull
             @Parameter(name = "id", description = "需要删除的记录ID", required = true, example = "1") Long id)
     {
@@ -175,7 +175,7 @@ public abstract class BaseController<S extends IService<T>, T extends BaseEntity
 
     @Operation(description = "删除数据, 为逻辑删除, 但此逻辑删除等于物理删除, 逻辑删除只是为了发挥数据最大价值", summary = "逻辑删除数据")
     @DeleteMapping("ids")
-    public R<Object> deleteByIds(
+    public R<Void> deleteByIds(
             @NotNull
             @Parameter(description = "请求对象", required = true)
             @RequestBody Q<List<Long>> req)
