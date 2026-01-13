@@ -1,27 +1,29 @@
 package com.fz.springboot.starter.generator.modules.service;
 
-import com.fz.springboot.starter.generator.frame.Generator;
+import com.fz.springboot.starter.generator.frame.BaseGenerator;
 import freemarker.template.Template;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
+import java.nio.file.Path;
 import java.util.Map;
 
 /**
  * @author fengbinbin
  * @version 1.0
- * @since 2025/8/30 16:15
+ * @since 2025/8/30 17:26
  */
+
 @Slf4j
 @Component("service")
-public class ServiceGenerator extends Generator {
+public class ServiceGenerator extends BaseGenerator {
 
     @Override
-    public JavaFilePath getJavaFilePath(Map<String, Object> ftlContext) {
+    public Path getFilePath(Map<String, Object> ftlContext) {
         String servicePackage  = ftlContext.get("moduleName") + ".service";
-        String serviceFileName = "I" + ftlContext.get("className") + "Service.java";
+        String serviceFileName = ftlContext.get("className") + "Service.java";
 
-        return JavaFilePath.of(servicePackage, serviceFileName);
+        return javaFilePath(servicePackage, serviceFileName);
     }
 
     @Override

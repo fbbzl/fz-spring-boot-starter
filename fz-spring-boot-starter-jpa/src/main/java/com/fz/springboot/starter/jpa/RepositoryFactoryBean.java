@@ -2,6 +2,7 @@ package com.fz.springboot.starter.jpa;
 
 
 import com.fz.springboot.starter.jpa.repository.BaseRepositoryImpl;
+import com.fz.springboot.starter.pojo.entity.BaseTableEntity;
 import jakarta.persistence.EntityManager;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.support.JpaRepositoryFactory;
@@ -30,7 +31,7 @@ public class RepositoryFactoryBean<T extends JpaRepository<S, ID>, S, ID extends
         return new BaseRepositoryFactory(entityManager);
     }
 
-    public static class BaseRepositoryFactory<T extends BaseEntity, ID extends Serializable>
+    public static class BaseRepositoryFactory<T extends BaseTableEntity, ID extends Serializable>
             extends JpaRepositoryFactory {
 
         BaseRepositoryFactory(EntityManager entityManager) {

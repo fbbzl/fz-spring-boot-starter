@@ -1,5 +1,6 @@
 package com.fz.springboot.starter.jpa;
 
+import com.fz.springboot.starter.pojo.entity.BaseTableEntity;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.criteria.*;
 import jakarta.persistence.metamodel.Attribute;
@@ -18,7 +19,7 @@ import java.util.Set;
  *
  * @author fbb
  * @version 1.0
- * @see BaseEntity
+ * @see BaseTableEntity
  * @since 2020/1/1/001 9:10
  */
 @SuppressWarnings("all")
@@ -34,7 +35,7 @@ public class Specifications {
      * @param sqlQueryEntity the sql query entity
      * @return the specification
      */
-    public static <T extends BaseEntity> Specification<T> byAuto(final EntityManager entityManager, final T sqlQueryEntity) {
+    public static <T extends BaseTableEntity> Specification<T> byAuto(final EntityManager entityManager, final T sqlQueryEntity) {
         final Class<T> type = (Class<T>) sqlQueryEntity.getClass();
 
         return (Root<T> root, CriteriaQuery<?> query, CriteriaBuilder cb) -> {
@@ -66,11 +67,13 @@ public class Specifications {
                     Path queryPath = root.get(attribute(entityType, field));
                     predicates.add(cb.like(queryPath, SqlLike.contain(queryValue)));
                 }
+                else
                 // 枚举类型 使用ordinal
                 if (enumType) {
                     Path queryPath = root.get(attribute(entityType, field));
                     predicates.add(cb.equal(queryPath, ((Enum) queryValue).ordinal()));
                 }
+                else
                 // 其他类型使用等于 匹配方式, 并添加到条件列表中
                 if (otherType) {
                     Path queryPath = root.get(attribute(entityType, field));
@@ -83,10 +86,9 @@ public class Specifications {
         };
     }
 
-    private static <T extends BaseEntity> Object getValue(T sqlQueryObject, Attribute<? super T, ?> attr) {
+    private static <T extends BaseTableEntity> Object getValue(T sqlQueryObject, Attribute<? super T, ?> attr) {
         return ReflectionUtils.getField((Field) attr.getJavaMember(), sqlQueryObject);
     }
-
 
     private static <T, E> SingularAttribute<? super T, E> attribute(EntityType<T> entityType, Attribute<?, E> attr) {
         return entityType.getSingularAttribute(attr.getName(), attr.getJavaType());

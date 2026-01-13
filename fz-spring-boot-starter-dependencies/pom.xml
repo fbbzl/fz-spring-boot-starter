@@ -33,19 +33,12 @@
     </licenses>
 
     <properties>
-        <reversion>3.4.9</reversion>
-        <springboot.version>${reversion}</springboot.version>
+        <reversion>3.5.10</reversion>
 
-        <java.version>17</java.version>
+        <java.version>21</java.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <reversion>3.4.9</reversion>
-        <flatten-maven-plugin.version>1.2.7</flatten-maven-plugin.version>
-        <maven-compiler-plugin-version>3.8.1</maven-compiler-plugin-version>
-        <maven-javadoc-plugin-version>2.9.1</maven-javadoc-plugin-version>
-        <maven-gpg-plugin-version>1.5</maven-gpg-plugin-version>
-        <maven-deploy-plugin-version>2.8.2</maven-deploy-plugin-version>
-        <maven-source-plugin-version>2.2.1</maven-source-plugin-version>
-        <nexus-staging-maven-plugin-version>1.7.0</nexus-staging-maven-plugin-version>
+
+        <spring.boot.version>${reversion}</spring.boot.version>
     </properties>
 
     <dependencyManagement>
@@ -53,21 +46,9 @@
             <dependency>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-dependencies</artifactId>
-                <version>${springboot.version}</version>
+                <version>${spring.boot.version}</version>
                 <type>pom</type>
                 <scope>import</scope>
-            </dependency>
-
-            <dependency>
-                <groupId>io.github.fbbzl</groupId>
-                <artifactId>fz-spring-boot-starter-jpa</artifactId>
-                <version>${reversion}</version>
-            </dependency>
-
-            <dependency>
-                <groupId>io.github.fbbzl</groupId>
-                <artifactId>fz-spring-boot-starter-web</artifactId>
-                <version>${reversion}</version>
             </dependency>
 
             <dependency>
@@ -78,13 +59,25 @@
 
             <dependency>
                 <groupId>io.github.fbbzl</groupId>
-                <artifactId>fz-spring-boot-starter-auth-client</artifactId>
+                <artifactId>fz-spring-boot-starter-dal</artifactId>
                 <version>${reversion}</version>
             </dependency>
 
             <dependency>
                 <groupId>io.github.fbbzl</groupId>
-                <artifactId>fz-spring-boot-starter-auth-server</artifactId>
+                <artifactId>fz-spring-boot-starter-generator</artifactId>
+                <version>${reversion}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>io.github.fbbzl</groupId>
+                <artifactId>fz-spring-boot-starter-jpa</artifactId>
+                <version>${reversion}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>io.github.fbbzl</groupId>
+                <artifactId>fz-spring-boot-starter-mybatis-plus</artifactId>
                 <version>${reversion}</version>
             </dependency>
 
@@ -96,132 +89,15 @@
 
             <dependency>
                 <groupId>io.github.fbbzl</groupId>
-                <artifactId>fz-spring-boot-starter-dict</artifactId>
+                <artifactId>fz-spring-boot-starter-pojo</artifactId>
                 <version>${reversion}</version>
             </dependency>
 
+            <dependency>
+                <groupId>io.github.fbbzl</groupId>
+                <artifactId>fz-spring-boot-starter-web</artifactId>
+                <version>${reversion}</version>
+            </dependency>
         </dependencies>
     </dependencyManagement>
-
-    <build>
-        <plugins>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-compiler-plugin</artifactId>
-                <version>${maven-compiler-plugin-version}</version>
-                <configuration>
-                    <source>${java.version}</source>
-                    <target>${java.version}</target>
-                    <encoding>UTF-8</encoding>
-                </configuration>
-            </plugin>
-
-
-            <plugin>
-                <groupId>org.sonatype.plugins</groupId>
-                <artifactId>nexus-staging-maven-plugin</artifactId>
-                <version>${nexus-staging-maven-plugin-version}</version>
-                <extensions>true</extensions>
-                <configuration>
-                    <serverId>ossrh</serverId>
-                    <nexusUrl>https://ossrh-staging-api.central.sonatype.com/</nexusUrl>
-                    <autoReleaseAfterClose>true</autoReleaseAfterClose>
-                </configuration>
-            </plugin>
-
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-source-plugin</artifactId>
-                <version>${maven-source-plugin-version}</version>
-                <executions>
-                    <execution>
-                        <id>attach-sources</id>
-                        <goals>
-                            <goal>jar-no-fork</goal>
-                        </goals>
-                    </execution>
-                </executions>
-            </plugin>
-
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-javadoc-plugin</artifactId>
-                <version>${maven-javadoc-plugin-version}</version>
-                <configuration>
-                    <show>private</show>
-                    <nohelp>true</nohelp>
-                    <charset>UTF-8</charset>
-                    <encoding>UTF-8</encoding>
-                    <docencoding>UTF-8</docencoding>
-                    <additionalparam>-Xdoclint:none</additionalparam>
-                </configuration>
-                <executions>
-                    <execution>
-                        <phase>package</phase>
-                        <goals>
-                            <goal>jar</goal>
-                        </goals>
-                    </execution>
-                </executions>
-            </plugin>
-
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-gpg-plugin</artifactId>
-                <version>${maven-gpg-plugin-version}</version>
-                <executions>
-                    <execution>
-                        <id>sign-artifacts</id>
-                        <phase>verify</phase>
-                        <goals>
-                            <goal>sign</goal>
-                        </goals>
-                    </execution>
-                </executions>
-            </plugin>
-
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-deploy-plugin</artifactId>
-                <version>${maven-deploy-plugin-version}</version>
-            </plugin>
-
-            <plugin>
-                <groupId>org.codehaus.mojo</groupId>
-                <artifactId>flatten-maven-plugin</artifactId>
-                <version>${flatten-maven-plugin.version}</version>
-                <configuration>
-                    <updatePomFile>true</updatePomFile>
-                    <flattenMode>resolveCiFriendliesOnly</flattenMode>
-                </configuration>
-                <executions>
-                    <execution>
-                        <id>flatten</id>
-                        <phase>process-resources</phase>
-                        <goals>
-                            <goal>flatten</goal>
-                        </goals>
-                    </execution>
-                    <execution>
-                        <id>flatten.clean</id>
-                        <phase>clean</phase>
-                        <goals>
-                            <goal>clean</goal>
-                        </goals>
-                    </execution>
-                </executions>
-            </plugin>
-        </plugins>
-    </build>
-
-    <distributionManagement>
-        <snapshotRepository>
-            <id>ossrh</id>
-            <url>https://ossrh-staging-api.central.sonatype.com/content/repositories/snapshots</url>
-        </snapshotRepository>
-        <repository>
-            <id>ossrh</id>
-            <url>https://ossrh-staging-api.central.sonatype.com/service/local/staging/deploy/maven2/</url>
-        </repository>
-    </distributionManagement>
 </project>

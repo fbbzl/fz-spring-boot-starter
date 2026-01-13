@@ -18,8 +18,9 @@
         </dependency>
 
         <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-web</artifactId>
+            <groupId>io.github.fbbzl</groupId>
+            <artifactId>fz-spring-boot-starter-dal</artifactId>
+            <version>${reversion}</version>
         </dependency>
 
         <dependency>

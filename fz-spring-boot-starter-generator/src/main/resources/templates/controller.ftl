@@ -1,16 +1,17 @@
 package ${moduleName}.controller;
 
-import ${moduleName}.repository.entity.${className};
-import ${moduleName}.service.I${className}Service;
+import ${moduleName}.dal.entity.${className};
+import ${moduleName}.controller.dto.${className}Dto;
+import ${moduleName}.service.bo.${className}Bo;
+import ${moduleName}.service.eo.${className}Eo;
 
-import com.springboot.starter.web.BaseController;
+import com.fz.springboot.starter.web.BaseController;
+import com.fz.springboot.starter.web.annotation.RestRequestController;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.extern.slf4j.Slf4j;
 import lombok.experimental.FieldDefaults;
 import lombok.RequiredArgsConstructor;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
 
 
 import static lombok.AccessLevel.PRIVATE;
@@ -25,9 +26,8 @@ import static lombok.AccessLevel.PRIVATE;
 
 @Slf4j
 @Validated
-@RestController
+@RestRequestController(mapping = "${requestMapping}")
 @RequiredArgsConstructor
-@RequestMapping("${requestMapping}")
-@Tag(name = "${tableComment}管理", description = "${tableComment}管理 相关操作API")
+@Tag(name = "${tableComment}管理", description = "${tableComment}管理API")
 @FieldDefaults(level = PRIVATE, makeFinal = true)
-public class ${className}Controller extends BaseController<I${className}Service, ${className}> {}
+public class ${className}Controller extends BaseController<${className}, ${className}Dto, ${className}Bo, ${className}Eo> {}
