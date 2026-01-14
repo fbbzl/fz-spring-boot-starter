@@ -35,7 +35,7 @@ import static java.util.stream.Collectors.joining;
 @Slf4j
 @RestControllerAdvice
 @ConditionalOnWebApplication
-public class WebMvcAdvisor {
+public class WebAdvisor {
 
     /**
      * business exception
