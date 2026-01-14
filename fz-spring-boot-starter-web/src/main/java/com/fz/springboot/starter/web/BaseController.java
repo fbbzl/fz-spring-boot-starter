@@ -46,7 +46,7 @@ public abstract class BaseController<S extends IService<E>, E extends BaseEntity
             @PathVariable @NotNull
             @Parameter(name = "id", description = "查询的id", required = true, example = "1") Long id)
     {
-        return R.ok(service.findById(id).orElseGet(() -> ReflectUtil.newInstance(entityClass)));
+        return R.ok(service.findById(id).orElseThrow(BizExceptionVerb.RESOURCE_NOT_FOUND.on(entityClass)));
     }
 
     @Operation(description = "根据id集合进行查询", summary = "根据id集合进行查询")
