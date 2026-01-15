@@ -1,5 +1,10 @@
 package com.fz.springboot.starter.webflux;
 
+import lombok.experimental.FieldDefaults;
+import org.springframework.validation.annotation.Validated;
+
+import static lombok.AccessLevel.PROTECTED;
+
 /**
  * @author fengbinbin
  * @version 1.0
