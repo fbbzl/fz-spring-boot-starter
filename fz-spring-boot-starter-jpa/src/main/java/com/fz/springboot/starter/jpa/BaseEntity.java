@@ -1,6 +1,5 @@
 package com.fz.springboot.starter.jpa;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fz.springboot.starter.jpa.validation.CRUD;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
@@ -53,10 +52,9 @@ public abstract class BaseEntity implements Serializable {
     @Column(nullable = false, columnDefinition = "datetime(3)")
     LocalDateTime updateTime;
 
-    @JsonIgnore
     @ColumnDefault("0")
     @Column(nullable = false, columnDefinition = "TINYINT(1)")
-    Boolean isDeleted = DEFAULT_IS_DELETED;
+    transient Boolean isDeleted = DEFAULT_IS_DELETED;
 
     /**
      * @author fengbinbin

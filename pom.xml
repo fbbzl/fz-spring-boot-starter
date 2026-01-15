@@ -36,7 +36,6 @@
         <module>fz-spring-boot-starter-jpa</module>
         <module>fz-spring-boot-starter-core</module>
         <module>fz-spring-boot-starter-generator</module>
-        <module>fz-spring-boot-starter-web</module>
         <module>fz-spring-boot-starter-webflux</module>
     </modules>
 
@@ -181,6 +180,10 @@
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>flatten-maven-plugin</artifactId>
                 <version>${flatten-maven-plugin.version}</version>
+                <configuration>
+                    <updatePomFile>true</updatePomFile>
+                    <flattenMode>oss</flattenMode>
+                </configuration>
                 <executions>
                     <execution>
                         <id>flatten</id>
@@ -190,17 +193,13 @@
                         </goals>
                     </execution>
                     <execution>
-                        <id>flatten-clean</id>
+                        <id>flatten.clean</id>
                         <phase>clean</phase>
                         <goals>
                             <goal>clean</goal>
                         </goals>
                     </execution>
                 </executions>
-                <configuration>
-                    <flattenMode>resolveCiFriendliesOnly</flattenMode>
-                    <updatePomFile>false</updatePomFile>
-                </configuration>
             </plugin>
         </plugins>
     </build>
