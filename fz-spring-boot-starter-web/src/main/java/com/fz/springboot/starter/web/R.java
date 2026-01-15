@@ -84,7 +84,7 @@ public class R<T> {
         return new R<>(code, true, message, data);
     }
 
-    public static R<Object> fail() {
+    public static R<Void> fail() {
         return DEFAULT_R_FAIL;
     }
 
