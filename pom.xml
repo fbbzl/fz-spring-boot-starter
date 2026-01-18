@@ -40,25 +40,31 @@
     </modules>
 
     <properties>
+        <!--build-->
         <java.version>17</java.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <reversion>3.4.9</reversion>
+        <reversion>1.0.0-[${springboot.version}]-RELEASE</reversion>
 
+        <!--reversion plugin-->
         <flatten-maven-plugin.version>1.2.7</flatten-maven-plugin.version>
+
+        <!--maven plugin-->
         <maven-compiler-plugin-version>3.8.1</maven-compiler-plugin-version>
         <maven-javadoc-plugin-version>2.9.1</maven-javadoc-plugin-version>
-        <maven-gpg-plugin-version>1.5</maven-gpg-plugin-version>
+        <maven-gpg-plugin-version>3.2.8</maven-gpg-plugin-version>
         <maven-deploy-plugin-version>2.8.2</maven-deploy-plugin-version>
         <maven-source-plugin-version>2.2.1</maven-source-plugin-version>
         <nexus-staging-maven-plugin-version>1.7.0</nexus-staging-maven-plugin-version>
 
-        <springboot.version>${reversion}</springboot.version>
+        <!--extension-->
+        <lombok.version>1.18.42</lombok.version>
 
-        <lombok.version>1.18.38</lombok.version>
-        <erwin.version>1.2.1-RELEASE</erwin.version>
-
+        <!--springboot-->
+        <springboot.version>3.5.9</springboot.version>
         <springdoc-openapi-starter-webmvc-ui.version>2.8.6</springdoc-openapi-starter-webmvc-ui.version>
-        <maven-compiler-plugin.version>3.11.0</maven-compiler-plugin.version>
+
+        <!--util-->
+        <erwin.version>1.2.1-RELEASE</erwin.version>
     </properties>
 
     <dependencies>
