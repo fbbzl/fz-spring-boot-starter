@@ -3,8 +3,8 @@ spring:
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
     url: jdbc:mysql://123.60.157.107/lj_cloud?useUnicode=true&characterEncoding=UTF-8&useSSL=false&serverTimezone=Asia/Shanghai
-    username: root
-    password: TUju=LUk^&UkvWYp
+    username:
+    password:
 
     # HikariCP 连接池配置（可选但推荐）
     hikari:
