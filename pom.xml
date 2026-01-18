@@ -8,6 +8,10 @@
     <version>${reversion}</version>
     <packaging>pom</packaging>
 
+    <name>fz-spring-boot-starter</name>
+    <description>a custom springboot starter</description>
+    <url>https://github.com/fbbzl/fz-spring-boot-starter</url>
+
     <developers>
         <developer>
             <name>fengbinbin</name>
@@ -36,7 +40,6 @@
         <module>fz-spring-boot-starter-jpa</module>
         <module>fz-spring-boot-starter-core</module>
         <module>fz-spring-boot-starter-generator</module>
-        <module>fz-spring-boot-starter-webflux</module>
     </modules>
 
     <properties>
@@ -122,6 +125,8 @@
                     <serverId>ossrh</serverId>
                     <nexusUrl>https://ossrh-staging-api.central.sonatype.com/</nexusUrl>
                     <autoReleaseAfterClose>true</autoReleaseAfterClose>
+                    <skipNexusStagingDeployMojo>false</skipNexusStagingDeployMojo>
+                    <stagingProgressTimeoutMinutes>20</stagingProgressTimeoutMinutes>
                 </configuration>
             </plugin>
 
@@ -180,6 +185,9 @@
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-deploy-plugin</artifactId>
                 <version>${maven-deploy-plugin-version}</version>
+                <configuration>
+                    <skip>true</skip>
+                </configuration>
             </plugin>
 
             <plugin>
