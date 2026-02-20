@@ -19,4 +19,4 @@ import org.mapstruct.NullValuePropertyMappingStrategy;
 */
 
 @Mapper(componentModel = "spring", nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
-public interface ${className}StructMapper extends BaseStructMapper<${className}, ${className}Dto, ${className}Bo,${className}Eo> {}
+public interface ${className}StructMapper extends BaseStructMapper<${className}, ${className}Dto, ${className}Bo, ${className}Eo> {}
