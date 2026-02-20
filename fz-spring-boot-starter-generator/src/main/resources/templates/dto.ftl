@@ -1,13 +1,21 @@
 package ${moduleName}.controller.dto;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fz.admin.modules.enterprise.repository.entity.EnterpriseContact;
+import ${moduleName}.dal.entity.${className};
+import io.swagger.v3.oas.annotations.media.*;
+import jakarta.validation.constraints.*;
 import lombok.AccessLevel;
 import lombok.Data;
-import lombok.experimental.Delegate;
+import lombok.EqualsAndHashCode;
 import lombok.experimental.FieldDefaults;
+import com.fz.springboot.starter.pojo.dto.BaseDto;
 
-import static lombok.AccessLevel.PRIVATE;
+<#if hasLengthValidation?? && hasLengthValidation>
+import org.hibernate.validator.constraints.Length;
+</#if>
+<#if hasPatternValidation?? && hasPatternValidation>
+import jakarta.validation.constraints.Pattern;
+import cn.hutool.core.lang.RegexPool;
+</#if>
 
 /**
 * ${className} dto
@@ -18,14 +26,26 @@ import static lombok.AccessLevel.PRIVATE;
 */
 
 @Data
+@EqualsAndHashCode(callSuper = false)
+@Schema(description = "${tableComment} request")
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class ${className}Dto {
+public class ${className}Dto extends BaseDto<${className}> {
+<#-- 遍历字段生成实体属性 -->
+<#list fields as field>
+    <#-- 排除父类字段 id, createTime, createBy, updateTime, updateBy, deleted 字段 -->
+    <#if !["id", "createTime", "createBy", "updateTime", "updateBy", "deleted"]?seq_contains(field.name)>
 
-        @JsonIgnore
-        @Delegate
-        ${className} ${varName} = new ${className}();
-
-        public ${className} toEntity() {
-            return this.${varName};
-        }
+        /**
+         * ${field.comment}
+         */
+        <#if field.isNullable == "NO">
+        @NotNull(message = "{${className}.${field.name}}")
+        </#if>
+        @Schema(description = "${field.comment}"<#if field.minLength??>, minLength = ${field.minLength}</#if><#if field.maxLength??>, maxLength = ${field.maxLength}</#if>)
+        <#if field.lengthValidation??>
+        @Length(min = ${field.minLength!1}, max = ${field.maxLength})
+        </#if>
+        ${field.javaType} ${field.name};
+    </#if>
+</#list>
 }

@@ -1,6 +1,8 @@
 package com.fz.springboot.starter.jpa;
 
+import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
+import lombok.experimental.FieldDefaults;
 
 import static java.lang.String.format;
 
@@ -11,6 +13,7 @@ import static java.lang.String.format;
  * @version 1.0
  * @since 2025/8/22 15:30
  */
+@FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 @AllArgsConstructor
 public enum SqlLike {
 
@@ -28,7 +31,7 @@ public enum SqlLike {
     DEFAULT("%%%s%%"),
     ;
 
-    private String pattern;
+    String pattern;
 
     /**
      * Left string.

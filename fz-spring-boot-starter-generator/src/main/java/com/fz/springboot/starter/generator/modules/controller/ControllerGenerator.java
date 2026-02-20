@@ -1,10 +1,11 @@
 package com.fz.springboot.starter.generator.modules.controller;
 
-import com.fz.springboot.starter.generator.frame.Generator;
+import com.fz.springboot.starter.generator.frame.BaseGenerator;
 import freemarker.template.Template;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
+import java.nio.file.Path;
 import java.util.Map;
 
 /**
@@ -15,15 +16,15 @@ import java.util.Map;
 
 @Slf4j
 @Component("controller")
-public class ControllerGenerator extends Generator {
+public class ControllerGenerator extends BaseGenerator {
 
     @Override
-    public JavaFilePath getJavaFilePath(Map<String, Object> ftlContext) {
+    public Path getFilePath(Map<String, Object> ftlContext) {
         this.addRequestMapping(ftlContext);
         String controllerPackage  = ftlContext.get("moduleName") + ".controller";
         String controllerFileName = ftlContext.get("className") + "Controller.java";
 
-        return JavaFilePath.of(controllerPackage, controllerFileName);
+        return javaFilePath(controllerPackage, controllerFileName);
     }
 
     @Override
@@ -42,7 +43,7 @@ public class ControllerGenerator extends Generator {
         if (upperCamelCase == null || upperCamelCase.isEmpty()) {
             return upperCamelCase;
         }
-        // 在每个大写字母前插入 '-'，并排除首个字符前的 '-'
+        // 在每个大写字母前插入 '-'，并排除首个字符前的 '-', 驼峰转烤串
         return upperCamelCase.replaceAll("([a-z])([A-Z])", "$1-$2").toLowerCase();
     }
 }
