@@ -28,7 +28,7 @@ public class StructMapperGenerator extends BaseGenerator {
 
     @Override
     public Template getTemplate() throws Exception {
-        return configuration.getTemplate("struct_mapper.ftl");
+        return configuration.getTemplate("mapper_struct.ftl");
     }
 
 }
