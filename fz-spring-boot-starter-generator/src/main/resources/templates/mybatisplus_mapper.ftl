@@ -1,7 +1,7 @@
 package ${moduleName}.dal;
 
 import ${moduleName}.dal.entity.${className};
-import com.fz.springboot.starter.mybatisplus.BaseMybatisPlusMapper;
+import com.fz.starter.mybatisplus.BaseMybatisPlusMapper;
 import org.springframework.stereotype.Repository;
 import org.apache.ibatis.annotations.Mapper;
 

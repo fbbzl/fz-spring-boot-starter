@@ -52,6 +52,11 @@
             <groupId>org.springframework.data</groupId>
             <artifactId>spring-data-commons</artifactId>
         </dependency>
+        <dependency>
+            <groupId>io.github.fbbzl</groupId>
+            <artifactId>fz-spring-boot-starter-core</artifactId>
+            <version>${reversion}</version>
+        </dependency>
 
     </dependencies>
 

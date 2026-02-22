@@ -1,7 +1,7 @@
 package ${moduleName}.dal.entity;
 
 import com.baomidou.mybatisplus.annotation.*;
-import com.fz.springboot.starter.mybatisplus.BaseMybatisPlusEntity;
+import com.fz.starter.mybatisplus.BaseMybatisPlusEntity;
 import lombok.*;
 import jakarta.validation.constraints.*;
 import lombok.experimental.FieldDefaults;

@@ -1,6 +1,6 @@
 package ${moduleName}.dal.entity;
 
-import com.fz.springboot.starter.jpa.BaseJpaEntity;
+import com.fz.starter.jpa.BaseJpaEntity;
 
 import jakarta.persistence.*;
 import jakarta.validation.constraints.*;
