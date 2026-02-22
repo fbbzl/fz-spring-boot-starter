@@ -7,6 +7,8 @@
     <artifactId>fz-spring-boot-starter-dependencies</artifactId>
     <version>${reversion}</version>
     <packaging>pom</packaging>
+
+    <name>${project.artifactId}</name>
     <description>contain all fz-spring-boot-starter dependencies bom file</description>
 
     <developers>
