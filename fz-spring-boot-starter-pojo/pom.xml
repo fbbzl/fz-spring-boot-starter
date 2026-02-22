@@ -10,6 +10,8 @@
 
     <artifactId>fz-spring-boot-starter-pojo</artifactId>
 
+    <name>${project.artifactId}</name>
+
     <dependencies>
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
