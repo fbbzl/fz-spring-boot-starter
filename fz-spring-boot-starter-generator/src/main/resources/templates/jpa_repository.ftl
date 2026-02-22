@@ -1,7 +1,7 @@
 package ${moduleName}.dal;
 
 import ${moduleName}.dal.entity.${className};
-import com.fz.springboot.starter.jpa.repository.BaseRepository;
+import com.fz.starter.jpa.repository.BaseRepository;
 
 import org.springframework.stereotype.Repository;
 

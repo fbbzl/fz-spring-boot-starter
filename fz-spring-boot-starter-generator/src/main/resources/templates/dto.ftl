@@ -7,7 +7,7 @@ import lombok.AccessLevel;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.experimental.FieldDefaults;
-import com.fz.springboot.starter.pojo.dto.BaseDto;
+import com.fz.starter.pojo.dto.BaseDto;
 
 <#if hasLengthValidation?? && hasLengthValidation>
 import org.hibernate.validator.constraints.Length;

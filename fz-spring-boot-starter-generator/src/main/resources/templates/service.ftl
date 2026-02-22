@@ -7,7 +7,7 @@ import ${moduleName}.service.eo.${className}Eo;
 
 import ${moduleName}.struct.${className}StructMapper;
 
-import com.fz.springboot.starter.web.BaseService;
+import com.fz.starter.web.BaseService;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
 import lombok.RequiredArgsConstructor;
