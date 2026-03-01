@@ -5,7 +5,7 @@ import io.swagger.v3.oas.annotations.media.*;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.experimental.FieldDefaults;
-import com.fz.springboot.starter.pojo.bo.BaseBo;
+import com.fz.starter.pojo.bo.BaseBo;
 
 import static lombok.AccessLevel.PRIVATE;
 

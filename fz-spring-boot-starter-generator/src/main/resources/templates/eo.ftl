@@ -5,7 +5,7 @@ import com.alibaba.excel.annotation.ExcelProperty;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.experimental.FieldDefaults;
-import com.fz.springboot.starter.pojo.eo.BaseEo;
+import com.fz.starter.pojo.eo.BaseEo;
 
 import static lombok.AccessLevel.PRIVATE;
 
