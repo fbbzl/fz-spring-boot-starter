@@ -1,9 +1,5 @@
 package com.fz.starter.mybatisplus;
 
-import static cn.hutool.core.collection.CollUtil.isEmpty;
-import static cn.hutool.core.text.CharSequenceUtil.isNotBlank;
-import static com.baomidou.mybatisplus.extension.repository.IRepository.DEFAULT_BATCH_SIZE;
-
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.collection.IterUtil;
 import cn.hutool.core.map.MapUtil;
@@ -21,11 +17,16 @@ import com.baomidou.mybatisplus.core.toolkit.StringUtils;
 import com.baomidou.mybatisplus.extension.plugins.pagination.PageDTO;
 import com.fz.starter.dal.BaseDal;
 import com.fz.starter.pojo.entity.BaseTableEntity;
+import org.apache.ibatis.executor.BatchResult;
+import org.springframework.transaction.annotation.Transactional;
+
 import java.util.*;
 import java.util.function.Consumer;
 import java.util.stream.Stream;
-import org.apache.ibatis.executor.BatchResult;
-import org.springframework.transaction.annotation.Transactional;
+
+import static cn.hutool.core.collection.CollUtil.isEmpty;
+import static cn.hutool.core.text.CharSequenceUtil.isNotBlank;
+import static com.baomidou.mybatisplus.extension.repository.IRepository.DEFAULT_BATCH_SIZE;
 
 /**
  * @author fengbinbin
@@ -37,74 +38,74 @@ public interface BaseMybatisPlusMapper<ENTITY extends BaseMybatisPlusEntity>
                 BaseDal<ENTITY> {
 
     @Override
-    default ENTITY baseCreate(ENTITY entity) {
+    default ENTITY create(ENTITY entity) {
         this.insert(entity);
         return entity;
     }
 
     @Transactional
     @Override
-    default int baseCreate(Iterable<ENTITY> entities) {
+    default int create(Iterable<ENTITY> entities) {
         List<BatchResult> inserts = this.insert(IterUtil.toList(entities), DEFAULT_BATCH_SIZE);
         return effectRows(inserts);
     }
 
     @Override
-    default void baseDelete(Long id) {
+    default void delete(Long id) {
         this.deleteById(id);
     }
 
     @Transactional
     @Override
-    default void baseDelete(Set<Long> ids) {
+    default void delete(Set<Long> ids) {
         if (isEmpty(ids)) return;
 
         this.deleteByIds(IterUtil.toList(ids));
     }
 
     @Override
-    default int baseUpdate(ENTITY entity) {
+    default int update(ENTITY entity) {
         return this.updateById(entity);
     }
 
     @Transactional
     @Override
-    default int baseUpdate(Iterable<ENTITY> entities) {
+    default int update(Iterable<ENTITY> entities) {
         return effectRows(this.updateById(IterUtil.toList(entities), DEFAULT_BATCH_SIZE));
     }
 
     @Override
-    default Optional<ENTITY> baseById(Long id) {
+    default Optional<ENTITY> byId(Long id) {
         return Optional.ofNullable(this.selectById(id));
     }
 
     @Override
-    default List<ENTITY> baseByIds(Set<Long> ids) {
+    default List<ENTITY> byIds(Set<Long> ids) {
         return this.selectByIds(IterUtil.toList(ids));
     }
 
     @Override
-    default Optional<ENTITY> baseOne(ENTITY entity) {
+    default Optional<ENTITY> one(ENTITY entity) {
         return Optional.ofNullable(this.selectOne(buildQueryWrapper(entity)));
     }
 
     @Override
-    default Optional<ENTITY> baseOne(Map<String, Object> propertyAndValue) {
+    default Optional<ENTITY> one(Map<String, Object> propertyAndValue) {
         return Optional.ofNullable(this.selectOne(buildQueryWrapper(propertyAndValue)));
     }
 
     @Override
-    default List<ENTITY> baseList(ENTITY entity) {
+    default List<ENTITY> list(ENTITY entity) {
         return this.selectList(buildQueryWrapper(entity));
     }
 
     @Override
-    default List<ENTITY> baseList(Map<String, Object> propertyAndValue) {
+    default List<ENTITY> list(Map<String, Object> propertyAndValue) {
         return this.selectList(buildQueryWrapper(propertyAndValue));
     }
 
     @Override
-    default PageResult<ENTITY> basePage(ENTITY entity, Page page) {
+    default PageResult<ENTITY> page(ENTITY entity, Page page) {
         IPage<ENTITY> result =
                 this.selectPage(
                         PageDTO.<ENTITY>of(toMybatisPlusPageNumber(page), page.getPageSize()).addOrder(this.toOrderItem(page.getOrders())),
@@ -114,7 +115,7 @@ public interface BaseMybatisPlusMapper<ENTITY extends BaseMybatisPlusEntity>
     }
 
     @Override
-    default PageResult<ENTITY> basePage(Map<String, Object> propertyAndValue, Page page) {
+    default PageResult<ENTITY> page(Map<String, Object> propertyAndValue, Page page) {
         IPage<ENTITY> result =
                 this.selectPage(
                         PageDTO.<ENTITY>of(toMybatisPlusPageNumber(page), page.getPageSize()).addOrder(this.toOrderItem(page.getOrders())),
@@ -124,17 +125,17 @@ public interface BaseMybatisPlusMapper<ENTITY extends BaseMybatisPlusEntity>
     }
 
     @Override
-    default boolean baseExists(ENTITY entity) {
+    default boolean exists(ENTITY entity) {
         return this.selectCount(buildQueryWrapper(entity)) > 0;
     }
 
     @Override
-    default boolean baseExists(Map<String, Object> propertyAndValue) {
+    default boolean exists(Map<String, Object> propertyAndValue) {
         return this.selectCount(buildQueryWrapper(propertyAndValue)) > 0;
     }
 
     @Override
-    default boolean baseExists(Long id) {
+    default boolean exists(Long id) {
         return this.selectById(id) != null;
     }
 
@@ -173,13 +174,13 @@ public interface BaseMybatisPlusMapper<ENTITY extends BaseMybatisPlusEntity>
     }
 
     @Override
-    default void doBatch(ENTITY entity, int batchSize, Consumer<List<ENTITY>> recordsConsumer) {
+    default void doBatchConsume(ENTITY entity, int batchSize, Consumer<List<ENTITY>> recordsConsumer) {
         int pageNumber = 0;
         Page page = new Page(pageNumber, batchSize);
         PageResult<ENTITY> pageResult;
 
         do {
-            pageResult = this.basePage(entity, page);
+            pageResult = this.page(entity, page);
 
             recordsConsumer.accept(pageResult);
 

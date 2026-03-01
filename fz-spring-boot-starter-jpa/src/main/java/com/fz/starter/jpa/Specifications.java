@@ -1,5 +1,6 @@
 package com.fz.starter.jpa;
 
+import cn.hutool.db.sql.Condition.LikeType;
 import com.fz.starter.pojo.entity.BaseTableEntity;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.criteria.*;
@@ -12,8 +13,9 @@ import org.springframework.util.ReflectionUtils;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 import java.util.Set;
+
+import static cn.hutool.db.sql.SqlUtil.buildLikeValue;
 
 /**
  *
@@ -57,15 +59,15 @@ public class Specifications {
                 // 如果是 string 类型,特殊处理成 like 方式
                 // 如果是 枚举 类型则使用 ordinal
                 // 其他类型则使用等于
-                boolean notNull = Objects.nonNull(queryValue),
+                boolean notNull    = queryValue != null,
                         stringType = notNull && field.getJavaType() == String.class,
-                        enumType = notNull && field.getJavaType().isEnum(),
-                        otherType = notNull && !stringType && !enumType;
+                        enumType   = notNull && field.getJavaType().isEnum(),
+                        otherType  = notNull && !stringType && !enumType;
 
                 // string 使用like contain 匹配方式, 并添加到条件列表中
                 if (stringType) {
                     Path queryPath = root.get(attribute(entityType, field));
-                    predicates.add(cb.like(queryPath, SqlLike.contain(queryValue)));
+                    predicates.add(cb.like(queryPath, buildLikeValue(queryValue.toString(), LikeType.Contains, false)));
                 }
                 else
                 // 枚举类型 使用ordinal

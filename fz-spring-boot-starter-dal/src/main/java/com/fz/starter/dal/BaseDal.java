@@ -19,39 +19,39 @@ import java.util.function.Consumer;
 
 public interface BaseDal<ENTITY extends BaseTableEntity> {
 
-    ENTITY baseCreate(ENTITY entity);
+    ENTITY create(ENTITY entity);
 
-    int baseCreate(Iterable<ENTITY> entities);
+    int create(Iterable<ENTITY> entities);
 
-    void baseDelete(Long id);
+    void delete(Long id);
 
-    void baseDelete(Set<Long> ids);
+    void delete(Set<Long> ids);
 
-    int baseUpdate(ENTITY entity);
+    int update(ENTITY entity);
 
-    int baseUpdate(Iterable<ENTITY> entities);
+    int update(Iterable<ENTITY> entities);
 
-    Optional<ENTITY> baseById(Long id);
+    Optional<ENTITY> byId(Long id);
 
-    List<ENTITY> baseByIds(Set<Long> ids);
+    List<ENTITY> byIds(Set<Long> ids);
 
-    Optional<ENTITY> baseOne(ENTITY entity);
+    Optional<ENTITY> one(ENTITY entity);
 
-    Optional<ENTITY> baseOne(Map<String, Object> propertyAndValue);
+    Optional<ENTITY> one(Map<String, Object> propertyAndValue);
 
-    List<ENTITY> baseList(ENTITY entity);
+    List<ENTITY> list(ENTITY entity);
 
-    List<ENTITY> baseList(Map<String, Object> propertyAndValue);
+    List<ENTITY> list(Map<String, Object> propertyAndValue);
 
-    PageResult<ENTITY> basePage(ENTITY entity, Page page);
+    PageResult<ENTITY> page(ENTITY entity, Page page);
 
-    PageResult<ENTITY> basePage(Map<String, Object> propertyAndValue, Page page);
+    PageResult<ENTITY> page(Map<String, Object> propertyAndValue, Page page);
 
-    boolean baseExists(ENTITY entity);
+    boolean exists(ENTITY entity);
 
-    boolean baseExists(Map<String, Object> propertyAndValue);
+    boolean exists(Map<String, Object> propertyAndValue);
 
-    boolean baseExists(Long id);
+    boolean exists(Long id);
 
     void selectForUpdate(Long... ids);
 
@@ -61,7 +61,7 @@ public interface BaseDal<ENTITY extends BaseTableEntity> {
 
     void decrement(String fieldName, int delta, Long... ids);
 
-    void doBatch(ENTITY entity, int batchSize, Consumer<List<ENTITY>> recordsConsumer);
+    void doBatchConsume(ENTITY entity, int batchSize, Consumer<List<ENTITY>> recordsConsumer);
 
     default @NonNull PageResult<ENTITY> toPageResult(int pageNumber, int pageSize, long total, List<ENTITY> content) {
         PageResult<ENTITY> pageResult =

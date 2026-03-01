@@ -1,10 +1,5 @@
 package com.fz.starter.web;
 
-import static cn.hutool.core.io.FileMagicNumber.XLSX;
-import static cn.hutool.core.text.CharSequenceUtil.appendIfMissing;
-import static java.util.Collections.emptyList;
-import static lombok.AccessLevel.PROTECTED;
-
 import com.alibaba.excel.EasyExcel;
 import com.alibaba.excel.write.style.column.LongestMatchColumnWidthStyleStrategy;
 import com.fz.starter.core.exception.ExceptionVerb;
@@ -26,17 +21,23 @@ import io.swagger.v3.oas.annotations.Parameter;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.constraints.NotNull;
-import java.io.IOException;
-import java.io.OutputStream;
-import java.util.Collection;
-import java.util.List;
-import java.util.Set;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+
+import java.io.IOException;
+import java.io.OutputStream;
+import java.util.Collection;
+import java.util.List;
+import java.util.Set;
+
+import static cn.hutool.core.io.FileMagicNumber.XLSX;
+import static cn.hutool.core.text.CharSequenceUtil.appendIfMissing;
+import static java.util.Collections.emptyList;
+import static lombok.AccessLevel.PROTECTED;
 
 /**
  * @author fengbinbin
@@ -61,147 +62,147 @@ public abstract class BaseController<
     Class<EO>     excelClass  = Generics.getGenericType(this.getClass(), BaseController.class, 3);
 
     @Operation(description = "Based on the primary key query, it does not contain data that has been logically deleted", summary = "query based on the primary key")
-    @GetMapping("base/{id}")
-    public R<BO> baseById(
+    @GetMapping("{id}")
+    public R<BO> byId(
             @NotNull
             @PathVariable("id")
             @Parameter(name = "id", description = "the primary key of the query", required = true, example = "1")
             Long id) {
-        return R.ok(service.baseById(id).orElseThrow(ExceptionVerb.RESOURCE_NOT_FOUND.on(entityClass, id)));
+        return R.ok(service.byId(id).orElseThrow(ExceptionVerb.RESOURCE_NOT_FOUND.on(entityClass, id)));
     }
 
     @Operation(description = "query based on the primary key set", summary = "query based on the primary key set")
-    @PostMapping("base/ids")
-    public R<List<BO>> baseByIds(
+    @PostMapping("ids")
+    public R<List<BO>> byIds(
             @NotNull
             @Parameter(description = "request object contains ids", required = true)
             @RequestBody
             Q<Set<Long>> req) {
-        return R.ok(service.baseByIds(req.getData()));
+        return R.ok(service.byIds(req.getData()));
     }
 
-    @Operation(description = "List queries, null fields do not participate in the query", summary = "query baseList")
-    @PostMapping("base/list")
-    public R<List<BO>> baseList(
+    @Operation(description = "List queries, null fields do not participate in the query", summary = "query list")
+    @PostMapping("list")
+    public R<List<BO>> list(
             @NotNull
             @Validated(CRUD.R.class)
             @Parameter(description = "request object", required = true)
             @RequestBody
             Q<DTO> req) {
-        return R.ok(service.baseList(req.getData()));
+        return R.ok(service.list(req.getData()));
     }
 
     @Operation(description = "For paginated queries, null fields do not participate in queries", summary = "pagination query")
-    @PostMapping("base/page")
-    public PR<BO> basePage(
+    @PostMapping("page")
+    public PR<BO> page(
             @NotNull
             @Validated(CRUD.R.class)
             @Parameter(description = "pagination request object", required = true)
             @RequestBody
             PQ<DTO> req) {
-        return PR.ok(service.basePage(req.getData(), req.getPage()));
+        return PR.ok(service.page(req.getData(), req.getPage()));
     }
 
-    @Operation(description = "specifies whether primary key data baseExists", summary = "specifies whether primary key data baseExists")
-    @GetMapping("base/exists/{id}")
-    public R<Boolean> baseExists(
+    @Operation(description = "Specify whether primary key data exists", summary = "specifies whether primary key data exists")
+    @GetMapping("exists/{id}")
+    public R<Boolean> exists(
             @NotNull
             @PathVariable("id")
             @Parameter(name = "id", description = "the primary key of the query", required = true, example = "1")
             Long id) {
-        return R.ok(service.baseExists(id));
+        return R.ok(service.exists(id));
     }
 
-    @Operation(description = "Specify whether the condition data baseExists, and null fields will not participate in the query", summary = "specifies whether conditional data baseExists")
-    @PostMapping("base/exists")
-    public R<Boolean> baseExists(
+    @Operation(description = "Specify whether the condition data exists, and null fields will not participate in the query", summary = "specifies whether conditional data exists")
+    @PostMapping("exists")
+    public R<Boolean> exists(
             @NotNull
             @Validated(CRUD.R.class)
             @Parameter(description = "request data", required = true)
             @RequestBody
             Q<DTO> req) {
-        return R.ok(service.baseExists(req.getData()));
+        return R.ok(service.exists(req.getData()));
     }
 
-    @Operation(description = "create data", summary = "baseCreate data")
-    @PostMapping("base")
-    public R<BO> baseCreate(
+    @Operation(description = "create data", summary = "create data")
+    @PostMapping
+    public R<BO> create(
             @NotNull
             @Validated(CRUD.C.class)
             @Parameter(description = "creating data", required = true)
             @RequestBody
             Q<DTO> req) {
-        return R.ok(service.baseCreate(req.getData()));
+        return R.ok(service.create(req.getData()));
     }
 
-    @Operation(description = "create data batch", summary = "baseCreate data batch")
-    @PostMapping("base/batch")
-    public R<Integer> baseCreateBatch(
+    @Operation(description = "create data batch", summary = "create data batch")
+    @PostMapping("batch")
+    public R<Integer> createBatch(
             @NotNull
             @Parameter(description = "creating batch data", required = true)
             @RequestBody
             Q<Collection<DTO>> req) {
-        return R.ok(service.baseCreate(req.getData()));
+        return R.ok(service.create(req.getData()));
     }
 
-    @Operation(description = "update without null fields", summary = "do baseUpdate ignore null field value")
-    @PatchMapping("base")
-    public R<Integer> baseUpdate(
+    @Operation(description = "update without null fields", summary = "do update ignore null field value")
+    @PatchMapping
+    public R<Integer> update(
             @NotNull
             @Validated(CRUD.U.class)
             @Parameter(name = "req", description = "updating data", required = true)
             @RequestBody
             Q<DTO> req) {
-        return R.ok(service.baseUpdate(req.getData()));
+        return R.ok(service.update(req.getData()));
     }
 
-    @Operation(description = " batch updates without null fields", summary = "do batch baseUpdate ignore null field value")
-    @PatchMapping("base/batch")
-    public R<Integer> baseUpdateBatch(
+    @Operation(description = " batch updates without null fields", summary = "do batch update ignore null field value")
+    @PatchMapping("batch")
+    public R<Integer> updateBatch(
             @NotNull
             @Parameter(name = "req", description = "batch updating data", required = true)
             @RequestBody
             Q<Collection<DTO>> req) {
-        return R.ok(service.baseUpdate(req.getData()));
+        return R.ok(service.update(req.getData()));
     }
 
-    @Operation(description = "Deleting data is a logical deletion, but this tombstone deletion is equivalent to physical deletion, and the tombstone is only to maximize the value of the data", summary = "baseDelete data")
-    @DeleteMapping("base/{id}")
-    public R<Void> baseDelete(
+    @Operation(description = "Deleting data is a logical deletion, but this tombstone deletion is equivalent to physical deletion, and the tombstone is only to maximize the value of the data", summary = "delete data")
+    @DeleteMapping("{id}")
+    public R<Void> delete(
             @NotNull
             @PathVariable("id")
             @Parameter(name = "id", description = "The primary key of the record that needs to be deleted", required = true, example = "1")
             Long id) {
-        service.baseDelete(id);
+        service.delete(id);
         return R.ok();
     }
 
-    @Operation(description = "Deleting data is a logical deletion, but this tombstone deletion is equivalent to physical deletion, and the tombstone is only to maximize the value of the data", summary = "baseDelete data")
-    @DeleteMapping("base/ids")
-    public R<Void> baseDelete(
+    @Operation(description = "Deleting data is a logical deletion, but this tombstone deletion is equivalent to physical deletion, and the tombstone is only to maximize the value of the data", summary = "delete data")
+    @DeleteMapping("ids")
+    public R<Void> delete(
             @NotNull
             @Parameter(description = "request ids", required = true)
             @RequestBody
             Q<Set<Long>> req) {
-        service.baseDelete(req.getData());
+        service.delete(req.getData());
         return R.ok();
     }
 
     @Operation(description = "get an excel template", summary = "The Excel template you need to use to get Excel upload data")
-    @PostMapping("base/template")
-    public void baseTemplate(
+    @PostMapping("excel/template")
+    public void excelTemplate(
             @NotNull
             @Validated(CRUD.R.class)
             @Parameter(description = "download excel template request", required = true)
             @RequestBody Q<ExcelConfig<DTO>> req) throws IOException {
         ExcelConfig<DTO> excelCfg = req.getData();
         this.setResponseHeader(excelCfg);
-        this.doBaseExport(emptyList(), excelCfg);
+        this.doExport(emptyList(), excelCfg);
     }
 
-    @Operation(description = "excel upload to import", summary = "upload excel data to import data")
-    @PostMapping("base/import")
-    public R<Integer> baseImport(
+    @Operation(description = "excel to import", summary = "excel data to import data")
+    @PostMapping("excel/import")
+    public R<Integer> importExcel(
             @NotNull
             @Validated(CRUD.C.class)
             @Parameter(description = "excel import object", required = true)
@@ -212,19 +213,19 @@ public abstract class BaseController<
                          .headRowNumber(1)
                          .sheet()
                          .doReadSync();
-        return R.ok(service.baseImport(importData));
+        return R.ok(service.importExcel(importData));
     }
 
     @Operation(description = "excel export", summary = "export excel data")
-    @PostMapping("base/export")
-    public void baseExport(
+    @PostMapping("excel/export")
+    public void exportExcel(
             @NotNull
             @Validated(CRUD.R.class)
             @Parameter(description = "export excel request", required = true)
             @RequestBody Q<ExcelConfig<DTO>> req) throws IOException {
         ExcelConfig<DTO> excelCfg = req.getData();
         this.setResponseHeader(excelCfg);
-        this.doBaseExport(service.baseExport(excelCfg.param()), excelCfg);
+        this.doExport(service.exportExcel(excelCfg.param()), excelCfg);
     }
 
     //******************************************       protected start      ******************************************//
@@ -237,7 +238,7 @@ public abstract class BaseController<
         response.setHeader(HttpHeaders.CONTENT_DISPOSITION, "attachment;filename=" + filename);
     }
 
-    protected void doBaseExport(Collection<EO> excelData, ExcelConfig<DTO> config) throws IOException {
+    protected void doExport(Collection<EO> excelData, ExcelConfig<DTO> config) throws IOException {
         try (OutputStream os = response.getOutputStream()) {
             EasyExcel.write(os)
                      .head(excelClass)

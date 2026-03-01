@@ -1,30 +1,32 @@
 package com.fz.starter.jpa.repository;
 
 
-import static cn.hutool.core.collection.CollUtil.isEmpty;
-import static java.util.Collections.emptyList;
-
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.bean.copier.CopyOptions;
 import cn.hutool.core.util.ArrayUtil;
 import cn.hutool.db.Page;
 import cn.hutool.db.PageResult;
+import cn.hutool.db.sql.Condition.LikeType;
 import cn.hutool.db.sql.Direction;
 import cn.hutool.db.sql.Order;
 import com.fz.starter.jpa.BaseJpaEntity;
 import com.fz.starter.jpa.Specifications;
-import com.fz.starter.jpa.SqlLike;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.LockModeType;
 import jakarta.persistence.TypedQuery;
 import jakarta.persistence.criteria.*;
-import java.util.*;
-import java.util.function.Consumer;
-import java.util.stream.Stream;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.*;
 import org.springframework.data.jpa.repository.support.SimpleJpaRepository;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.*;
+import java.util.function.Consumer;
+import java.util.stream.Stream;
+
+import static cn.hutool.core.collection.CollUtil.isEmpty;
+import static cn.hutool.db.sql.SqlUtil.buildLikeValue;
+import static java.util.Collections.emptyList;
 
 /**
  *
@@ -46,31 +48,31 @@ public class BaseRepositoryImpl<ENTITY extends BaseJpaEntity> extends SimpleJpaR
 
     @Transactional
     @Override
-    public ENTITY baseCreate(ENTITY entity) {
+    public ENTITY create(ENTITY entity) {
         return this.saveAndFlush(entity);
     }
 
     @Transactional
     @Override
-    public int baseCreate(Iterable<ENTITY> entities) {
+    public int create(Iterable<ENTITY> entities) {
         return this.saveAllAndFlush(entities).size();
     }
 
     @Transactional
     @Override
-    public void baseDelete(Long id) {
+    public void delete(Long id) {
         this.deleteById(id);
     }
 
     @Transactional
     @Override
-    public void baseDelete(Set<Long> ids) {
+    public void delete(Set<Long> ids) {
         this.deleteAllById(ids);
     }
 
     @Transactional
     @Override
-    public int baseUpdate(ENTITY entity) {
+    public int update(ENTITY entity) {
         return this.findById(entity.getId())
                    .map(byId -> {
                        BeanUtil.copyProperties(entity, byId, CopyOptions.create().setIgnoreNullValue(true).setIgnoreError(true));
@@ -81,27 +83,27 @@ public class BaseRepositoryImpl<ENTITY extends BaseJpaEntity> extends SimpleJpaR
 
     @Transactional
     @Override
-    public int baseUpdate(Iterable<ENTITY> entities) {
+    public int update(Iterable<ENTITY> entities) {
         return this.saveAllAndFlush(entities).size();
     }
 
     @Override
-    public Optional<ENTITY> baseById(Long id) {
+    public Optional<ENTITY> byId(Long id) {
         return this.findById(id);
     }
 
     @Override
-    public List<ENTITY> baseByIds(Set<Long> ids) {
+    public List<ENTITY> byIds(Set<Long> ids) {
         return this.findAllById(ids);
     }
 
     @Override
-    public Optional<ENTITY> baseOne(ENTITY entity) {
+    public Optional<ENTITY> one(ENTITY entity) {
         return super.findOne(Specifications.byAuto(entityManager, entity));
     }
 
     @Override
-    public Optional<ENTITY> baseOne(Map<String, Object> propertyAndValue) {
+    public Optional<ENTITY> one(Map<String, Object> propertyAndValue) {
         if (isEmpty(propertyAndValue)) return Optional.empty();
 
         CriteriaBuilder       cb = entityManager.getCriteriaBuilder();
@@ -113,12 +115,12 @@ public class BaseRepositoryImpl<ENTITY extends BaseJpaEntity> extends SimpleJpaR
     }
 
     @Override
-    public List<ENTITY> baseList(ENTITY entity) {
+    public List<ENTITY> list(ENTITY entity) {
         return findAll(Specifications.byAuto(entityManager, entity));
     }
 
     @Override
-    public PageResult<ENTITY> basePage(ENTITY entity, Page page) {
+    public PageResult<ENTITY> page(ENTITY entity, Page page) {
         PageRequest pageRequest = PageRequest.of(page.getPageNumber(), page.getPageSize(), toSort(page.getOrders()));
 
         org.springframework.data.domain.Page<ENTITY> pageImpl = findAll(Specifications.byAuto(entityManager, entity), pageRequest);
@@ -127,7 +129,7 @@ public class BaseRepositoryImpl<ENTITY extends BaseJpaEntity> extends SimpleJpaR
     }
 
     @Override
-    public List<ENTITY> baseList(Map<String, Object> propertyAndValue) {
+    public List<ENTITY> list(Map<String, Object> propertyAndValue) {
         if (isEmpty(propertyAndValue)) return emptyList();
 
         CriteriaBuilder       cb = entityManager.getCriteriaBuilder();
@@ -139,7 +141,7 @@ public class BaseRepositoryImpl<ENTITY extends BaseJpaEntity> extends SimpleJpaR
     }
 
     @Override
-    public PageResult<ENTITY> basePage(Map<String, Object> propertyAndValue, Page page) {
+    public PageResult<ENTITY> page(Map<String, Object> propertyAndValue, Page page) {
         CriteriaBuilder       cb = entityManager.getCriteriaBuilder();
         CriteriaQuery<ENTITY> cq = cb.createQuery(entityClass);
 
@@ -158,12 +160,12 @@ public class BaseRepositoryImpl<ENTITY extends BaseJpaEntity> extends SimpleJpaR
     }
 
     @Override
-    public boolean baseExists(ENTITY entity) {
+    public boolean exists(ENTITY entity) {
         return this.exists(Example.of(entity, ExampleMatcher.matching().withIgnoreNullValues()));
     }
 
     @Override
-    public boolean baseExists(Map<String, Object> propertyAndValue) {
+    public boolean exists(Map<String, Object> propertyAndValue) {
         if (isEmpty(propertyAndValue)) return false;
 
         CriteriaBuilder     cb = entityManager.getCriteriaBuilder();
@@ -177,7 +179,7 @@ public class BaseRepositoryImpl<ENTITY extends BaseJpaEntity> extends SimpleJpaR
     }
 
     @Override
-    public boolean baseExists(Long id) {
+    public boolean exists(Long id) {
         return super.existsById(id);
     }
 
@@ -242,7 +244,7 @@ public class BaseRepositoryImpl<ENTITY extends BaseJpaEntity> extends SimpleJpaR
     }
 
     @Override
-    public void doBatch(ENTITY entity, int batchSize, Consumer<List<ENTITY>> recordsConsumer) {
+    public void doBatchConsume(ENTITY entity, int batchSize, Consumer<List<ENTITY>> recordsConsumer) {
         int pageNumber = 0;
         PageRequest pageRequest = PageRequest.of(pageNumber, batchSize);
         org.springframework.data.domain.Page<ENTITY> pageResult;
@@ -272,14 +274,16 @@ public class BaseRepositoryImpl<ENTITY extends BaseJpaEntity> extends SimpleJpaR
     protected Predicate[] mapToPredicates(Map<String, Object> map, CriteriaBuilder cb, Root<ENTITY> root) {
         List<Predicate> predicates = new ArrayList<>();
         map.forEach((k, v) -> {
-            boolean notNull    = Objects.nonNull(v);
+            boolean notNull    = v != null;
             boolean stringType = notNull && v.getClass() == String.class;
             boolean enumType   = notNull && v.getClass().isEnum();
             boolean otherType  = notNull && !stringType && !enumType;
 
-            if (stringType) predicates.add(cb.like(root.get(k), SqlLike.contain(v)));
-            else if (enumType) predicates.add(cb.equal(root.get(k), ((Enum) v).ordinal()));
-            else if (otherType) predicates.add(cb.equal(root.get(k), v));
+            if (stringType) predicates.add(cb.like(root.get(k), buildLikeValue(v.toString(), LikeType.Contains, false)));
+            else
+            if (enumType)   predicates.add(cb.equal(root.get(k), ((Enum<?>) v).ordinal()));
+            else
+            if (otherType)  predicates.add(cb.equal(root.get(k), v));
         });
 
         return predicates.toArray(new Predicate[]{});

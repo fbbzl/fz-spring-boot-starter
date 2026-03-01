@@ -10,6 +10,6 @@ import lombok.experimental.UtilityClass;
 @UtilityClass
 public class SqlConstants {
 
-    public static final String LIMIT_1  = " limit 1 ";
-    public static final String DISTINCT = " distinct ";
+    public static final String LIMIT_1  = " LIMIT 1 ";
+    public static final String DISTINCT = " DISTINCT ";
 }
