@@ -8,7 +8,7 @@ import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.fasterxml.jackson.datatype.jsr310.deser.LocalDateTimeDeserializer;
 import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateTimeSerializer;
-import com.fz.starter.web.WebAdvisor;
+import com.fz.starter.web.WebMvcAdvisor;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
@@ -27,10 +27,11 @@ import static cn.hutool.core.date.DatePattern.NORM_DATETIME_PATTERN;
  * @since 2025/8/22 14:24
  */
 @Import({
-        WebAdvisor.class
+        WebMvcAdvisor.class
 })
 @AutoConfiguration
-public class MvcConfiguration {
+public class WebMvcConfiguration
+{
 
     @Bean
     public Jackson2ObjectMapperBuilder jackson2ObjectMapperBuilder() {

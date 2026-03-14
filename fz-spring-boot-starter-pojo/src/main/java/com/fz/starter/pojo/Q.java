@@ -1,10 +1,12 @@
 package com.fz.starter.pojo;
 
 
+import cn.hutool.core.util.ArrayUtil;
 import cn.hutool.db.Page;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 import org.springframework.web.multipart.MultipartFile;
@@ -39,17 +41,12 @@ public class Q<DATA> {
      * request timestamp
      */
     @Schema(description = "request timestamp")
-    Long timestamp;
-
-    public static <T> Q<T> of(T data, long timestamp) {
-        Q<T> q = new Q<>();
-        q.setData(data);
-        q.setTimestamp(timestamp);
-        return q;
-    }
+    long timestamp = System.currentTimeMillis();
 
     public static <T> Q<T> of(T data) {
-        return of(data, System.currentTimeMillis());
+        Q<T> q = new Q<>();
+        q.setData(data);
+        return q;
     }
 
     /**
@@ -67,21 +64,15 @@ public class Q<DATA> {
     @FieldDefaults(level = PRIVATE)
     public static class PQ<T> extends Q<T> {
 
-        @Valid
-        @NotNull(message = "{PQ.pagination}")
+        @NotNull(message = "{PQ.page}")
         @Schema(description = "paging parameters page numbers start from 0")
-        private Page page;
+        Page page;
 
-        public static <T> PQ<T> of(T data, Page page, Long timestamp) {
+        public static <T> PQ<T> of(T data, Page page) {
             PQ<T> pq = new PQ<>();
             pq.setData(data);
             pq.setPage(page);
-            pq.setTimestamp(timestamp);
             return pq;
-        }
-
-        public static <T> PQ<T> of(T data, Page pagination) {
-            return of(data, pagination, System.currentTimeMillis());
         }
     }
 
@@ -98,8 +89,12 @@ public class Q<DATA> {
     @EqualsAndHashCode(callSuper = false)
     public static class FQ<T> extends Q<T> {
 
-        @Schema(description = "uploaded file")
-        MultipartFile file;
+        @Size(max = 128)
+        @Schema(description = "uploaded files")
+        MultipartFile[] files;
 
+        public MultipartFile getFile() {
+            return ArrayUtil.get(files, 0);
+        }
     }
 }

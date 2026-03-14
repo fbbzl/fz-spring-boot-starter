@@ -13,7 +13,7 @@ import java.lang.annotation.*;
  * @since 4/13/2022 7:37 PM
  */
 
-@Target({ElementType.TYPE, ElementType.METHOD})
+@Target(ElementType.TYPE)
 @Retention(RetentionPolicy.RUNTIME)
 @Documented
 
