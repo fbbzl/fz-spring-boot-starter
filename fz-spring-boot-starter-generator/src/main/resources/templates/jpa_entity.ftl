@@ -5,6 +5,7 @@ import com.fz.starter.jpa.BaseJpaEntity;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.*;
 import org.hibernate.annotations.Comment;
+import com.fz.starter.pojo.validation.CRUD;
 import lombok.*;
 import lombok.experimental.*;
 import org.hibernate.proxy.HibernateProxy;
@@ -70,11 +71,11 @@ public class ${className} extends BaseJpaEntity {
          * ${field.comment}
          */
         <#if field.isNullable == "NO">
-        @NotNull(message = "{${className}.${field.name}}")
+        @NotNull(groups = CRUD.C.class, message = "{${className}.${field.name}.null}")
         </#if>
         @Comment("${field.comment}")
         <#if field.lengthValidation??>
-        @Length(min = ${field.minLength!1}, max = ${field.maxLength})
+        @Length(groups = CRUD.C.class, min = ${field.minLength!1}, max = ${field.maxLength}, message="{${className}.${field.name}.illegal}")
         </#if>
         ${field.javaType} ${field.name};
     </#if>

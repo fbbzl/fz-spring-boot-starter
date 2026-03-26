@@ -16,10 +16,12 @@ import java.util.Map;
 
 @Slf4j
 @Component("controller")
-public class ControllerGenerator extends BaseGenerator {
+public class ControllerGenerator extends BaseGenerator
+{
 
     @Override
-    public Path getFilePath(Map<String, Object> ftlContext) {
+    public Path getFilePath(Map<String, Object> ftlContext)
+    {
         this.addRequestMapping(ftlContext);
         String controllerPackage  = ftlContext.get("moduleName") + ".controller";
         String controllerFileName = ftlContext.get("className") + "Controller.java";
@@ -28,18 +30,21 @@ public class ControllerGenerator extends BaseGenerator {
     }
 
     @Override
-    public Template getTemplate() throws Exception {
+    public Template getTemplate() throws Exception
+    {
         return configuration.getTemplate("controller.ftl");
     }
 
     //************************************************ private start *************************************************//
 
-    private void addRequestMapping(Map<String, Object> ftlContext) {
+    private void addRequestMapping(Map<String, Object> ftlContext)
+    {
         String className = ftlContext.get("className").toString();
         ftlContext.put("requestMapping", upperCamelToKebabCase(className));
     }
 
-    private String upperCamelToKebabCase(String upperCamelCase) {
+    private String upperCamelToKebabCase(String upperCamelCase)
+    {
         if (upperCamelCase == null || upperCamelCase.isEmpty()) {
             return upperCamelCase;
         }

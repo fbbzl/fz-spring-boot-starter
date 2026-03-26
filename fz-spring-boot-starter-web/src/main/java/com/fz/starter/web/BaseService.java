@@ -42,7 +42,7 @@ public abstract class BaseService<
         EO     extends BaseEo<ENTITY>,
         STRUCT_MAPPER extends BaseStructMapper<ENTITY, DTO, BO, EO>> {
 
-    Class<ENTITY> entityClass = Generics.getGenericType(this.getClass(), BaseService.class, 0);
+    Class<ENTITY> entityClass = Generics.getGenericSuperType(this.getClass(), BaseService.class, 0);
     @Autowired BaseDal<ENTITY> dal;
     @Autowired STRUCT_MAPPER   mapper;
 
@@ -96,7 +96,7 @@ public abstract class BaseService<
             Collection<EO> eos) {
         if (isEmpty(eos)) return 0;
 
-        Validators.validateAndThrow(eos, CRUD.C.class);
+        com.fz.starter.pojo.validation.Validators.validateAndThrow(eos, CRUD.C.class);
         return dal.create(mapper.eoToEntity(eos));
     }
 
@@ -115,7 +115,7 @@ public abstract class BaseService<
             Collection<DTO> dtos) {
         if (isEmpty(dtos)) return 0;
 
-        Validators.validateAndThrow(dtos, CRUD.C.class);
+        com.fz.starter.pojo.validation.Validators.validateAndThrow(dtos, CRUD.C.class);
         return dal.create(mapper.dtoToEntity(dtos));
     }
 
@@ -133,7 +133,7 @@ public abstract class BaseService<
             Collection<DTO> dtos) {
         if (isEmpty(dtos)) return 0;
 
-        Validators.validateAndThrow(dtos, CRUD.U.class);
+        com.fz.starter.pojo.validation.Validators.validateAndThrow(dtos, CRUD.U.class);
         return dal.update(mapper.dtoToEntity(dtos));
     }
 

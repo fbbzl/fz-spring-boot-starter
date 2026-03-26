@@ -16,6 +16,6 @@ import lombok.experimental.FieldDefaults;
 public abstract class BaseEo<ENTITY extends BaseTableEntity> {
 
     @Getter(AccessLevel.NONE)
-    transient Class<ENTITY> entityClass = Generics.getGenericType(this.getClass(), BaseEo.class, 0);
+    transient Class<ENTITY> entityClass = Generics.getGenericSuperType(this.getClass(), BaseEo.class, 0);
 
 }

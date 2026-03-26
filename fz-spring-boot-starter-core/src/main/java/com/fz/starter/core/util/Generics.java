@@ -13,14 +13,14 @@ import org.springframework.core.ResolvableType;
 public class Generics {
 
     @SuppressWarnings("unchecked")
-    public <C> Class<C> getGenericType(Class<?> currentClass, Class<?> rootSuperClass, int genericIndex) {
+    public <C> Class<C> getGenericSuperType(Class<?> currentClass, Class<?> superClass, int genericIndex) {
         ResolvableType currentType = ResolvableType.forClass(currentClass);
 
         while (true) {
             currentType.getSuperType();
             ResolvableType superType = currentType.getSuperType();
 
-            if (superType.getRawClass() == rootSuperClass) {
+            if (superType.getRawClass() == superClass) {
                 ResolvableType entityType = superType.getGeneric(genericIndex);
 
                 return (Class<C>) entityType.resolve();

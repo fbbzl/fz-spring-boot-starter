@@ -24,11 +24,13 @@ import static lombok.AccessLevel.PRIVATE;
 @Component("dal")
 @RequiredArgsConstructor
 @FieldDefaults(level = PRIVATE, makeFinal = true)
-public class DalGenerator extends BaseGenerator {
+public class DalGenerator extends BaseGenerator
+{
 
     GeneratorConfigProperties genCfg;
 
-    public Path getFilePath(Map<String, Object> ftlContext) {
+    public Path getFilePath(Map<String, Object> ftlContext)
+    {
         DalPlatform platformType = genCfg.getPlatformType();
 
         String dalPackage  = ftlContext.get("moduleName") + ".dal";
@@ -43,7 +45,8 @@ public class DalGenerator extends BaseGenerator {
     }
 
     @Override
-    public Template getTemplate() throws Exception {
+    public Template getTemplate() throws Exception
+    {
         DalPlatform platformType = genCfg.getPlatformType();
 
         if (platformType == DalPlatform.JPA)

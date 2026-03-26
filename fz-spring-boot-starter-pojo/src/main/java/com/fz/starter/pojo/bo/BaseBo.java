@@ -22,7 +22,7 @@ import lombok.experimental.FieldDefaults;
 public abstract class BaseBo<ENTITY extends BaseTableEntity> {
 
     @Getter(AccessLevel.NONE)
-    transient Class<ENTITY> entityClass = Generics.getGenericType(this.getClass(), BaseBo.class, 0);
+    transient Class<ENTITY> entityClass = Generics.getGenericSuperType(this.getClass(), BaseBo.class, 0);
 
     Long id;
 

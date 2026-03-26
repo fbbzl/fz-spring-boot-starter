@@ -58,8 +58,8 @@ public abstract class BaseController<
     @Autowired HttpServletRequest  request;
     @Autowired HttpServletResponse response;
 
-    Class<ENTITY> entityClass = Generics.getGenericType(this.getClass(), BaseController.class, 0);
-    Class<EO>     excelClass  = Generics.getGenericType(this.getClass(), BaseController.class, 3);
+    Class<ENTITY> entityClass = Generics.getGenericSuperType(this.getClass(), BaseController.class, 0);
+    Class<EO>     excelClass  = Generics.getGenericSuperType(this.getClass(), BaseController.class, 3);
 
     @Operation(description = "Based on the primary key query, it does not contain data that has been logically deleted", summary = "query based on the primary key")
     @GetMapping("{id}")
@@ -208,7 +208,7 @@ public abstract class BaseController<
             @Parameter(description = "excel import object", required = true)
             FQ<DTO> req) throws IOException {
         List<EO> importData =
-                EasyExcel.read(req.getFile().getInputStream())
+                EasyExcel.read(req.getSingleFile().getInputStream())
                          .head(excelClass)
                          .headRowNumber(1)
                          .sheet()

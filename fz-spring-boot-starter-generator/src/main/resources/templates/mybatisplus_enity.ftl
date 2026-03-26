@@ -2,6 +2,7 @@ package ${moduleName}.dal.entity;
 
 import com.baomidou.mybatisplus.annotation.*;
 import com.fz.starter.mybatisplus.BaseMybatisPlusEntity;
+import com.fz.starter.pojo.validation.CRUD;
 import lombok.*;
 import jakarta.validation.constraints.*;
 import lombok.experimental.FieldDefaults;
@@ -44,10 +45,10 @@ public class ${className} extends BaseMybatisPlusEntity {
          * ${field.comment}
          */
         <#if field.isNullable == "NO">
-        @NotNull(message = "{${className}.${field.name}}")
+        @NotNull(groups = CRUD.C.class, message = "{${className}.${field.name}.null}")
         </#if>
         <#if field.lengthValidation??>
-        @Length(min = ${field.minLength!1}, max = ${field.maxLength})
+        @Length(groups = CRUD.C.class, min = ${field.minLength!1}, max = ${field.maxLength}, message="{${className}.${field.name}.illegal}")
         </#if>
         ${field.javaType} ${field.name};
     </#if>

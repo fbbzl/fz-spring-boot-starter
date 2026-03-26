@@ -93,7 +93,7 @@ public class Q<DATA> {
         @Schema(description = "uploaded files")
         MultipartFile[] files;
 
-        public MultipartFile getFile() {
+        public MultipartFile getSingleFile() {
             return ArrayUtil.get(files, 0);
         }
     }

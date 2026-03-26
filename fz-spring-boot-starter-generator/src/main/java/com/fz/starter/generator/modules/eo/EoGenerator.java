@@ -16,18 +16,21 @@ import java.util.Map;
 
 @Slf4j
 @Component("eo")
-public class EoGenerator extends BaseGenerator {
+public class EoGenerator extends BaseGenerator
+{
 
     @Override
-    public Path getFilePath(Map<String, Object> ftlContext) throws Exception {
-        String entityPackage  = ftlContext.get("moduleName") + ".service.eo";
-        String entityFileName = ftlContext.get("className") + "Eo.java";
+    public Path getFilePath(Map<String, Object> ftlContext) throws Exception
+    {
+        String eoPackage  = ftlContext.get("moduleName") + ".service.eo";
+        String eoFileName = ftlContext.get("className") + "Eo.java";
 
-        return javaFilePath(entityPackage, entityFileName);
+        return javaFilePath(eoPackage, eoFileName);
     }
 
     @Override
-    public Template getTemplate() throws Exception {
+    public Template getTemplate() throws Exception
+    {
         return configuration.getTemplate("eo.ftl");
     }
 

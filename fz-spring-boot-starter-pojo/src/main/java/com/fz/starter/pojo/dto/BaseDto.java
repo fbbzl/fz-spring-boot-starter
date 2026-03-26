@@ -24,7 +24,7 @@ import org.springframework.format.annotation.DateTimeFormat;
 public abstract class BaseDto<ENTITY extends BaseTableEntity> {
 
     @Getter(AccessLevel.NONE)
-    transient Class<ENTITY> entityClass = Generics.getGenericType(this.getClass(), BaseDto.class, 0);
+    transient Class<ENTITY> entityClass = Generics.getGenericSuperType(this.getClass(), BaseDto.class, 0);
 
     @NotNull(groups = CRUD.U.class, message = "id can not be null when doing update")
     Long id;

@@ -17,18 +17,21 @@ import java.util.Map;
 
 @Slf4j
 @Component("bo")
-public class BoGenerator extends BaseGenerator {
+public class BoGenerator extends BaseGenerator
+{
 
     @Override
-    public Path getFilePath(Map<String, Object> ftlContext) throws Exception {
-        String entityPackage  = ftlContext.get("moduleName") + ".service.bo";
-        String entityFileName = ftlContext.get("className") + "Bo.java";
+    public Path getFilePath(Map<String, Object> ftlContext) throws Exception
+    {
+        String boPackage  = ftlContext.get("moduleName") + ".service.bo";
+        String boFileName = ftlContext.get("className") + "Bo.java";
 
-        return javaFilePath(entityPackage, entityFileName);
+        return javaFilePath(boPackage, boFileName);
     }
 
     @Override
-    public Template getTemplate() throws Exception {
+    public Template getTemplate() throws Exception
+    {
         return configuration.getTemplate("bo.ftl");
     }
 

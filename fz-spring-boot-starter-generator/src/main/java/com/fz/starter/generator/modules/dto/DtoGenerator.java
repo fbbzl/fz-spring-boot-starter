@@ -16,17 +16,20 @@ import java.util.Map;
 
 @Slf4j
 @Component("dto")
-public class DtoGenerator extends BaseGenerator {
+public class DtoGenerator extends BaseGenerator
+{
     @Override
-    public Path getFilePath(Map<String, Object> ftlContext) throws Exception {
-        String entityPackage  = ftlContext.get("moduleName") + ".controller.dto";
-        String entityFileName = ftlContext.get("className") + "Dto.java";
+    public Path getFilePath(Map<String, Object> ftlContext) throws Exception
+    {
+        String dtoPackage  = ftlContext.get("moduleName") + ".controller.dto";
+        String dtoFileName = ftlContext.get("className") + "Dto.java";
 
-        return javaFilePath(entityPackage, entityFileName);
+        return javaFilePath(dtoPackage, dtoFileName);
     }
 
     @Override
-    public Template getTemplate() throws Exception {
+    public Template getTemplate() throws Exception
+    {
         return configuration.getTemplate("dto.ftl");
     }
 }

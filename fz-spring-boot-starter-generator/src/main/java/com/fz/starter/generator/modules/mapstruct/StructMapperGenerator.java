@@ -16,18 +16,21 @@ import java.util.Map;
 
 @Slf4j
 @Component("struct_mapper")
-public class StructMapperGenerator extends BaseGenerator {
+public class StructMapperGenerator extends BaseGenerator
+{
 
     @Override
-    public Path getFilePath(Map<String, Object> ftlContext) throws Exception {
-        String entityPackage  = ftlContext.get("moduleName") + ".struct";
-        String entityFileName = ftlContext.get("className") + "StructMapper.java";
+    public Path getFilePath(Map<String, Object> ftlContext) throws Exception
+    {
+        String structMapperPackage  = ftlContext.get("moduleName") + ".struct";
+        String structMapperFileName = ftlContext.get("className") + "StructMapper.java";
 
-        return javaFilePath(entityPackage, entityFileName);
+        return javaFilePath(structMapperPackage, structMapperFileName);
     }
 
     @Override
-    public Template getTemplate() throws Exception {
+    public Template getTemplate() throws Exception
+    {
         return configuration.getTemplate("mapper_struct.ftl");
     }
 
