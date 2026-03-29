@@ -1,5 +1,6 @@
 package com.fz.starter.generator.frame;
 
+import com.fz.starter.generator.config.properties.GeneratorConfigProperties;
 import freemarker.template.Configuration;
 import freemarker.template.Template;
 import lombok.Getter;
@@ -26,13 +27,18 @@ import static lombok.AccessLevel.PROTECTED;
 @FieldDefaults(level = PROTECTED)
 public abstract class BaseGenerator implements BeanNameAware {
 
-    @Autowired                          Configuration configuration;
-    @Value("${code.generator.author:}") String        author;
-    @Getter volatile                    String        generatorName;
+    @Autowired
+    Configuration             configuration;
+    @Value("${code.generator.author:fz}")
+    String                    author;
+    @Getter volatile
+    String                    generatorBeanName;
+    @Autowired
+    GeneratorConfigProperties genCfg;
 
     @Override
     public void setBeanName(@NonNull String name) {
-        generatorName = name;
+        generatorBeanName = name;
     }
 
     public abstract Path getFilePath(Map<String, Object> ftlContext) throws Exception;

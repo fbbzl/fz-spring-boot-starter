@@ -3,7 +3,7 @@ package com.fz.starter.mybatisplus;
 import com.baomidou.mybatisplus.annotation.*;
 import com.fz.starter.mybatisplus.frame.BaseMetaObjectHandler;
 import com.fz.starter.pojo.entity.BaseTableEntity;
-import com.fz.starter.pojo.validation.CRUD;
+import com.fz.starter.pojo.validation.group.CRUD;
 import jakarta.validation.constraints.NotNull;
 import lombok.AccessLevel;
 import lombok.Data;
@@ -12,6 +12,7 @@ import lombok.experimental.FieldDefaults;
 import lombok.experimental.FieldNameConstants;
 
 import java.io.Serial;
+import java.io.Serializable;
 import java.time.LocalDateTime;
 
 /**
@@ -25,25 +26,25 @@ import java.time.LocalDateTime;
 @FieldNameConstants
 @EqualsAndHashCode(callSuper = false)
 @FieldDefaults(level = AccessLevel.PROTECTED)
-public abstract class BaseMybatisPlusEntity implements BaseTableEntity {
+public abstract class BaseMybatisPlusEntity<ID extends Serializable> implements BaseTableEntity<ID> {
 
     @Serial private static final long serialVersionUID = -4346857202985735177L;
 
     @NotNull(groups = CRUD.U.class)
     @TableId(type = IdType.AUTO)
-    Long id;
+    ID id;
 
     @TableField(fill = FieldFill.INSERT)
     LocalDateTime createTime;
 
     @TableField(fill = FieldFill.INSERT)
-    Long createBy;
+    ID createBy;
 
     @TableField(fill = FieldFill.INSERT_UPDATE)
     LocalDateTime updateTime;
 
     @TableField(fill = FieldFill.INSERT_UPDATE)
-    Long updateBy;
+    ID updateBy;
 
     @TableLogic
     @TableField(select = false)

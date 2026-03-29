@@ -3,10 +3,10 @@ package com.fz.starter.dal;
 import cn.hutool.db.Page;
 import cn.hutool.db.PageResult;
 import com.fz.starter.pojo.entity.BaseTableEntity;
-import org.jspecify.annotations.NonNull;
+import org.springframework.lang.NonNull;
 
+import java.io.Serializable;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.Consumer;
@@ -17,49 +17,43 @@ import java.util.function.Consumer;
  * @since 2026/2/8 10:04
  */
 
-public interface BaseDal<ENTITY extends BaseTableEntity> {
+public interface BaseDal<ENTITY extends BaseTableEntity<ID>, ID extends Serializable> {
 
     ENTITY create(ENTITY entity);
 
     int create(Iterable<ENTITY> entities);
 
-    void delete(Long id);
+    void delete(ID id);
 
-    void delete(Set<Long> ids);
+    void delete(Set<ID> ids);
 
     int update(ENTITY entity);
 
     int update(Iterable<ENTITY> entities);
 
-    Optional<ENTITY> byId(Long id);
+    Optional<ENTITY> byId(ID id);
 
-    List<ENTITY> byIds(Set<Long> ids);
+    List<ENTITY> byIds(Set<ID> ids);
 
     Optional<ENTITY> one(ENTITY entity);
 
-    Optional<ENTITY> one(Map<String, Object> propertyAndValue);
-
     List<ENTITY> list(ENTITY entity);
 
-    List<ENTITY> list(Map<String, Object> propertyAndValue);
+    List<ENTITY> limit(ENTITY entity, int limit);
 
-    PageResult<ENTITY> page(ENTITY entity, Page page);
-
-    PageResult<ENTITY> page(Map<String, Object> propertyAndValue, Page page);
+    PageResult<ENTITY> page(Page page, ENTITY entity);
 
     boolean exists(ENTITY entity);
 
-    boolean exists(Map<String, Object> propertyAndValue);
+    boolean exists(ID id);
 
-    boolean exists(Long id);
-
-    void selectForUpdate(Long... ids);
+    void selectForUpdate(List<ID> ids);
 
     void selectForUpdate(ENTITY entity);
 
-    void increment(String fieldName, int delta, Long... ids);
+    void increment(String fieldName, int delta, List<ID> ids);
 
-    void decrement(String fieldName, int delta, Long... ids);
+    void decrement(String fieldName, int delta, List<ID> ids);
 
     void doBatchConsume(ENTITY entity, int batchSize, Consumer<List<ENTITY>> recordsConsumer);
 

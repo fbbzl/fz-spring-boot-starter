@@ -4,7 +4,6 @@ import lombok.AccessLevel;
 import lombok.Data;
 import lombok.experimental.FieldDefaults;
 import org.springframework.boot.context.properties.ConfigurationProperties;
-import org.springframework.stereotype.Component;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -17,19 +16,21 @@ import static com.fz.starter.generator.config.properties.GeneratorConfigProperti
  * @since 2026/2/12 13:38
  */
 @Data
-@Component
 @FieldDefaults(level = AccessLevel.PRIVATE)
 @ConfigurationProperties(prefix = "code.generator")
-public class GeneratorConfigProperties {
+public class GeneratorConfigProperties
+{
 
-    Path        outputPath   = Paths.get(System.getProperty("user.dir"), "generated-sources");
-    DalPlatform platformType = MYBATIS_PLUS;
+    Path        outputPath     = Paths.get(System.getProperty("user.dir"), "generated-sources");
+    String      primaryKeyType = "Long";
+    DalPlatform platformType   = MYBATIS_PLUS;
     String      tables;
     String      modulePackage;
     String      tablePrefix;
     String      author;
 
-    public enum DalPlatform {
+    public enum DalPlatform
+    {
         MYBATIS_PLUS, JPA,
         ;
     }

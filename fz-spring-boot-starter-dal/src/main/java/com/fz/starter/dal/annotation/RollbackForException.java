@@ -39,8 +39,6 @@ public @interface RollbackForException
 
     boolean readOnly() default false;
 
-    Class<? extends Throwable>[] rollbackFor() default {};
-
     String[] rollbackForClassName() default {};
 
     Class<? extends Throwable>[] noRollbackFor() default {};

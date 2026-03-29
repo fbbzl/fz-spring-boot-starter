@@ -21,7 +21,8 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
-import static org.apache.commons.lang3.ArrayUtils.EMPTY_STRING_ARRAY;
+import static org.hibernate.internal.util.collections.ArrayHelper.EMPTY_STRING_ARRAY;
+
 
 /**
  * @author fengbinbin
@@ -39,8 +40,8 @@ import static org.apache.commons.lang3.ArrayUtils.EMPTY_STRING_ARRAY;
 @AutoConfigureBefore(JpaRepositoriesAutoConfiguration.class)
 public class JpaConfiguration {
 
-    static final String AUDITOR_BEAN_NAME           = "def_auditor";
-    static final String DATETIME_PROVIDER_BEAN_NAME = "def_dateTimeProvider";
+    static final String AUDITOR_BEAN_NAME           = "defaultAuditor";
+    static final String DATETIME_PROVIDER_BEAN_NAME = "defaultDateTimeProvider";
 
     @Bean
     @ConditionalOnMissingBean

@@ -1,10 +1,9 @@
 package com.fz.starter.jpa;
 
 import com.fz.starter.pojo.entity.BaseTableEntity;
-import com.fz.starter.pojo.validation.CRUD;
+import com.fz.starter.pojo.validation.group.CRUD;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
-import java.time.LocalDateTime;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 import lombok.experimental.FieldNameConstants;
@@ -14,6 +13,9 @@ import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedBy;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
+
+import java.io.Serializable;
+import java.time.LocalDateTime;
 
 /**
  * @author fengbinbin
@@ -30,17 +32,17 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 @MappedSuperclass
 @SoftDelete
 @EntityListeners(AuditingEntityListener.class)
-public abstract class BaseJpaEntity implements BaseTableEntity {
+public abstract class BaseJpaEntity<ID extends Serializable> implements BaseTableEntity<ID> {
 
     @Id
     @NotNull(groups = CRUD.U.class)
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(nullable = false)
-    Long id;
+    ID id;
 
     @CreatedBy
     @Column
-    Long createBy;
+    ID createBy;
 
     @CreatedDate
     @Column
@@ -48,7 +50,7 @@ public abstract class BaseJpaEntity implements BaseTableEntity {
 
     @LastModifiedBy
     @Column
-    Long updateBy;
+    ID updateBy;
 
     @LastModifiedDate
     @Column

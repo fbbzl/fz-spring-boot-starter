@@ -1,9 +1,11 @@
 package com.fz.starter.mybatisplus.frame;
 
 import com.baomidou.mybatisplus.core.handlers.MetaObjectHandler;
+import com.fz.starter.core.util.Generics;
 import com.fz.starter.mybatisplus.BaseMybatisPlusEntity;
 import org.apache.ibatis.reflection.MetaObject;
 
+import java.io.Serializable;
 import java.time.LocalDateTime;
 
 /**
@@ -12,14 +14,16 @@ import java.time.LocalDateTime;
  * @since 2025/8/22 15:00
  */
 
-public abstract class BaseMetaObjectHandler implements MetaObjectHandler {
+public abstract class BaseMetaObjectHandler<ID extends Serializable> implements MetaObjectHandler {
 
-    protected abstract Long getCurrentLoginUserId();
+    protected abstract ID getCurrentLoginUserId();
+
+    Class<ID> idClass = Generics.getGenericSuperType(this.getClass(), BaseMetaObjectHandler.class, 0);
 
     @Override
     public void insertFill(MetaObject metaObject) {
         strictInsertFill(metaObject, BaseMybatisPlusEntity.Fields.createTime, LocalDateTime.class, LocalDateTime.now());
-        strictInsertFill(metaObject, BaseMybatisPlusEntity.Fields.createBy, Long.class, this.getCurrentLoginUserId());
+        strictInsertFill(metaObject, BaseMybatisPlusEntity.Fields.createBy, idClass, this.getCurrentLoginUserId());
 
         this.updateFill(metaObject);
     }
@@ -27,6 +31,6 @@ public abstract class BaseMetaObjectHandler implements MetaObjectHandler {
     @Override
     public void updateFill(MetaObject metaObject) {
         strictUpdateFill(metaObject, BaseMybatisPlusEntity.Fields.updateTime, LocalDateTime.class, LocalDateTime.now());
-        strictUpdateFill(metaObject, BaseMybatisPlusEntity.Fields.updateBy, Long.class, this.getCurrentLoginUserId());
+        strictUpdateFill(metaObject, BaseMybatisPlusEntity.Fields.updateBy, idClass, this.getCurrentLoginUserId());
     }
 }

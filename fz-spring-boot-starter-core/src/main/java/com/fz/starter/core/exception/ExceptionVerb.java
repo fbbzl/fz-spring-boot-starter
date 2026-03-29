@@ -64,7 +64,7 @@ public enum ExceptionVerb {
     @Getter
     public static class BizException extends RuntimeException {
 
-        ExceptionVerb verb;
+        final ExceptionVerb verb;
 
         public BizException(ExceptionVerb verb, Object message) {
             super(message.toString());

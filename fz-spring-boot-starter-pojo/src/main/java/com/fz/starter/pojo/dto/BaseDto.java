@@ -1,17 +1,16 @@
 package com.fz.starter.pojo.dto;
 
-import static cn.hutool.core.date.DatePattern.NORM_DATETIME_PATTERN;
-
-import com.fz.starter.core.util.Generics;
-import com.fz.starter.pojo.entity.BaseTableEntity;
-import com.fz.starter.pojo.validation.CRUD;
+import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fz.starter.pojo.validation.group.CRUD;
 import jakarta.validation.constraints.NotNull;
-import java.time.LocalDateTime;
 import lombok.AccessLevel;
 import lombok.Data;
-import lombok.Getter;
 import lombok.experimental.FieldDefaults;
-import org.springframework.format.annotation.DateTimeFormat;
+import lombok.experimental.FieldNameConstants;
+
+import java.time.LocalDateTime;
+
+import static cn.hutool.core.date.DatePattern.NORM_DATETIME_PATTERN;
 
 /**
  * @author fengbinbin
@@ -20,22 +19,17 @@ import org.springframework.format.annotation.DateTimeFormat;
  */
 
 @Data
+@FieldNameConstants
 @FieldDefaults(level = AccessLevel.PROTECTED)
-public abstract class BaseDto<ENTITY extends BaseTableEntity> {
-
-    @Getter(AccessLevel.NONE)
-    transient Class<ENTITY> entityClass = Generics.getGenericSuperType(this.getClass(), BaseDto.class, 0);
+public abstract class BaseDto<ID>
+{
 
     @NotNull(groups = CRUD.U.class, message = "id can not be null when doing update")
-    Long id;
-
-    @DateTimeFormat(pattern = NORM_DATETIME_PATTERN)
+    ID id;
+    @JsonFormat(pattern = NORM_DATETIME_PATTERN, timezone = "GMT+8")
     LocalDateTime createTime;
-
-    Long createBy;
-
-    @DateTimeFormat(pattern = NORM_DATETIME_PATTERN)
+    ID createBy;
+    @JsonFormat(pattern = NORM_DATETIME_PATTERN, timezone = "GMT+8")
     LocalDateTime updateTime;
-
-    Long updateBy;
+    ID updateBy;
 }

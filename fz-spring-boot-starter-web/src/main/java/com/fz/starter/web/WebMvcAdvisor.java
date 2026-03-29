@@ -2,7 +2,6 @@ package com.fz.starter.web;
 
 
 import com.fz.starter.core.exception.ExceptionVerb.BizException;
-import com.fz.starter.pojo.R;
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.ConstraintViolationException;
 import lombok.extern.slf4j.Slf4j;
@@ -130,6 +129,14 @@ public class WebMvcAdvisor
     public Object handleException(Exception exception) {
         log.error("exception occurred: ", exception);
         return R.fail(defaultIfBlank(getRootCauseMessage(exception), "unknown system error..."));
+    }
+
+    @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
+    @ExceptionHandler(ClassNotFoundException.class)
+    public Object classNotFoundException(ClassNotFoundException exception) {
+        String convertExceptionMessage = getRootCauseMessage(exception);
+        log.error("http exception occurred: {}", defaultIfBlank(convertExceptionMessage, "class not found exception"));
+        return R.fail("can not read class info, make sure class is exist");
     }
 
     //************************************************ private start *************************************************//
