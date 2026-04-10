@@ -1,7 +1,9 @@
 package com.fz.starter.generator.frame.context;
 
+import lombok.AccessLevel;
 import lombok.Data;
 import lombok.experimental.Accessors;
+import lombok.experimental.FieldDefaults;
 
 import java.util.List;
 
@@ -12,12 +14,13 @@ import java.util.List;
  */
 @Data
 @Accessors(chain = true)
+@FieldDefaults(level = AccessLevel.PRIVATE)
 public class Table
 {
 
-    private String      tableName;
-    private String      tableComment;
-    private String      schemaName;
-    private List<Field> fields;
-    private List<Index> indexes;
+    String      tableName;
+    String      tableComment;
+    String      schemaName;
+    List<Field> fields;
+    List<Index> indexes;
 }

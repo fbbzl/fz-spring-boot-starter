@@ -1,6 +1,8 @@
 package com.fz.starter.generator.frame.context;
 
+import lombok.AccessLevel;
 import lombok.Data;
+import lombok.experimental.FieldDefaults;
 
 import java.util.List;
 
@@ -11,19 +13,11 @@ import java.util.List;
  */
 
 @Data
+@FieldDefaults(level = AccessLevel.PRIVATE)
 public class Index
 {
-    /**
-     * 索引名称
-     */
-    private String       name;
-    /**
-     * 索引涉及的列名列表
-     */
-    private List<String> columns;
-    /**
-     * 是否是唯一索引
-     */
-    private Boolean      unique;
+    String       name;
+    List<String> columns;
+    Boolean      unique;
 
 }
