@@ -57,7 +57,7 @@
 
         <!--maven-->
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <flatten-maven-plugin.version>1.5.0</flatten-maven-plugin.version>
+        <flatten-maven-plugin.version>1.7.3</flatten-maven-plugin.version>
         <maven.compiler.release>${java.version}</maven.compiler.release>
 
         <maven-compiler-plugin.version>3.15.0</maven-compiler-plugin.version>
