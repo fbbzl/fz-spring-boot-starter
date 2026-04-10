@@ -14,14 +14,16 @@ import java.time.LocalDateTime;
  * @since 2025/8/22 15:00
  */
 
-public abstract class BaseMetaObjectHandler<ID extends Serializable> implements MetaObjectHandler {
-
-    protected abstract ID getCurrentLoginUserId();
+public abstract class BaseMetaObjectHandler<ID extends Serializable> implements MetaObjectHandler
+{
 
     Class<ID> idClass = Generics.getGenericSuperType(this.getClass(), BaseMetaObjectHandler.class, 0);
 
+    protected abstract ID getCurrentLoginUserId();
+
     @Override
-    public void insertFill(MetaObject metaObject) {
+    public void insertFill(MetaObject metaObject)
+    {
         strictInsertFill(metaObject, BaseMybatisPlusEntity.Fields.createTime, LocalDateTime.class, LocalDateTime.now());
         strictInsertFill(metaObject, BaseMybatisPlusEntity.Fields.createBy, idClass, this.getCurrentLoginUserId());
 
@@ -29,7 +31,8 @@ public abstract class BaseMetaObjectHandler<ID extends Serializable> implements 
     }
 
     @Override
-    public void updateFill(MetaObject metaObject) {
+    public void updateFill(MetaObject metaObject)
+    {
         strictUpdateFill(metaObject, BaseMybatisPlusEntity.Fields.updateTime, LocalDateTime.class, LocalDateTime.now());
         strictUpdateFill(metaObject, BaseMybatisPlusEntity.Fields.updateBy, idClass, this.getCurrentLoginUserId());
     }

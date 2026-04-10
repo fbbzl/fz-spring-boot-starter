@@ -38,7 +38,8 @@ import static org.hibernate.internal.util.collections.ArrayHelper.EMPTY_STRING_A
         dateTimeProviderRef = JpaConfiguration.DATETIME_PROVIDER_BEAN_NAME
 )
 @AutoConfigureBefore(JpaRepositoriesAutoConfiguration.class)
-public class JpaConfiguration {
+public class JpaConfiguration
+{
 
     static final String AUDITOR_BEAN_NAME           = "defaultAuditor";
     static final String DATETIME_PROVIDER_BEAN_NAME = "defaultDateTimeProvider";
@@ -48,7 +49,8 @@ public class JpaConfiguration {
     public LocalContainerEntityManagerFactoryBean entityManagerFactory(
             EntityManagerFactoryBuilder builder,
             DataSource dataSource,
-            BeanFactory beanFactory) {
+            BeanFactory beanFactory)
+    {
         List<String> basePackages = AutoConfigurationPackages.get(beanFactory);
         Throws.ifEmpty(basePackages, () -> "Unable to determine the JPA entity scanning base package! Make sure that the main class is labeled @SpringBootApplication");
         log.info("jpa starter scans packages -> {}", basePackages);
@@ -61,13 +63,15 @@ public class JpaConfiguration {
 
     @Bean(AUDITOR_BEAN_NAME)
     @ConditionalOnMissingBean
-    public AuditorAware<Long> auditor() {
+    public AuditorAware<Long> auditor()
+    {
         return () -> Optional.of(0L);
     }
 
     @Bean(DATETIME_PROVIDER_BEAN_NAME)
     @ConditionalOnMissingBean
-    public DateTimeProvider dateTimeProvider() {
+    public DateTimeProvider dateTimeProvider()
+    {
         return () -> Optional.of(LocalDateTime.now());
     }
 

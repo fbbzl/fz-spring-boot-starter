@@ -208,7 +208,7 @@ public interface BaseMybatisPlusMapper<ENTITY extends BaseMybatisPlusEntity<ID>,
 
     default OrderItem[] toOrderItem(Order... orders)
     {
-        if (ArrayUtil.isEmpty(orders)) return new OrderItem[] {};
+        if (ArrayUtil.isEmpty(orders)) return new OrderItem[]{};
 
         return Stream.of(orders)
                      .map(order ->
@@ -221,7 +221,7 @@ public interface BaseMybatisPlusMapper<ENTITY extends BaseMybatisPlusEntity<ID>,
         LambdaQueryWrapper<ENTITY> timeRangeQuery = Wrappers.lambdaQuery();
 
         if (isEq) timeRangeQuery.ge(start != null, BaseMybatisPlusEntity::getCreateTime, start).le(end != null, BaseMybatisPlusEntity::getCreateTime, end);
-        else      timeRangeQuery.gt(start != null, BaseMybatisPlusEntity::getCreateTime, start).lt(end != null, BaseMybatisPlusEntity::getCreateTime, end);
+        else timeRangeQuery.gt(start != null, BaseMybatisPlusEntity::getCreateTime, start).lt(end != null, BaseMybatisPlusEntity::getCreateTime, end);
 
         return timeRangeQuery;
     }
@@ -231,7 +231,7 @@ public interface BaseMybatisPlusMapper<ENTITY extends BaseMybatisPlusEntity<ID>,
         LambdaQueryWrapper<ENTITY> timeRangeQuery = Wrappers.lambdaQuery();
 
         if (isEq) timeRangeQuery.ge(start != null, BaseMybatisPlusEntity::getUpdateTime, start).le(end != null, BaseMybatisPlusEntity::getUpdateTime, end);
-        else      timeRangeQuery.gt(start != null, BaseMybatisPlusEntity::getUpdateTime, start).lt(end != null, BaseMybatisPlusEntity::getUpdateTime, end);
+        else timeRangeQuery.gt(start != null, BaseMybatisPlusEntity::getUpdateTime, start).lt(end != null, BaseMybatisPlusEntity::getUpdateTime, end);
 
         return timeRangeQuery;
     }
@@ -264,14 +264,14 @@ public interface BaseMybatisPlusMapper<ENTITY extends BaseMybatisPlusEntity<ID>,
                 String column = cache.getColumn();
 
                 switch (value) {
-                    case Enum<?>       enumVal                                      -> wrapper.eq(column,   enumVal.ordinal());
-                    case Number        number                                       -> wrapper.eq(column,   number);
-                    case LocalDateTime localDateTime                                -> wrapper.eq(column,   localDateTime);
-                    case Date          date                                         -> wrapper.eq(column,   date);
-                    case Collection<?> col    when isNotEmpty(col)                  -> wrapper.in(column,   newHashSet(col));
-                    case String        string when stringLike && isNotBlank(string) -> wrapper.like(column, string);
-                    case String        string when isNotBlank(string)               -> wrapper.eq(column,   string);
-                    default                                                         -> wrapper.eq(column,   value);
+                    case Enum<?> enumVal -> wrapper.eq(column, enumVal.ordinal());
+                    case Number number -> wrapper.eq(column, number);
+                    case LocalDateTime localDateTime -> wrapper.eq(column, localDateTime);
+                    case Date date -> wrapper.eq(column, date);
+                    case Collection<?> col when isNotEmpty(col) -> wrapper.in(column, newHashSet(col));
+                    case String string when stringLike && isNotBlank(string) -> wrapper.like(column, string);
+                    case String string when isNotBlank(string) -> wrapper.eq(column, string);
+                    default -> wrapper.eq(column, value);
                 }
             }
         }

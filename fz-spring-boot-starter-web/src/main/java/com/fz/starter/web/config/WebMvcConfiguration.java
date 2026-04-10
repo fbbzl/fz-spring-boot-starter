@@ -34,7 +34,8 @@ public class WebMvcConfiguration
 {
 
     @Bean
-    public Jackson2ObjectMapperBuilder jackson2ObjectMapperBuilder() {
+    public Jackson2ObjectMapperBuilder jackson2ObjectMapperBuilder()
+    {
         return Jackson2ObjectMapperBuilder.json()
                                           // basic config
                                           .timeZone(TimeZone.getTimeZone("GMT+8"))

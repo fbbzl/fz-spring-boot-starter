@@ -122,7 +122,8 @@ public class BaseRepositoryImpl<ENTITY extends BaseJpaEntity<ID>, ID extends Ser
     }
 
     @Override
-    public List<ENTITY> limit(ENTITY entity, int limit) {
+    public List<ENTITY> limit(ENTITY entity, int limit)
+    {
         PageRequest pageRequest = PageRequest.of(0, limit);
         return findAll(Specifications.byAuto(entityManager, entity), pageRequest).getContent();
     }

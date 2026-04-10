@@ -15,18 +15,20 @@ import java.util.Set;
  * @version 1.0
  * @since 2026/4/9
  */
-public class GeneratorImportSelector implements ImportSelector {
+public class GeneratorImportSelector implements ImportSelector
+{
 
     @NonNull
     @Override
-    public String[] selectImports(@NonNull AnnotationMetadata importingClassMetadata) {
+    public String[] selectImports(@NonNull AnnotationMetadata importingClassMetadata)
+    {
         Set<Class<?>> generatorClasses = ClassUtil.scanPackageBySuper(
-            "com.fz.starter.generator.genarators",
-            BaseGenerator.class
-        );
+                "com.fz.starter.generator.genarators",
+                BaseGenerator.class
+                                                                     );
 
         return generatorClasses.stream()
-            .map(Class::getName)
-            .toArray(String[]::new);
+                               .map(Class::getName)
+                               .toArray(String[]::new);
     }
 }

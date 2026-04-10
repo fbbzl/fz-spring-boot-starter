@@ -15,10 +15,12 @@ import java.util.Map;
  */
 
 @Slf4j
-public class ServiceGenerator extends BaseGenerator {
+public class ServiceGenerator extends BaseGenerator
+{
 
     @Override
-    public Path getFilePath(Map<String, Object> ftlContext) {
+    public Path getFilePath(Map<String, Object> ftlContext)
+    {
         String servicePackage  = ftlContext.get("moduleName") + ".service";
         String serviceFileName = ftlContext.get("className") + "Service.java";
 
@@ -33,7 +35,8 @@ public class ServiceGenerator extends BaseGenerator {
     }
 
     @Override
-    public Template getTemplate() throws Exception {
+    public Template getTemplate() throws Exception
+    {
         return configuration.getTemplate("service.ftl");
     }
 }

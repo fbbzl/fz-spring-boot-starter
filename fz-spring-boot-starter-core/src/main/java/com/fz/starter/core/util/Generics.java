@@ -10,10 +10,12 @@ import org.springframework.core.ResolvableType;
  */
 
 @UtilityClass
-public class Generics {
+public class Generics
+{
 
     @SuppressWarnings("unchecked")
-    public <C> Class<C> getGenericSuperType(Class<?> currentClass, Class<?> superClass, int genericIndex) {
+    public <C> Class<C> getGenericSuperType(Class<?> currentClass, Class<?> superClass, int genericIndex)
+    {
         ResolvableType currentType = ResolvableType.forClass(currentClass);
 
         while (true) {

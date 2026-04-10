@@ -25,19 +25,22 @@ import static lombok.AccessLevel.PROTECTED;
 
 @Slf4j
 @FieldDefaults(level = PROTECTED)
-public abstract class BaseGenerator implements BeanNameAware {
+public abstract class BaseGenerator implements BeanNameAware
+{
 
     @Autowired
     Configuration             configuration;
     @Value("${code.generator.author:fz}")
     String                    author;
-    @Getter volatile
+    @Getter
+    volatile
     String                    generatorBeanName;
     @Autowired
     GeneratorConfigProperties genCfg;
 
     @Override
-    public void setBeanName(@NonNull String name) {
+    public void setBeanName(@NonNull String name)
+    {
         generatorBeanName = name;
     }
 
@@ -48,7 +51,8 @@ public abstract class BaseGenerator implements BeanNameAware {
     /**
      * generate the java file path
      */
-    public static Path javaFilePath(String fullPackage, String className) {
+    public static Path javaFilePath(String fullPackage, String className)
+    {
         if (contains(fullPackage, '.')) {
             fullPackage = fullPackage.replace(".", "/");
         }

@@ -12,7 +12,8 @@ import java.util.List;
  */
 @Data
 @Accessors(chain = true)
-public class Table {
+public class Table
+{
 
     private String      tableName;
     private String      tableComment;

@@ -20,7 +20,8 @@ import static java.lang.annotation.RetentionPolicy.RUNTIME;
 @Retention(RUNTIME)
 @EntityScan
 @EnableJpaRepositories(repositoryFactoryBeanClass = RepositoryFactoryBean.class)
-public @interface EnableSpecificationRepository {
+public @interface EnableSpecificationRepository
+{
 
     @AliasFor(annotation = EntityScan.class, attribute = "basePackages")
     String[] entityPackages() default "";

@@ -4,6 +4,7 @@ import java.util.Map;
 
 /**
  * map db type and java type for generating code
+ *
  * @author fengbinbin
  * @version 1.0
  * @since 2026/4/4 10:20

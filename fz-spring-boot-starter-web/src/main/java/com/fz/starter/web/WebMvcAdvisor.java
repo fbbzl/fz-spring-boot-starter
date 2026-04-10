@@ -43,7 +43,8 @@ public class WebMvcAdvisor
      */
     @ResponseStatus(HttpStatus.OK)
     @ExceptionHandler(BizException.class)
-    public Object handleBizException(BizException exception) {
+    public Object handleBizException(BizException exception)
+    {
         String bizExceptionMessage = getRootCauseMessage(exception);
         log.error("business exception occurred: {}", defaultIfBlank(bizExceptionMessage, "business exception"));
         return R.fail(exception.getVerb().getBisCode(), bizExceptionMessage);
@@ -54,7 +55,8 @@ public class WebMvcAdvisor
      */
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     @ExceptionHandler(BindException.class)
-    public Object handleBindException(BindException exception) {
+    public Object handleBindException(BindException exception)
+    {
         String exceptionMessage = exception.getBindingResult().getAllErrors().stream().map(ObjectError::getDefaultMessage).collect(joining(";"));
         log.error("bind exception occurred: {}", defaultIfBlank(getRootCauseMessage(exception), "request argument bind exception"));
         return badRequest(exceptionMessage);
@@ -62,7 +64,8 @@ public class WebMvcAdvisor
 
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     @ExceptionHandler(HttpMessageConversionException.class)
-    public Object convertException(HttpMessageConversionException exception) {
+    public Object convertException(HttpMessageConversionException exception)
+    {
         String convertExceptionMessage = getRootCauseMessage(exception);
         log.error("http message convert exception occurred: {}", defaultIfBlank(convertExceptionMessage, "http message convert exception"));
         return badRequest(convertExceptionMessage);
@@ -73,7 +76,8 @@ public class WebMvcAdvisor
      */
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     @ExceptionHandler(MissingServletRequestParameterException.class)
-    public Object handleMissingServletRequestParameterException(MissingServletRequestParameterException exception) {
+    public Object handleMissingServletRequestParameterException(MissingServletRequestParameterException exception)
+    {
         log.error("missing servlet request parameter exception occurred: {}", defaultIfBlank(getRootCauseMessage(exception), "missing servlet request parameter exception"));
         return badRequest(exception.getMessage());
     }
@@ -83,7 +87,8 @@ public class WebMvcAdvisor
      */
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     @ExceptionHandler(ConstraintViolationException.class)
-    public Object handleConstraintViolationException(ConstraintViolationException exception) {
+    public Object handleConstraintViolationException(ConstraintViolationException exception)
+    {
         String exceptionMessage = exception.getConstraintViolations().stream().map(ConstraintViolation::getMessage).collect(joining(";"));
         log.error("constraint violation exception occurred: {}", defaultIfBlank(getRootCauseMessage(exception), "constraint violation exception"));
         return badRequest(exceptionMessage);
@@ -94,7 +99,8 @@ public class WebMvcAdvisor
      */
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     @ExceptionHandler(MethodArgumentNotValidException.class)
-    public Object handleMethodArgumentNotValidException(MethodArgumentNotValidException exception) {
+    public Object handleMethodArgumentNotValidException(MethodArgumentNotValidException exception)
+    {
         FieldError fieldError = exception.getBindingResult().getFieldError();
         String     message    = isNull(fieldError) ? erroredMethodMessage(exception) : fieldError.getDefaultMessage();
         log.error("argument not valid exception occurred: {}", defaultIfBlank(getRootCauseMessage(exception), "handle method argument not valid exception"));
@@ -106,7 +112,8 @@ public class WebMvcAdvisor
      */
     @ResponseStatus(HttpStatus.METHOD_NOT_ALLOWED)
     @ExceptionHandler(HttpRequestMethodNotSupportedException.class)
-    public Object handleHttpRequestMethodNotSupportedException(HttpRequestMethodNotSupportedException exception) {
+    public Object handleHttpRequestMethodNotSupportedException(HttpRequestMethodNotSupportedException exception)
+    {
         log.error("http request method not supported exception occurred: {}", defaultIfBlank(getRootCauseMessage(exception), "handle http request method not supported exception"));
         return badRequest(exception.getMessage());
     }
@@ -116,7 +123,8 @@ public class WebMvcAdvisor
      */
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
     @ExceptionHandler(RuntimeException.class)
-    public Object handleRuntimeException(RuntimeException exception) {
+    public Object handleRuntimeException(RuntimeException exception)
+    {
         log.error("runtime exception occurred: ", exception);
         return R.fail(defaultIfBlank(getRootCauseMessage(exception), "unknown system error..."));
     }
@@ -126,14 +134,16 @@ public class WebMvcAdvisor
      */
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
     @ExceptionHandler(Exception.class)
-    public Object handleException(Exception exception) {
+    public Object handleException(Exception exception)
+    {
         log.error("exception occurred: ", exception);
         return R.fail(defaultIfBlank(getRootCauseMessage(exception), "unknown system error..."));
     }
 
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
     @ExceptionHandler(ClassNotFoundException.class)
-    public Object classNotFoundException(ClassNotFoundException exception) {
+    public Object classNotFoundException(ClassNotFoundException exception)
+    {
         String convertExceptionMessage = getRootCauseMessage(exception);
         log.error("http exception occurred: {}", defaultIfBlank(convertExceptionMessage, "class not found exception"));
         return R.fail("can not read class info, make sure class is exist");
@@ -141,11 +151,13 @@ public class WebMvcAdvisor
 
     //************************************************ private start *************************************************//
 
-    private static <T> R<T> badRequest(String message) {
+    private static <T> R<T> badRequest(String message)
+    {
         return R.fail(String.valueOf(HttpStatus.BAD_REQUEST.value()), message, null);
     }
 
-    private String erroredMethodMessage(MethodArgumentNotValidException exception) {
+    private String erroredMethodMessage(MethodArgumentNotValidException exception)
+    {
         return "method [" + exception.getParameter().getMethod() + "] argument not-validate error";
     }
 }

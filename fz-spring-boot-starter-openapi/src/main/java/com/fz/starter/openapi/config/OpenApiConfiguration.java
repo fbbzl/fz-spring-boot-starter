@@ -41,8 +41,7 @@ public class OpenApiConfiguration implements ImportAware
         AnnotationAttributes attributes =
                 AnnotationAttributes.fromMap(importMetadata.getAnnotationAttributes(ApiInfo.class.getName(), false));
 
-        if (attributes != null)
-        {
+        if (attributes != null) {
             Contact contact = new Contact()
                     .name(attributes.getString("contactName"))
                     .email(attributes.getString("contactEmail"))

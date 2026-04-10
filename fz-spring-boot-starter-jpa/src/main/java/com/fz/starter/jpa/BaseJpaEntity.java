@@ -32,7 +32,8 @@ import java.time.LocalDateTime;
 @MappedSuperclass
 @SoftDelete
 @EntityListeners(AuditingEntityListener.class)
-public abstract class BaseJpaEntity<ID extends Serializable> implements BaseTableEntity<ID> {
+public abstract class BaseJpaEntity<ID extends Serializable> implements BaseTableEntity<ID>
+{
 
     @Id
     @NotNull(groups = CRUD.U.class)

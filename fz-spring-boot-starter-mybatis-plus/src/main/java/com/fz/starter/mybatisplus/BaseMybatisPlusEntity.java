@@ -26,9 +26,11 @@ import java.time.LocalDateTime;
 @FieldNameConstants
 @EqualsAndHashCode(callSuper = false)
 @FieldDefaults(level = AccessLevel.PROTECTED)
-public abstract class BaseMybatisPlusEntity<ID extends Serializable> implements BaseTableEntity<ID> {
+public abstract class BaseMybatisPlusEntity<ID extends Serializable> implements BaseTableEntity<ID>
+{
 
-    @Serial private static final long serialVersionUID = -4346857202985735177L;
+    @Serial
+    private static final long serialVersionUID = -4346857202985735177L;
 
     @NotNull(groups = CRUD.U.class)
     @TableId(type = IdType.AUTO)

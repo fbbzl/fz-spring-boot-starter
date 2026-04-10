@@ -8,7 +8,8 @@ import lombok.Data;
  * @since 2025/8/29 14:32
  */
 @Data
-public class Field {
+public class Field
+{
     private String  name;
     private String  javaType;
     private String  comment;

@@ -22,9 +22,8 @@ public class MybatisXmlGenerator extends BaseGenerator
     {
         DalPlatform platformType = genCfg.getPlatformType();
 
-        if (platformType == DalPlatform.MYBATIS_PLUS)
-        {
-            String              xmlPackage   = ftlContext.get("moduleName") + ".dal";
+        if (platformType == DalPlatform.MYBATIS_PLUS) {
+            String xmlPackage = ftlContext.get("moduleName") + ".dal";
             return javaFilePath(xmlPackage, ftlContext.get("className") + "Mapper.xml");
         }
 

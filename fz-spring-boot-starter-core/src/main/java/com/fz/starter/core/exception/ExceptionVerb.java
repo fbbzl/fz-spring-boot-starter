@@ -21,7 +21,8 @@ import static cn.hutool.core.text.CharSequenceUtil.toCamelCase;
 @Getter
 @RequiredArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
-public enum ExceptionVerb {
+public enum ExceptionVerb
+{
 
     ACCESS_DENIED("403"),
     INVALID_INPUT("400"),
@@ -37,21 +38,25 @@ public enum ExceptionVerb {
 
     String bisCode;
 
-    public <T> Supplier<? extends BizException> on(T subject, Object context) {
+    public <T> Supplier<? extends BizException> on(T subject, Object context)
+    {
         Throws.ifNull(subject, () -> "subject can not be null");
         return on(subject.getClass(), context);
     }
 
-    public <T> Supplier<? extends BizException> on(T subject, Object context, Throwable cause) {
+    public <T> Supplier<? extends BizException> on(T subject, Object context, Throwable cause)
+    {
         Throws.ifNull(subject, () -> "subject can not be null");
         return on(subject.getClass(), context, cause);
     }
 
-    public Supplier<? extends BizException> on(Class<?> subjectType, Object context) {
+    public Supplier<? extends BizException> on(Class<?> subjectType, Object context)
+    {
         return on(subjectType, context, null);
     }
 
-    public Supplier<? extends BizException> on(Class<?> subjectType, Object context, Throwable cause) {
+    public Supplier<? extends BizException> on(Class<?> subjectType, Object context, Throwable cause)
+    {
         Objects.requireNonNull(subjectType, "subjectType can not be null");
         return () -> new BizException(this, format("[{}] {}, context: [{}]", subjectType.getSimpleName(), toCamelCase(this.name()), context), cause);
     }
@@ -62,16 +67,19 @@ public enum ExceptionVerb {
      * @since 2025/8/22 20:24
      */
     @Getter
-    public static class BizException extends RuntimeException {
+    public static class BizException extends RuntimeException
+    {
 
         final ExceptionVerb verb;
 
-        public BizException(ExceptionVerb verb, Object message) {
+        public BizException(ExceptionVerb verb, Object message)
+        {
             super(message.toString());
             this.verb = verb;
         }
 
-        public BizException(ExceptionVerb verb, Object message, Throwable cause) {
+        public BizException(ExceptionVerb verb, Object message, Throwable cause)
+        {
             super(message.toString(), cause);
             this.verb = verb;
         }

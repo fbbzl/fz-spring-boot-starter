@@ -22,14 +22,18 @@ import java.sql.SQLException;
  */
 
 @AutoConfiguration
-public class MybatisPlusConfiguration {
+public class MybatisPlusConfiguration
+{
 
     @Bean
     @ConditionalOnMissingBean
-    public BaseMetaObjectHandler<Long> defaultNoLogin() {
-        return new BaseMetaObjectHandler<>() {
+    public BaseMetaObjectHandler<Long> defaultNoLogin()
+    {
+        return new BaseMetaObjectHandler<>()
+        {
             @Override
-            protected Long getCurrentLoginUserId() {
+            protected Long getCurrentLoginUserId()
+            {
                 return 0L;
             }
         };
@@ -41,8 +45,7 @@ public class MybatisPlusConfiguration {
     {
         MybatisPlusInterceptor interceptor = new MybatisPlusInterceptor();
 
-        try (Connection connection = dataSource.getConnection())
-        {
+        try (Connection connection = dataSource.getConnection()) {
             DbType dbType = JdbcUtils.getDbType(connection.getMetaData().getURL());
 
             PaginationInnerInterceptor paginationInnerInterceptor = new PaginationInnerInterceptor(dbType);

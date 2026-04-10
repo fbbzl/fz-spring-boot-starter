@@ -53,17 +53,18 @@ public class MysqlContextLoader
     @Value("${code.generator.schema:}")
     private String schema;
 
-    public Table getTableContext(String tableName) {
+    public Table getTableContext(String tableName)
+    {
         String tableSql = """
-                              SELECT table_name, table_comment
-                              FROM information_schema.tables
-                              WHERE table_schema = DATABASE()
-                              AND table_name = ?
-                              """;
+                SELECT table_name, table_comment
+                FROM information_schema.tables
+                WHERE table_schema = DATABASE()
+                AND table_name = ?
+                """;
         DataSource dataSource = jdbcTemplate.getDataSource();
         if (dataSource == null) throw new DbRuntimeException("datasource is null, please check");
 
-        try(Connection conn = dataSource.getConnection()) {
+        try (Connection conn = dataSource.getConnection()) {
             Throws.ifFalse(conn.isValid(3), () -> "the database connection is invalid");
         }
         catch (Exception e) {
@@ -87,15 +88,16 @@ public class MysqlContextLoader
     }
 
 
-    private List<Field> getColumns(String tableName) {
+    private List<Field> getColumns(String tableName)
+    {
         String fieldSql = """
-                          SELECT column_name, data_type, column_comment, column_default, is_nullable,
-                                 character_maximum_length, numeric_precision, numeric_scale
-                          FROM information_schema.columns 
-                          WHERE table_schema = DATABASE() 
-                          AND table_name = ?
-                          ORDER BY ordinal_position
-                          """;
+                SELECT column_name, data_type, column_comment, column_default, is_nullable,
+                       character_maximum_length, numeric_precision, numeric_scale
+                FROM information_schema.columns 
+                WHERE table_schema = DATABASE() 
+                AND table_name = ?
+                ORDER BY ordinal_position
+                """;
 
         List<Map<String, Object>> columns = jdbcTemplate.queryForList(fieldSql, tableName);
         List<Field>               fields  = new ArrayList<>();
@@ -122,8 +124,7 @@ public class MysqlContextLoader
                 fieldInfo.setLengthValidation(true);
                 if ("NO".equals(isNullable)) {
                     fieldInfo.setMinLength(1);
-                }
-                else {
+                } else {
                     fieldInfo.setMinLength(0);
                 }
             }
@@ -134,14 +135,15 @@ public class MysqlContextLoader
         return fields;
     }
 
-    private List<Index> getIndexesForTable(String tableName) {
+    private List<Index> getIndexesForTable(String tableName)
+    {
         String indexSql = """
-                          SELECT index_name, column_name, non_unique, index_type
-                          FROM information_schema.statistics
-                          WHERE table_schema = DATABASE()
-                          AND table_name = ?
-                          ORDER BY index_name, seq_in_index
-                          """;
+                SELECT index_name, column_name, non_unique, index_type
+                FROM information_schema.statistics
+                WHERE table_schema = DATABASE()
+                AND table_name = ?
+                ORDER BY index_name, seq_in_index
+                """;
 
         List<Map<String, Object>> indexRows = jdbcTemplate.queryForList(indexSql, tableName);
         Map<String, Index>        indexMap  = new LinkedHashMap<>();
@@ -172,7 +174,8 @@ public class MysqlContextLoader
     /**
      * 获取示例值
      */
-    private String getExampleValue(String dataType) {
+    private String getExampleValue(String dataType)
+    {
         return switch (dataType.toLowerCase()) {
             case "bigint" -> "1";
             case "int", "integer" -> "1";

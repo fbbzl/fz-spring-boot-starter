@@ -17,7 +17,8 @@ import java.util.function.Consumer;
  * @since 2026/2/8 10:04
  */
 
-public interface BaseDal<ENTITY extends BaseTableEntity<ID>, ID extends Serializable> {
+public interface BaseDal<ENTITY extends BaseTableEntity<ID>, ID extends Serializable>
+{
 
     ENTITY create(ENTITY entity);
 
@@ -57,7 +58,8 @@ public interface BaseDal<ENTITY extends BaseTableEntity<ID>, ID extends Serializ
 
     void doBatchConsume(ENTITY entity, int batchSize, Consumer<List<ENTITY>> recordsConsumer);
 
-    default @NonNull PageResult<ENTITY> toPageResult(int pageNumber, int pageSize, long total, List<ENTITY> content) {
+    default @NonNull PageResult<ENTITY> toPageResult(int pageNumber, int pageSize, long total, List<ENTITY> content)
+    {
         PageResult<ENTITY> pageResult =
                 new PageResult<>(pageNumber, pageSize, (int) total);
         pageResult.addAll(content);

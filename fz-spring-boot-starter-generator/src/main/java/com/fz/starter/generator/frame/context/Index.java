@@ -11,7 +11,8 @@ import java.util.List;
  */
 
 @Data
-public class Index {
+public class Index
+{
     /**
      * 索引名称
      */
