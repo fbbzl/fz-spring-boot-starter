@@ -5,7 +5,7 @@
     <parent>
         <groupId>io.github.fbbzl</groupId>
         <artifactId>fz-spring-boot-starter</artifactId>
-        <version>${reversion}</version>
+        <version>${revision}</version>
     </parent>
 
     <artifactId>fz-spring-boot-starter-pojo</artifactId>
@@ -55,7 +55,7 @@
         <dependency>
             <groupId>io.github.fbbzl</groupId>
             <artifactId>fz-spring-boot-starter-core</artifactId>
-            <version>${reversion}</version>
+            <version>${revision}</version>
         </dependency>
 
     </dependencies>
