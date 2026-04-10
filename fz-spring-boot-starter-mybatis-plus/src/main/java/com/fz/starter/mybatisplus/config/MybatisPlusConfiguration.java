@@ -12,6 +12,8 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
 import org.springframework.context.annotation.Bean;
 
 import javax.sql.DataSource;
+import java.sql.Connection;
+import java.sql.SQLException;
 
 /**
  * @author fengbinbin
@@ -20,14 +22,18 @@ import javax.sql.DataSource;
  */
 
 @AutoConfiguration
-public class MybatisPlusConfiguration {
+public class MybatisPlusConfiguration
+{
 
     @Bean
     @ConditionalOnMissingBean
-    public BaseMetaObjectHandler defaultNoLogin() {
-        return new BaseMetaObjectHandler() {
+    public BaseMetaObjectHandler<Long> defaultNoLogin()
+    {
+        return new BaseMetaObjectHandler<>()
+        {
             @Override
-            protected Long getCurrentLoginUserId() {
+            protected Long getCurrentLoginUserId()
+            {
                 return 0L;
             }
         };
@@ -35,18 +41,22 @@ public class MybatisPlusConfiguration {
 
     @Bean
     @ConditionalOnMissingBean
-    public MybatisPlusInterceptor mybatisPlusInterceptor(DataSource dataSource) throws Exception {
+    public MybatisPlusInterceptor mybatisPlusInterceptor(DataSource dataSource) throws SQLException
+    {
         MybatisPlusInterceptor interceptor = new MybatisPlusInterceptor();
 
-        DbType dbType = JdbcUtils.getDbType(dataSource.getConnection().getMetaData().getURL());
+        try (Connection connection = dataSource.getConnection()) {
+            DbType dbType = JdbcUtils.getDbType(connection.getMetaData().getURL());
 
-        PaginationInnerInterceptor paginationInnerInterceptor = new PaginationInnerInterceptor(dbType);
-        paginationInnerInterceptor.setOverflow(true);
-        paginationInnerInterceptor.setMaxLimit(1000L);
+            PaginationInnerInterceptor paginationInnerInterceptor = new PaginationInnerInterceptor(dbType);
+            paginationInnerInterceptor.setOverflow(true);
+            paginationInnerInterceptor.setMaxLimit(1000L);
 
-        interceptor.addInnerInterceptor(paginationInnerInterceptor);
-        interceptor.addInnerInterceptor(new OptimisticLockerInnerInterceptor());
-        interceptor.addInnerInterceptor(new BlockAttackInnerInterceptor());
+            interceptor.addInnerInterceptor(new OptimisticLockerInnerInterceptor());
+            interceptor.addInnerInterceptor(new BlockAttackInnerInterceptor());
+            interceptor.addInnerInterceptor(paginationInnerInterceptor);
+        }
+
         return interceptor;
     }
 }

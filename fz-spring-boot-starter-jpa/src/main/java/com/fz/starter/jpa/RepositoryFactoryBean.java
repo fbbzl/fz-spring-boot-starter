@@ -20,21 +20,26 @@ import java.io.Serializable;
  * @since 2020/1/1/001 13:40
  */
 @SuppressWarnings("all")
-public class RepositoryFactoryBean<T extends JpaRepository<S, ID>, S, ID extends Serializable> extends JpaRepositoryFactoryBean<T, S, ID> {
+public class RepositoryFactoryBean<T extends JpaRepository<S, ID>, S, ID extends Serializable> extends JpaRepositoryFactoryBean<T, S, ID>
+{
 
-    public RepositoryFactoryBean(Class<? extends T> repositoryInterface) {
+    public RepositoryFactoryBean(Class<? extends T> repositoryInterface)
+    {
         super(repositoryInterface);
     }
 
     @Override
-    protected RepositoryFactorySupport createRepositoryFactory(EntityManager entityManager) {
+    protected RepositoryFactorySupport createRepositoryFactory(EntityManager entityManager)
+    {
         return new BaseRepositoryFactory(entityManager);
     }
 
     public static class BaseRepositoryFactory<T extends BaseTableEntity, ID extends Serializable>
-            extends JpaRepositoryFactory {
+            extends JpaRepositoryFactory
+    {
 
-        BaseRepositoryFactory(EntityManager entityManager) {
+        BaseRepositoryFactory(EntityManager entityManager)
+        {
             super(entityManager);
         }
 
@@ -47,7 +52,8 @@ public class RepositoryFactoryBean<T extends JpaRepository<S, ID>, S, ID extends
         }
 
         @Override
-        protected Class<?> getRepositoryBaseClass(RepositoryMetadata metadata) {
+        protected Class<?> getRepositoryBaseClass(RepositoryMetadata metadata)
+        {
             return BaseRepositoryImpl.class;
         }
     }

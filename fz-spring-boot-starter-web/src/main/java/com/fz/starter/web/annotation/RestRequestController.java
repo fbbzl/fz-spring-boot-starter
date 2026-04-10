@@ -8,18 +8,20 @@ import java.lang.annotation.*;
 
 /**
  * combine controller and request-mapping
+ *
  * @author fengbinbin
  * @version 1.0
  * @since 4/13/2022 7:37 PM
  */
 
-@Target({ElementType.TYPE, ElementType.METHOD})
+@Target(ElementType.TYPE)
 @Retention(RetentionPolicy.RUNTIME)
 @Documented
 
 @RestController
 @RequestMapping
-public @interface RestRequestController {
+public @interface RestRequestController
+{
 
     @AliasFor(annotation = RequestMapping.class, attribute = "value")
     String[] mapping() default {};

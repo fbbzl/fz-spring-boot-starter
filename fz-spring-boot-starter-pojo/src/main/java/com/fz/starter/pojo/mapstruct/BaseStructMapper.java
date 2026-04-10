@@ -5,6 +5,8 @@ import com.fz.starter.pojo.dto.BaseDto;
 import com.fz.starter.pojo.entity.BaseTableEntity;
 import com.fz.starter.pojo.eo.BaseEo;
 
+import java.io.Serializable;
+import java.util.Collection;
 import java.util.List;
 
 /**
@@ -16,54 +18,83 @@ import java.util.List;
  * @version 1.0
  * @since 2026/1/21 23:53
  */
-
-public interface BaseStructMapper<ENTITY extends BaseTableEntity, DTO extends BaseDto<ENTITY>, BO extends BaseBo<ENTITY>, EO extends BaseEo<ENTITY>> {
+@SuppressWarnings("all")
+public interface BaseStructMapper<
+        ENTITY extends BaseTableEntity<? extends Serializable>,
+        DTO extends BaseDto<? extends Serializable>,
+        BO extends BaseBo<? extends Serializable>,
+        EO extends BaseEo>
+{
 
     BO entityToBo(ENTITY entity);
 
     ENTITY boToEntity(BO bo);
 
-    List<BO> entityToBo(Iterable<ENTITY> entities);
+    List<BO> entityToBo(Collection<ENTITY> entities);
 
-    List<ENTITY> boToEntity(Iterable<BO> bos);
+    BO[] entityToBo(ENTITY... entities);
+
+    List<ENTITY> boToEntity(Collection<BO> bos);
+
+    ENTITY[] boToEntity(BO... bos);
 
     DTO entityToDto(ENTITY entity);
 
     ENTITY dtoToEntity(DTO dto);
 
-    List<DTO> entityToDto(Iterable<ENTITY> entities);
+    List<DTO> entityToDto(Collection<ENTITY> entities);
 
-    List<ENTITY> dtoToEntity(Iterable<DTO> dtos);
+    DTO[] entityToDto(ENTITY... entities);
+
+    List<ENTITY> dtoToEntity(Collection<DTO> dtos);
+
+    ENTITY[] dtoToEntity(DTO... dtos);
 
     EO entityToEo(ENTITY entity);
 
     ENTITY eoToEntity(EO eo);
 
-    List<EO> entityToEo(Iterable<ENTITY> entities);
+    List<EO> entityToEo(Collection<ENTITY> entities);
 
-    List<ENTITY> eoToEntity(Iterable<EO> eos);
+    EO[] entityToEo(ENTITY... entities);
+
+    List<ENTITY> eoToEntity(Collection<EO> eos);
+
+    ENTITY[] eoToEntity(EO... eos);
 
     BO dtoToBo(DTO dto);
 
     DTO boToDto(BO bo);
 
-    List<BO> dtoToBo(Iterable<DTO> dtos);
+    List<BO> dtoToBo(Collection<DTO> dtos);
 
-    List<DTO> boToDto(Iterable<BO> bos);
+    BO[] dtoToBo(DTO... dtos);
+
+    List<DTO> boToDto(Collection<BO> bos);
+
+    DTO[] boToDto(BO... bos);
 
     EO dtoToEo(DTO dto);
 
     DTO eoToDto(EO eo);
 
-    List<EO> dtoToEo(Iterable<DTO> dtos);
+    List<EO> dtoToEo(Collection<DTO> dtos);
 
-    List<DTO> eoToDto(Iterable<EO> eos);
+    EO[] dtoToEo(DTO... dtos);
+
+    List<DTO> eoToDto(Collection<EO> eos);
+
+    DTO[] eoToDto(EO... eos);
 
     EO boToEo(BO bo);
 
     BO eoToBo(EO eo);
 
-    List<EO> boToEo(Iterable<BO> bos);
+    List<EO> boToEo(Collection<BO> bos);
 
-    List<BO> eoToBo(Iterable<EO> eos);
+    EO[] boToEo(BO... bos);
+
+    List<BO> eoToBo(Collection<EO> eos);
+
+    BO[] eoToBo(EO... eos);
 }

@@ -1,15 +1,14 @@
 package com.fz.starter.pojo.bo;
 
-import static cn.hutool.core.date.DatePattern.NORM_DATETIME_PATTERN;
-
 import com.fasterxml.jackson.annotation.JsonFormat;
-import com.fz.starter.core.util.Generics;
-import com.fz.starter.pojo.entity.BaseTableEntity;
-import java.time.LocalDateTime;
 import lombok.AccessLevel;
 import lombok.Data;
-import lombok.Getter;
 import lombok.experimental.FieldDefaults;
+import lombok.experimental.FieldNameConstants;
+
+import java.time.LocalDateTime;
+
+import static cn.hutool.core.date.DatePattern.NORM_DATETIME_PATTERN;
 
 /**
  * @author fengbinbin
@@ -18,22 +17,17 @@ import lombok.experimental.FieldDefaults;
  */
 
 @Data
+@FieldNameConstants
 @FieldDefaults(level = AccessLevel.PROTECTED)
-public abstract class BaseBo<ENTITY extends BaseTableEntity> {
+public abstract class BaseBo<ID>
+{
 
-    @Getter(AccessLevel.NONE)
-    transient Class<ENTITY> entityClass = Generics.getGenericType(this.getClass(), BaseBo.class, 0);
-
-    Long id;
-
+    ID id;
     @JsonFormat(pattern = NORM_DATETIME_PATTERN, timezone = "GMT+8")
     LocalDateTime createTime;
-
-    Long createBy;
-
+    ID createBy;
     @JsonFormat(pattern = NORM_DATETIME_PATTERN, timezone = "GMT+8")
     LocalDateTime updateTime;
-
-    Long updateBy;
+    ID updateBy;
 
 }

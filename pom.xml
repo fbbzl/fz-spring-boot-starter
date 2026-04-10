@@ -5,7 +5,7 @@
 
     <groupId>io.github.fbbzl</groupId>
     <artifactId>fz-spring-boot-starter</artifactId>
-    <version>${reversion}</version>
+    <version>${revision}</version>
     <packaging>pom</packaging>
 
     <name>fz-spring-boot-starter</name>
@@ -43,40 +43,60 @@
         <module>fz-spring-boot-starter-mybatis-plus</module>
         <module>fz-spring-boot-starter-openapi</module>
         <module>fz-spring-boot-starter-pojo</module>
+        <module>fz-spring-boot-starter-shiro</module>
         <module>fz-spring-boot-starter-web</module>
     </modules>
 
     <properties>
-        <!--build-->
-        <java.version>17</java.version>
-        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <reversion>1.0.0_${spring-boot.version}</reversion>
+        <!--project-->
+        <fz.version>1.0.3</fz.version>
+        <revision>${fz.version}_${spring-boot.version}</revision>
 
-        <!--maven plugin-->
-        <flatten-maven-plugin.version>1.5.0</flatten-maven-plugin.version>
+        <!--java-->
+        <java.version>21</java.version>
+
+        <!--maven-->
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <flatten-maven-plugin.version>1.7.3</flatten-maven-plugin.version>
+        <maven.compiler.release>${java.version}</maven.compiler.release>
+
         <maven-compiler-plugin.version>3.15.0</maven-compiler-plugin.version>
-        <maven-javadoc-plugin-version>3.12.0</maven-javadoc-plugin-version>
-        <maven-gpg-plugin-version>3.2.8</maven-gpg-plugin-version>
-        <maven-deploy-plugin-version>3.1.4</maven-deploy-plugin-version>
-        <maven-source-plugin-version>3.4.0</maven-source-plugin-version>
-        <nexus-staging-maven-plugin-version>1.7.0</nexus-staging-maven-plugin-version>
+        <maven-javadoc-plugin.version>3.12.0</maven-javadoc-plugin.version>
+        <maven-gpg-plugin.version>3.2.8</maven-gpg-plugin.version>
+        <maven-deploy-plugin.version>3.1.4</maven-deploy-plugin.version>
+        <maven-source-plugin.version>3.4.0</maven-source-plugin.version>
+        <nexus-staging-maven-plugin.version>1.7.0</nexus-staging-maven-plugin.version>
+
+        <!--lombok-->
+        <lombok.version>1.18.44</lombok.version>
         <lombok-mapstruct-binding.version>0.2.0</lombok-mapstruct-binding.version>
-        <!--springboot-->
-        <spring-boot.version>3.5.10</spring-boot.version>
+
+        <!--spring boot-->
+        <spring-boot.version>3.5.13</spring-boot.version>
+        <swagger-annotations-jakarta.version>2.2.29</swagger-annotations-jakarta.version>
         <springdoc-openapi-starter-webmvc-ui.version>2.8.6</springdoc-openapi-starter-webmvc-ui.version>
 
         <!--util-->
         <erwin.version>1.2.7-RELEASE</erwin.version>
 
-        <!--excel support-->
+        <!--excel-->
         <easyexcel.version>4.0.3</easyexcel.version>
 
+        <!--mapstruct-->
         <mapstruct.version>1.6.3</mapstruct.version>
 
+        <!--mybatis plus-->
         <mybatis-plus-bom.version>3.5.15</mybatis-plus-bom.version>
+        <mybatis-plus-join-boot-starter.version>1.5.6</mybatis-plus-join-boot-starter.version>
     </properties>
 
     <dependencies>
+        <dependency>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+            <version>${lombok.version}</version>
+        </dependency>
+
         <dependency>
             <groupId>io.github.fbbzl</groupId>
             <artifactId>erwin</artifactId>
@@ -109,6 +129,12 @@
             </dependency>
 
             <dependency>
+                <groupId>io.swagger.core.v3</groupId>
+                <artifactId>swagger-annotations-jakarta</artifactId>
+                <version>${swagger-annotations-jakarta.version}</version>
+            </dependency>
+
+            <dependency>
                 <groupId>com.alibaba</groupId>
                 <artifactId>easyexcel</artifactId>
                 <version>${easyexcel.version}</version>
@@ -125,6 +151,12 @@
                 <artifactId>mapstruct-processor</artifactId>
                 <version>${mapstruct.version}</version>
             </dependency>
+
+            <dependency>
+                <groupId>com.github.yulichang</groupId>
+                <artifactId>mybatis-plus-join-boot-starter</artifactId>
+                <version>${mybatis-plus-join-boot-starter.version}</version>
+            </dependency>
         </dependencies>
     </dependencyManagement>
 
@@ -137,11 +169,12 @@
                 <configuration>
                     <source>${java.version}</source>
                     <target>${java.version}</target>
-                    <encoding>UTF-8</encoding>
+                    <encoding>${project.build.sourceEncoding}</encoding>
                     <annotationProcessorPaths>
                         <path>
                             <groupId>org.projectlombok</groupId>
                             <artifactId>lombok</artifactId>
+                            <version>${lombok.version}</version>
                         </path>
                         <path>
                             <groupId>org.mapstruct</groupId>
@@ -160,7 +193,7 @@
             <plugin>
                 <groupId>org.sonatype.plugins</groupId>
                 <artifactId>nexus-staging-maven-plugin</artifactId>
-                <version>${nexus-staging-maven-plugin-version}</version>
+                <version>${nexus-staging-maven-plugin.version}</version>
                 <extensions>true</extensions>
                 <configuration>
                     <serverId>ossrh</serverId>
@@ -172,7 +205,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-source-plugin</artifactId>
-                <version>${maven-source-plugin-version}</version>
+                <version>${maven-source-plugin.version}</version>
                 <executions>
                     <execution>
                         <id>attach-sources</id>
@@ -186,7 +219,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-javadoc-plugin</artifactId>
-                <version>${maven-javadoc-plugin-version}</version>
+                <version>${maven-javadoc-plugin.version}</version>
                 <configuration>
                     <show>private</show>
                     <nohelp>true</nohelp>
@@ -213,7 +246,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-gpg-plugin</artifactId>
-                <version>${maven-gpg-plugin-version}</version>
+                <version>${maven-gpg-plugin.version}</version>
                 <executions>
                     <execution>
                         <id>sign-artifacts</id>
@@ -228,7 +261,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-deploy-plugin</artifactId>
-                <version>${maven-deploy-plugin-version}</version>
+                <version>${maven-deploy-plugin.version}</version>
             </plugin>
 
             <plugin>
@@ -248,7 +281,7 @@
                         </goals>
                     </execution>
                     <execution>
-                        <id>flatten.clean</id>
+                        <id>clean</id>
                         <phase>clean</phase>
                         <goals>
                             <goal>clean</goal>

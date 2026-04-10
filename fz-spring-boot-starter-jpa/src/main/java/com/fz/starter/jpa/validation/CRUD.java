@@ -7,7 +7,8 @@ package com.fz.starter.jpa.validation;
  * @version 1.0
  * @since 2025/9/2 9:13
  */
-public interface CRUD {
+public interface CRUD
+{
 
     /**
      * create
@@ -22,7 +23,7 @@ public interface CRUD {
     /**
      * update
      */
-    interface U {}
+    interface U extends C {}
 
     /**
      * delete

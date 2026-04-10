@@ -9,25 +9,26 @@ import java.time.LocalDateTime;
  * @since 2025/8/22 14:24
  */
 
-public interface BaseTableEntity extends Serializable {
+public interface BaseTableEntity<ID extends Serializable> extends Serializable
+{
 
-    Long getId();
+    ID getId();
 
-    void setId(Long id);
+    void setId(ID id);
 
     LocalDateTime getCreateTime();
 
     void setCreateTime(LocalDateTime createTime);
 
-    Long getCreateBy();
+    ID getCreateBy();
 
-    void setCreateBy(Long createBy);
+    void setCreateBy(ID createBy);
 
     LocalDateTime getUpdateTime();
 
     void setUpdateTime(LocalDateTime updateTime);
 
-    Long getUpdateBy();
+    ID getUpdateBy();
 
-    void setUpdateBy(Long updateBy);
+    void setUpdateBy(ID updateBy);
 }

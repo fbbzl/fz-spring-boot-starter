@@ -7,6 +7,8 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.repository.NoRepositoryBean;
 
+import java.io.Serializable;
+
 /**
  *
  * @author fbb
@@ -14,7 +16,7 @@ import org.springframework.data.repository.NoRepositoryBean;
  * @since 2020/1/1/001 13:10
  */
 @NoRepositoryBean
-public interface BaseRepository<ENTITY extends BaseJpaEntity>
-        extends JpaRepository<ENTITY, Long>,
+public interface BaseRepository<ENTITY extends BaseJpaEntity<ID>, ID extends Serializable>
+        extends JpaRepository<ENTITY, ID>,
                 JpaSpecificationExecutor<ENTITY>,
-                BaseDal<ENTITY> {}
+                BaseDal<ENTITY, ID> {}

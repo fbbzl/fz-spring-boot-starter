@@ -25,7 +25,8 @@ import java.util.List;
 @Target({ElementType.TYPE})
 @Retention(RetentionPolicy.RUNTIME)
 @PropertySource("")
-public @interface YamlSource {
+public @interface YamlSource
+{
 
     @AliasFor(annotation = PropertySource.class, attribute = "name")
     String name() default "";
@@ -48,11 +49,13 @@ public @interface YamlSource {
      * @since 2021/5/11 11:01
      */
 
-    class YamlAndPropertySourceFactory extends DefaultPropertySourceFactory {
+    class YamlAndPropertySourceFactory extends DefaultPropertySourceFactory
+    {
 
         @NonNull
         @Override
-        public org.springframework.core.env.PropertySource<?> createPropertySource(String name, EncodedResource encodedResource) throws IOException {
+        public org.springframework.core.env.PropertySource<?> createPropertySource(String name, EncodedResource encodedResource) throws IOException
+        {
             Resource resource = encodedResource.getResource();
 
             if (isYml(resource)) {
@@ -67,7 +70,8 @@ public @interface YamlSource {
 
         //************************************       private start      ***************************************************//
 
-        private boolean isYml(Resource resource) {
+        private boolean isYml(Resource resource)
+        {
             String filename = resource.getFilename();
             Throws.ifBlank(filename, () -> "resource filename is null or blank");
 

@@ -1,6 +1,8 @@
 package com.fz.starter.generator.frame.context;
 
+import lombok.AccessLevel;
 import lombok.Data;
+import lombok.experimental.FieldDefaults;
 
 /**
  * @author fengbinbin
@@ -8,16 +10,18 @@ import lombok.Data;
  * @since 2025/8/29 14:32
  */
 @Data
-public class Field {
-    private String  name;
-    private String  javaType;
-    private String  comment;
-    private String  example;
-    private Integer minLength;
-    private Integer maxLength;
-    private Boolean lengthValidation;
-    private Boolean patternValidation;
-    private String  patternType;
-    private String  isNullable;
+@FieldDefaults(level = AccessLevel.PRIVATE)
+public class Field
+{
+    String  name;
+    String  javaType;
+    String  comment;
+    String  example;
+    Integer minLength;
+    Integer maxLength;
+    Boolean lengthValidation;
+    Boolean patternValidation;
+    String  patternType;
+    String  isNullable;
 
 }

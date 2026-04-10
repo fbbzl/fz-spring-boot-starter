@@ -27,10 +27,11 @@ import static cn.hutool.core.text.CharSequenceUtil.endWithAnyIgnoreCase;
  * @since 4/1/2023
  */
 
-@Target( {ElementType.PARAMETER})
+@Target({ElementType.PARAMETER})
 @Retention(RetentionPolicy.RUNTIME)
 @Constraint(validatedBy = ExcelValidator.class)
-public @interface Excel {
+public @interface Excel
+{
 
     String message() default "not a valid excel";
 
@@ -38,12 +39,14 @@ public @interface Excel {
 
     Class<? extends Payload>[] payload() default {};
 
-    class ExcelValidator implements ConstraintValidator<Excel, MultipartFile> {
+    class ExcelValidator implements ConstraintValidator<Excel, MultipartFile>
+    {
 
         static final String[] excelExtensions = {XLSX.getExtension(), XLS.getExtension()};
 
         @Override
-        public boolean isValid(@NotNull MultipartFile file, ConstraintValidatorContext context) {
+        public boolean isValid(@NotNull MultipartFile file, ConstraintValidatorContext context)
+        {
             try {
                 Throws.ifNull(file, () -> "Uploaded file is null");
                 Throws.ifTrue(file.isEmpty(), () -> "Uploaded file is empty, 0 bytes");
@@ -61,7 +64,8 @@ public @interface Excel {
             return true;
         }
 
-        private void resetConstraintViolationWithTemplate(ConstraintValidatorContext context, String messageTemplate) {
+        private void resetConstraintViolationWithTemplate(ConstraintValidatorContext context, String messageTemplate)
+        {
             context.disableDefaultConstraintViolation();
             context.buildConstraintViolationWithTemplate(messageTemplate).addConstraintViolation();
         }
