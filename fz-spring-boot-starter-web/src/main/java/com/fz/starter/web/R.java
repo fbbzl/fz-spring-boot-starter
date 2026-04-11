@@ -6,6 +6,7 @@ import cn.hutool.db.PageResult;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
+import lombok.experimental.FieldNameConstants;
 import org.springframework.http.HttpStatus;
 
 import static lombok.AccessLevel.PRIVATE;
@@ -21,12 +22,13 @@ import static lombok.AccessLevel.PROTECTED;
  */
 
 @Getter
+@FieldNameConstants
 @SuppressWarnings("unchecked")
-@Schema(description = "generic response")
 @NoArgsConstructor(access = PRIVATE)
 @AllArgsConstructor(access = PRIVATE)
+@Schema(description = "generic response")
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class R<T>
+public class R<DATA>
 {
 
     private static final String
@@ -60,57 +62,57 @@ public class R<T>
      */
     @Setter(PROTECTED)
     @Schema(description = "response data")
-    T data;
+    DATA data;
 
-    public static <T> R<T> ok()
+    public static <DATA> R<DATA> ok()
     {
-        return (R<T>) DEFAULT_R_SUCCESS;
+        return (R<DATA>) DEFAULT_R_SUCCESS;
     }
 
-    public static <T> R<T> ok(T data)
+    public static <DATA> R<DATA> ok(DATA data)
     {
         return ok(DEFAULT_SUCCESS_MESSAGE, data);
     }
 
-    public static <T> R<T> ok(String message)
+    public static <DATA> R<DATA> ok(String message)
     {
         return ok(message, null);
     }
 
-    public static <T> R<T> ok(String message, T data)
+    public static <DATA> R<DATA> ok(String message, DATA data)
     {
         return ok(String.valueOf(HttpStatus.OK.value()), message, data);
     }
 
-    public static <T> R<T> ok(String code, String message, T data)
+    public static <DATA> R<DATA> ok(String code, String message, DATA data)
     {
         return new R<>(code, true, message, data);
     }
 
-    public static <T> R<T> fail()
+    public static <DATA> R<DATA> fail()
     {
-        return (R<T>) DEFAULT_R_FAIL;
+        return (R<DATA>) DEFAULT_R_FAIL;
     }
 
-    public static <T> R<T> fail(String message)
+    public static <DATA> R<DATA> fail(String message)
     {
         return fail(String.valueOf(HttpStatus.INTERNAL_SERVER_ERROR.value()), message);
     }
 
-    public static <T> R<T> fail(String code, String message)
+    public static <DATA> R<DATA> fail(String code, String message)
     {
         return new R<>(code, false, message, null);
     }
 
-    public static <T> R<T> fail(String code, String message, T data)
+    public static <DATA> R<DATA> fail(String code, String message, DATA data)
     {
         return new R<>(code, false, message, data);
     }
 
-
-    @EqualsAndHashCode(callSuper = true)
     @Data
+    @FieldNameConstants
     @FieldDefaults(level = PRIVATE)
+    @EqualsAndHashCode(callSuper = true)
     @Schema(description = "generic page request")
     public static class PR<DATA> extends R<PageResult<DATA>>
     {

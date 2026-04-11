@@ -1,7 +1,8 @@
-package com.fz.starter.web;
+package com.fz.starter.web.advice;
 
 
 import com.fz.starter.core.exception.ExceptionVerb.BizException;
+import com.fz.starter.web.R;
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.ConstraintViolationException;
 import lombok.extern.slf4j.Slf4j;
@@ -35,7 +36,7 @@ import static java.util.stream.Collectors.joining;
 @Slf4j
 @RestControllerAdvice
 @ConditionalOnWebApplication
-public class WebMvcAdvisor
+public class WebExceptionAdvice
 {
 
     /**

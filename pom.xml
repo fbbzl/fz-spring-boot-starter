@@ -80,7 +80,7 @@
         <erwin.version>1.2.7-RELEASE</erwin.version>
 
         <!--data assemble-->
-        <crane4j-spring-boot-starter.version>2.9.0</crane4j-spring-boot-starter.version>
+        <crane4j.version>2.9.0</crane4j.version>
 
         <!--excel-->
         <easyexcel.version>4.0.3</easyexcel.version>
@@ -164,7 +164,7 @@
             <dependency>
                 <groupId>cn.crane4j</groupId>
                 <artifactId>crane4j-spring-boot-starter</artifactId>
-                <version>${crane4j-spring-boot-starter.version}</version>
+                <version>${crane4j.version}</version>
             </dependency>
         </dependencies>
     </dependencyManagement>

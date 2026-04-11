@@ -10,6 +10,11 @@ package com.fz.starter.pojo.validation.group;
 public interface CRUD
 {
 
+    String C = C.class.getSimpleName();
+    String R = R.class.getSimpleName();
+    String U = U.class.getSimpleName();
+    String D = D.class.getSimpleName();
+
     /**
      * create
      */

@@ -1,1 +1,2 @@
+com.fz.starter.web.config.JacksonConfiguration
 com.fz.starter.web.config.WebMvcConfiguration
