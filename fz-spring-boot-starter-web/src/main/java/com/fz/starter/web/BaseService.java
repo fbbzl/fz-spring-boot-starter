@@ -1,6 +1,7 @@
 package com.fz.starter.web;
 
 
+import cn.crane4j.annotation.AutoOperate;
 import cn.hutool.core.lang.tree.Tree;
 import cn.hutool.core.lang.tree.TreeUtil;
 import cn.hutool.db.Page;
@@ -62,9 +63,61 @@ public abstract class BaseService<
     Class<ENTITY> boClass     = Generics.getGenericSuperType(this.getClass(), BaseService.class, 3);
     Class<ENTITY> eoClass     = Generics.getGenericSuperType(this.getClass(), BaseService.class, 4);
 
-    @Autowired DAL           dal;
-    @Autowired STRUCT_MAPPER mapper;
+    @Autowired DAL             dal;
+    @Autowired STRUCT_MAPPER   mapper;
 
+    @AutoOperate
+    @Nullable
+    public BO byId(
+            @NotNull(message = "id can not be null when doing id-query")
+            ID id)
+    {
+        ENTITY entity = dal.byId(id);
+        if (entity != null) return mapper.entityToBo(entity);
+        return null;
+    }
+
+    @AutoOperate
+    public List<BO> byIds(
+            @Size(max = 1024, message = "the number of collection cannot exceed 1024")
+            Set<ID> ids)
+    {
+        if (isEmpty(ids)) return emptyList();
+        return mapper.entityToBo(dal.byIds(ids));
+    }
+
+    public Map<ID, BO> map(
+            @Size(max = 1024, message = "the number of collection cannot exceed 1024")
+            Set<ID> ids)
+    {
+        if (isEmpty(ids)) return emptyMap();
+        return mapper.entityToBo(dal.byIds(ids)).stream().collect(toMap(BaseBo::getId, identity()));
+    }
+
+    public List<Tree<ID>> tree(
+            @NotNull(message = "root-id can not be null when doing tree-query")
+            ID rootId,
+            @Validated(CRUD.R.class)
+            DTO dto)
+    {
+        if (Treeable.class.isAssignableFrom(boClass))
+        {
+            return TreeUtil.build(this.list(dto), rootId, DEFAULT_CONFIG, (bo, tree) ->
+            {
+                tree.setId(bo.getId());
+
+                @SuppressWarnings("unchecked")
+                Treeable<ID> treeNodeBo = (Treeable<ID>) bo;
+                tree.setParentId(treeNodeBo.getParentId());
+
+                tree.putExtra("data", bo);
+            });
+        }
+
+        return emptyList();
+    }
+
+    @AutoOperate
     public List<BO> list(@Validated(CRUD.R.class) DTO dto)
     {
         if (dto == null) return emptyList();
@@ -74,6 +127,7 @@ public abstract class BaseService<
         return mapper.entityToBo(entities);
     }
 
+    @AutoOperate
     public List<BO> limit(@Validated(CRUD.R.class) DTO dto, int limit)
     {
         if (dto == null) return emptyList();
@@ -91,6 +145,7 @@ public abstract class BaseService<
                   .collect(toMap(BaseTableEntity::getId, mapper::entityToBo));
     }
 
+    @AutoOperate
     public PageResult<BO> page(
             @NotNull(message = "page can not be null when doing page-query")
             Page page,
@@ -99,6 +154,22 @@ public abstract class BaseService<
     {
         if (hasNull(dto, page)) return emptyPage();
         return mappingPage(dal.page(page, mapper.dtoToEntity(dto)), mapper::entityToBo);
+    }
+
+    public boolean exists(
+            @NotNull(message = "id can not be null when doing id-exist-query")
+            @Validated(CRUD.R.class)
+            ID id)
+    {
+        return dal.exists(id);
+    }
+
+    public boolean exists(
+            @NotNull(message = "data can not be null when doing data-exist-query")
+            @Validated(CRUD.R.class)
+            DTO dto)
+    {
+        return dal.exists(mapper.dtoToEntity(dto));
     }
 
     public List<EO> exportExcel(
@@ -153,60 +224,6 @@ public abstract class BaseService<
         if (isEmpty(dtos)) return 0;
         Validators.validateAndThrow(dtos, CRUD.U.class);
         return dal.update(mapper.dtoToEntity(dtos));
-    }
-
-    public Optional<BO> byId(
-            @NotNull(message = "id can not be null when doing id-query")
-            ID id)
-    {
-        return dal.byId(id).map(mapper::entityToBo);
-    }
-
-    public List<BO> byIds(
-            @Size(max = 1024, message = "the number of collection cannot exceed 1024")
-            Set<ID> ids)
-    {
-        if (isEmpty(ids)) return emptyList();
-        return mapper.entityToBo(dal.byIds(ids));
-    }
-
-    public List<Tree<ID>> tree(
-            @NotNull(message = "root-id can not be null when doing tree-query")
-            ID rootId,
-            @Validated(CRUD.R.class)
-            DTO dto)
-    {
-        if (Treeable.class.isAssignableFrom(boClass))
-        {
-            return TreeUtil.build(this.list(dto), rootId, DEFAULT_CONFIG, (bo, tree) ->
-            {
-                tree.setId(bo.getId());
-
-                @SuppressWarnings("unchecked")
-                Treeable<ID> treeNodeBo = (Treeable<ID>) bo;
-                tree.setParentId(treeNodeBo.getParentId());
-
-                tree.putExtra("data", bo);
-            });
-        }
-
-        return emptyList();
-    }
-
-    public boolean exists(
-            @NotNull(message = "id can not be null when doing id-exist-query")
-            @Validated(CRUD.R.class)
-            ID id)
-    {
-        return dal.exists(id);
-    }
-
-    public boolean exists(
-            @NotNull(message = "data can not be null when doing data-exist-query")
-            @Validated(CRUD.R.class)
-            DTO dto)
-    {
-        return dal.exists(mapper.dtoToEntity(dto));
     }
 
     public void delete(

@@ -28,16 +28,6 @@ public class GeneratorConfiguration
 {
 
     @Bean
-    @Primary
-    public FreeMarkerConfigurationFactoryBean freeMarkerConfigurationFactoryBean()
-    {
-        FreeMarkerConfigurationFactoryBean factoryBean = new FreeMarkerConfigurationFactoryBean();
-        factoryBean.setTemplateLoaderPath("classpath:/freemarker-templates/");
-        factoryBean.setDefaultEncoding("UTF-8");
-        return factoryBean;
-    }
-
-    @Bean
     @ConditionalOnMissingBean
     public TypeMapping defaultTypeMapping()
     {

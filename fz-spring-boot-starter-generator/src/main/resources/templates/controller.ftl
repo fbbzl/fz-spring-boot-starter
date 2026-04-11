@@ -13,7 +13,6 @@ import lombok.experimental.FieldDefaults;
 import lombok.RequiredArgsConstructor;
 import org.springframework.validation.annotation.Validated;
 
-
 import static lombok.AccessLevel.PRIVATE;
 
 /**
@@ -28,6 +27,6 @@ import static lombok.AccessLevel.PRIVATE;
 @Validated
 @RestRequestController(mapping = "${requestMapping}")
 @RequiredArgsConstructor
-@Tag(name = "${tableComment}", description = "${tableComment}API")
+@Tag(name = "${tableComment} Management", description = "${tableComment}API")
 @FieldDefaults(level = PRIVATE, makeFinal = true)
 public class ${className}Controller extends BaseController<${primaryKeyType}, ${className}, ${className}Dto, ${className}Bo, ${className}Eo> {}

@@ -4,6 +4,7 @@ import cn.hutool.db.Page;
 import cn.hutool.db.PageResult;
 import com.fz.starter.pojo.entity.BaseTableEntity;
 import org.springframework.lang.NonNull;
+import org.springframework.lang.Nullable;
 
 import java.io.Serializable;
 import java.util.List;
@@ -32,7 +33,8 @@ public interface BaseDal<ENTITY extends BaseTableEntity<ID>, ID extends Serializ
 
     int update(Iterable<ENTITY> entities);
 
-    Optional<ENTITY> byId(ID id);
+    @Nullable
+    ENTITY byId(ID id);
 
     List<ENTITY> byIds(Set<ID> ids);
 

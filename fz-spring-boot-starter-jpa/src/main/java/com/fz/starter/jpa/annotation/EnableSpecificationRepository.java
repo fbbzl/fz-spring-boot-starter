@@ -16,6 +16,7 @@ import static java.lang.annotation.RetentionPolicy.RUNTIME;
  * @version 1.0
  * @since 2020/1/6/006 17:22
  */
+
 @Target(TYPE)
 @Retention(RUNTIME)
 @EntityScan

@@ -19,6 +19,7 @@ import org.springframework.data.domain.ExampleMatcher;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.repository.support.SimpleJpaRepository;
+import org.springframework.lang.Nullable;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.io.Serializable;
@@ -97,10 +98,11 @@ public class BaseRepositoryImpl<ENTITY extends BaseJpaEntity<ID>, ID extends Ser
         return super.saveAllAndFlush(entities).size();
     }
 
+    @Nullable
     @Override
-    public Optional<ENTITY> byId(ID id)
+    public ENTITY byId(ID id)
     {
-        return this.findById(id);
+        return this.findById(id).get();
     }
 
     @Override

@@ -19,7 +19,7 @@ import static lombok.AccessLevel.PRIVATE;
 @Data
 @EqualsAndHashCode(callSuper = false)
 @FieldDefaults(level = PRIVATE)
-@Schema(description = "${tableComment} response")
+@Schema(description = "${tableComment} bo")
 public class ${className}Bo extends BaseBo<${primaryKeyType}> {
 <#-- 遍历字段生成实体属性 -->
 <#list fields as field>

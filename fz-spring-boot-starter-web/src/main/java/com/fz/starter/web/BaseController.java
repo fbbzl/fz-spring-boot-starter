@@ -66,7 +66,7 @@ public abstract class BaseController<
 
     @Operation(description = "Based on the primary key query, it does not contain data that has been logically deleted", summary = "Query by primary key")
     @GetMapping("{id}")
-    public R<Optional<BO>> byId(
+    public R<BO> byId(
             @NotNull
             @PathVariable("id")
             @Parameter(name = "id", description = "the primary key of the query", required = true, example = "1")

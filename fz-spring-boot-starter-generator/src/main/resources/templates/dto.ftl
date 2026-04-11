@@ -1,6 +1,5 @@
 package ${moduleName}.controller.dto;
 
-
 import io.swagger.v3.oas.annotations.media.*;
 import jakarta.validation.constraints.*;
 import lombok.AccessLevel;
@@ -8,6 +7,7 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.experimental.FieldDefaults;
 import com.fz.starter.pojo.dto.BaseDto;
+import org.springframework.lang.Nullable;
 
 <#if hasLengthValidation?? && hasLengthValidation>
 import org.hibernate.validator.constraints.Length;
@@ -27,7 +27,7 @@ import cn.hutool.core.lang.RegexPool;
 
 @Data
 @EqualsAndHashCode(callSuper = false)
-@Schema(description = "${tableComment} request")
+@Schema(description = "${tableComment} dto")
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class ${className}Dto extends BaseDto<${primaryKeyType}> {
 <#-- 遍历字段生成实体属性 -->
@@ -40,6 +40,8 @@ public class ${className}Dto extends BaseDto<${primaryKeyType}> {
      */
     <#if field.isNullable == "NO">
     @NotNull(message = "{${className}.${field.name}}")
+    <#else>
+    @Nullable
     </#if>
     @Schema(description = "${field.comment}"<#if field.minLength??>, minLength = ${field.minLength}</#if><#if field.maxLength??>, maxLength = ${field.maxLength}</#if>)
     <#if field.lengthValidation??>

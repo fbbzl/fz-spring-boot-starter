@@ -10,6 +10,7 @@ import lombok.*;
 import lombok.experimental.*;
 import org.hibernate.proxy.HibernateProxy;
 import java.util.Objects;
+import org.springframework.lang.Nullable;
 
 import static lombok.AccessLevel.PRIVATE;
 
@@ -50,6 +51,8 @@ public class ${className} extends BaseJpaEntity<${primaryKeyType}> {
      */
     <#if field.isNullable == "NO">
     @NotNull(groups = CRUD.C.class, message = "{${className}.${field.name}.null}")
+    <#else>
+    @Nullable
     </#if>
     @Comment("${field.comment}")
     <#if field.lengthValidation??>

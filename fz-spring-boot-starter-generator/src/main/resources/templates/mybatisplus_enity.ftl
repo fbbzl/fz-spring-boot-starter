@@ -8,6 +8,7 @@ import jakarta.validation.constraints.*;
 import lombok.experimental.FieldDefaults;
 import lombok.experimental.FieldNameConstants;
 import static lombok.AccessLevel.PRIVATE;
+import org.springframework.lang.Nullable;
 
 <#if hasLengthValidation?? && hasLengthValidation>
     import org.hibernate.validator.constraints.Length;
@@ -46,6 +47,8 @@ public class ${className} extends BaseMybatisPlusEntity<${primaryKeyType}> {
      */
     <#if field.isNullable == "NO">
     @NotNull(groups = CRUD.C.class, message = "{${className}.${field.name}.null}")
+    <#else>
+    @Nullable
     </#if>
     <#if field.lengthValidation??>
     @Length(groups = CRUD.C.class, min = ${field.minLength!1}, max = ${field.maxLength}, message="{${className}.${field.name}.illegal}")

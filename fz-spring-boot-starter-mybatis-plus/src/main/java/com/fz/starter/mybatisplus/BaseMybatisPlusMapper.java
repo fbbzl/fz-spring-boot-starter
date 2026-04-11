@@ -22,6 +22,7 @@ import com.fz.starter.dal.SqlConstants;
 import com.fz.starter.pojo.entity.BaseTableEntity;
 import org.apache.ibatis.executor.BatchResult;
 import org.fz.erwin.exception.Throws;
+import org.springframework.lang.Nullable;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.io.Serializable;
@@ -88,10 +89,11 @@ public interface BaseMybatisPlusMapper<ENTITY extends BaseMybatisPlusEntity<ID>,
         return effectRows(this.updateById(IterUtil.toList(entities), DEFAULT_BATCH_SIZE));
     }
 
+    @Nullable
     @Override
-    default Optional<ENTITY> byId(ID id)
+    default ENTITY byId(ID id)
     {
-        return Optional.ofNullable(this.selectById(id));
+        return this.selectById(id);
     }
 
     @Override
