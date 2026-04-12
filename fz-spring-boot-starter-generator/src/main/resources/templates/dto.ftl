@@ -8,6 +8,7 @@ import lombok.EqualsAndHashCode;
 import lombok.experimental.FieldDefaults;
 import com.fz.starter.pojo.dto.BaseDto;
 import org.springframework.lang.Nullable;
+import lombok.experimental.FieldNameConstants;
 
 <#if hasLengthValidation?? && hasLengthValidation>
 import org.hibernate.validator.constraints.Length;
@@ -26,6 +27,7 @@ import cn.hutool.core.lang.RegexPool;
  */
 
 @Data
+@FieldNameConstants
 @EqualsAndHashCode(callSuper = false)
 @Schema(description = "${tableComment} dto")
 @FieldDefaults(level = AccessLevel.PRIVATE)

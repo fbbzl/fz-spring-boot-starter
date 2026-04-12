@@ -17,7 +17,6 @@
         <dependency>
             <groupId>io.github.fbbzl</groupId>
             <artifactId>fz-spring-boot-starter-pojo</artifactId>
-            <version>${revision}</version>
         </dependency>
 
         <dependency>

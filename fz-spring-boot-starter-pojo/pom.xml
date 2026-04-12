@@ -56,7 +56,6 @@
         <dependency>
             <groupId>io.github.fbbzl</groupId>
             <artifactId>fz-spring-boot-starter-core</artifactId>
-            <version>${revision}</version>
         </dependency>
 
         <dependency>

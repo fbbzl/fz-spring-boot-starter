@@ -5,6 +5,7 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.experimental.FieldDefaults;
 import com.fz.starter.pojo.eo.BaseEo;
+import lombok.experimental.FieldNameConstants;
 
 import static lombok.AccessLevel.PRIVATE;
 
@@ -17,6 +18,7 @@ import static lombok.AccessLevel.PRIVATE;
  */
 
 @Data
+@FieldNameConstants
 @EqualsAndHashCode(callSuper = false)
 @FieldDefaults(level = PRIVATE)
 public class ${className}Eo extends BaseEo {

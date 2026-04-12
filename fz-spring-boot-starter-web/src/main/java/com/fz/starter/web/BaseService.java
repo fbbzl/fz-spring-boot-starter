@@ -2,6 +2,7 @@ package com.fz.starter.web;
 
 
 import cn.crane4j.core.container.Container;
+import cn.crane4j.core.support.OperateTemplate;
 import cn.hutool.core.lang.tree.Tree;
 import cn.hutool.core.lang.tree.TreeUtil;
 import cn.hutool.db.Page;
@@ -69,9 +70,10 @@ public abstract class BaseService<
     Class<ENTITY> boClass     = Generics.getGenericSuperType(this.getClass(), BaseService.class, 3);
     Class<ENTITY> eoClass     = Generics.getGenericSuperType(this.getClass(), BaseService.class, 4);
 
-    @Autowired DAL           dal;
-    @Autowired STRUCT_MAPPER mapper;
-    @Setter    String        beanName;
+    @Autowired DAL             dal;
+    @Autowired STRUCT_MAPPER   mapper;
+    @Setter    String          beanName;
+    @Autowired OperateTemplate operateTemplate;
 
     @Autowired
     @Lazy BaseService<ID, ENTITY, DTO, BO, EO, DAL, STRUCT_MAPPER> self;
@@ -124,7 +126,9 @@ public abstract class BaseService<
     {
         if (Treeable.class.isAssignableFrom(boClass))
         {
-            return TreeUtil.build(self.list(dto), rootId, DEFAULT_CONFIG, (bo, tree) ->
+            List<BO> list = this.list(dto);
+            operateTemplate.execute(list);
+            return TreeUtil.build(list, rootId, DEFAULT_CONFIG, (bo, tree) ->
             {
                 tree.setId(bo.getId());
 
