@@ -13,10 +13,6 @@
 
     <name>${project.artifactId}</name>
 
-    <properties>
-        <swagger-annotations-jakarta.version>2.2.29</swagger-annotations-jakarta.version>
-    </properties>
-
     <dependencies>
         <dependency>
             <groupId>org.springframework.boot</groupId>
@@ -41,6 +37,12 @@
         <dependency>
             <groupId>io.github.fbbzl</groupId>
             <artifactId>fz-spring-boot-starter-dal</artifactId>
+        </dependency>
+
+
+        <dependency>
+            <groupId>io.github.fbbzl</groupId>
+            <artifactId>fz-spring-boot-starter-messages</artifactId>
         </dependency>
 
         <dependency>

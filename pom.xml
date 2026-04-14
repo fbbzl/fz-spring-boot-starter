@@ -40,16 +40,17 @@
         <module>fz-spring-boot-starter-dal</module>
         <module>fz-spring-boot-starter-generator</module>
         <module>fz-spring-boot-starter-jpa</module>
+        <module>fz-spring-boot-starter-messages</module>
         <module>fz-spring-boot-starter-mybatis-plus</module>
         <module>fz-spring-boot-starter-openapi</module>
         <module>fz-spring-boot-starter-pojo</module>
-        <module>fz-spring-boot-starter-shiro</module>
+        <module>fz-spring-boot-starter-auth</module>
         <module>fz-spring-boot-starter-web</module>
     </modules>
 
     <properties>
         <!--project-->
-        <fz.version>1.0.5</fz.version>
+        <fz.version>1.2.5</fz.version>
         <revision>${fz.version}_${spring-boot.version}</revision>
 
         <!--java-->
@@ -132,6 +133,12 @@
             <dependency>
                 <groupId>io.github.fbbzl</groupId>
                 <artifactId>fz-spring-boot-starter-pojo</artifactId>
+                <version>${revision}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>io.github.fbbzl</groupId>
+                <artifactId>fz-spring-boot-starter-messages</artifactId>
                 <version>${revision}</version>
             </dependency>
 
