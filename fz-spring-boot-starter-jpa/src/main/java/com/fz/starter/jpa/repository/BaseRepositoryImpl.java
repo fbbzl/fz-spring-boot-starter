@@ -23,11 +23,15 @@ import org.springframework.lang.Nullable;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.io.Serializable;
+import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.Consumer;
 import java.util.stream.Stream;
+
+import static cn.hutool.core.collection.CollUtil.isNotEmpty;
 
 /**
  *
@@ -118,15 +122,15 @@ public class BaseRepositoryImpl<ENTITY extends BaseJpaEntity<ID>, ID extends Ser
     }
 
     @Override
-    public List<ENTITY> list(ENTITY entity)
+    public List<ENTITY> list(ENTITY entity, Order... orders)
     {
-        return findAll(Specifications.byAuto(entityManager, entity));
+        return findAll(Specifications.byAuto(entityManager, entity, orders));
     }
 
     @Override
-    public List<ENTITY> limit(ENTITY entity, int limit)
+    public List<ENTITY> limit(ENTITY entity, int limit, Order... orders)
     {
-        PageRequest pageRequest = PageRequest.of(0, limit);
+        PageRequest pageRequest = PageRequest.of(0, limit, toSort(orders));
         return findAll(Specifications.byAuto(entityManager, entity), pageRequest).getContent();
     }
 
@@ -233,16 +237,72 @@ public class BaseRepositoryImpl<ENTITY extends BaseJpaEntity<ID>, ID extends Ser
         } while (pageResult.hasNext());
     }
 
+    public CriteriaQuery<ENTITY> createTimeQuery(ENTITY query, boolean isClose, LocalDateTime start, LocalDateTime end)
+    {
+        return rangeQuery(query, BaseJpaEntity.Fields.createTime, isClose, start, end);
+    }
+
+    public CriteriaQuery<ENTITY> updateTimeQuery(ENTITY query, boolean isClose, LocalDateTime start, LocalDateTime end)
+    {
+        return rangeQuery(query, BaseJpaEntity.Fields.updateTime, isClose, start, end);
+    }
+
+    @SafeVarargs
+    public final <VALUE extends Comparable<? super VALUE>> CriteriaQuery<ENTITY> rangeQuery(
+            ENTITY query,
+            String field,
+            boolean isClose,
+            VALUE... values)
+    {
+        VALUE start = ArrayUtil.min(values);
+        VALUE end   = ArrayUtil.max(values);
+
+        CriteriaBuilder       cb   = entityManager.getCriteriaBuilder();
+        CriteriaQuery<ENTITY> cq   = cb.createQuery(entityClass);
+        Root<ENTITY>          root = cq.from(entityClass);
+
+        List<Predicate> predicates = new ArrayList<>(8);
+
+        if (query != null) {
+            Predicate autoPredicate = Specifications.byAuto(entityManager, query).toPredicate(root, cq, cb);
+            if (autoPredicate != null) predicates.add(autoPredicate);
+        }
+
+        Path<VALUE> fieldPath = root.get(field);
+
+        if (start != null) {
+            predicates.add(isClose ? cb.greaterThanOrEqualTo(fieldPath, start) : cb.greaterThan(fieldPath, start));
+        }
+
+        if (end != null) {
+            predicates.add(isClose ? cb.lessThanOrEqualTo(fieldPath, end) : cb.lessThan(fieldPath, end));
+        }
+
+        if (isNotEmpty(predicates)) cq.where(cb.and(predicates.toArray(new Predicate[]{})));
+
+        return cq;
+    }
+
+    public CriteriaQuery<ENTITY> order(Root<ENTITY> root, CriteriaQuery<ENTITY> criteriaQuery, CriteriaBuilder cb, Order... orders)
+    {
+        if (ArrayUtil.isNotEmpty(orders)) {
+            criteriaQuery.orderBy(Stream.of(orders)
+                                        .map(order -> order.getDirection() == Direction.ASC
+                                                      ? cb.asc(root.get(order.getField()))
+                                                      : cb.desc(root.get(order.getField()))).toList());
+        }
+
+        return criteriaQuery;
+    }
+
     //************************************************ protected start ***********************************************//
 
     protected Sort toSort(Order... orders)
     {
         if (ArrayUtil.isEmpty(orders)) return Sort.unsorted();
 
-        return Sort.by(Stream.of(orders)
-                             .map(order ->
-                                          new Sort.Order(order.getDirection() == Direction.ASC
-                                                         ? Sort.Direction.ASC
-                                                         : Sort.Direction.DESC, order.getField())).toList());
+        return Sort.by(Stream.of(orders).map(order -> new Sort.Order(order.getDirection() == Direction.ASC
+                                                                     ? Sort.Direction.ASC
+                                                                     : Sort.Direction.DESC, order.getField())).toList());
     }
 }

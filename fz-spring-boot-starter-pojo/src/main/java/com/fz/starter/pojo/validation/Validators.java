@@ -7,7 +7,7 @@ import lombok.experimental.UtilityClass;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
-import java.util.function.Function;
+import java.util.function.UnaryOperator;
 
 import static java.util.stream.Collectors.joining;
 
@@ -28,94 +28,94 @@ public final class Validators
         VALIDATOR         = SpringUtil.getBean(Validator.class);
     }
 
-    public static <T> Set<ConstraintViolation<T>> validate(T obj)
+    public static <BEAN> Set<ConstraintViolation<BEAN>> validate(BEAN obj)
     {
         return VALIDATOR.validate(obj);
     }
 
-    public static <T> Set<ConstraintViolation<T>> validate(T obj, Class<?>... groups)
+    public static <BEAN> Set<ConstraintViolation<BEAN>> validate(BEAN obj, Class<?>... groups)
     {
         return VALIDATOR.validate(obj, groups);
     }
 
-    public static <T> void validateAndThrow(T obj)
+    public static <BEAN> void validateAndThrow(BEAN obj)
     {
-        Set<ConstraintViolation<T>> violations = validate(obj);
+        Set<ConstraintViolation<BEAN>> violations = validate(obj);
         if (!violations.isEmpty()) {
             throw new IllegalArgumentException(collectErrorMessages(violations));
         }
     }
 
-    public static <T> void validateAndThrow(T obj, Class<?>... groups)
+    public static <BEAN> void validateAndThrow(BEAN obj, Class<?>... groups)
     {
-        Set<ConstraintViolation<T>> violations = validate(obj, groups);
+        Set<ConstraintViolation<BEAN>> violations = validate(obj, groups);
         if (!violations.isEmpty()) {
             throw new IllegalArgumentException(collectErrorMessages(violations));
         }
     }
 
-    public static <T> void validateAndThrow(T obj, Function<String, String> messageFunction, Class<?>... groups)
+    public static <BEAN> void validateAndThrow(BEAN obj, UnaryOperator<String> messageFunction, Class<?>... groups)
     {
-        Set<ConstraintViolation<T>> violations = validate(obj, groups);
+        Set<ConstraintViolation<BEAN>> violations = validate(obj, groups);
         if (!violations.isEmpty()) {
             throw new IllegalArgumentException(messageFunction.apply(collectErrorMessages(violations)));
         }
     }
 
-    public static <T> void validateAndThrow(Iterable<T> obs)
+    public static <BEAN> void validateAndThrow(Iterable<BEAN> obs)
     {
         obs.forEach(Validators::validateAndThrow);
     }
 
-    public static <T> void validateAndThrow(Iterable<T> obs, Class<?>... groups)
+    public static <BEAN> void validateAndThrow(Iterable<BEAN> obs, Class<?>... groups)
     {
         obs.forEach(obj -> validateAndThrow(obj, groups));
     }
 
-    public static <T> Set<ConstraintViolation<T>> validateProperty(T obj, String... properties)
+    public static <BEAN> Set<ConstraintViolation<BEAN>> validateProperty(BEAN obj, String... properties)
     {
         ValidatorContext            context    = VALIDATOR_FACTORY.usingContext();
         Validator                   validator  = context.getValidator();
-        Set<ConstraintViolation<T>> violations = new HashSet<>(4);
+        Set<ConstraintViolation<BEAN>> violations = new HashSet<>(4);
         for (String property : properties) {
             violations.addAll(validator.validateProperty(obj, property));
         }
         return violations;
     }
 
-    public static <T> Set<ConstraintViolation<T>> validateProperty(T obj, Class<?>[] groups, String... properties)
+    public static <BEAN> Set<ConstraintViolation<BEAN>> validateProperty(BEAN obj, Class<?>[] groups, String... properties)
     {
         ValidatorContext            context    = VALIDATOR_FACTORY.usingContext();
         Validator                   validator  = context.getValidator();
-        Set<ConstraintViolation<T>> violations = new HashSet<>(4);
+        Set<ConstraintViolation<BEAN>> violations = new HashSet<>(4);
         for (String property : properties) {
             violations.addAll(validator.validateProperty(obj, property, groups));
         }
         return violations;
     }
 
-    public static <T> Set<ConstraintViolation<T>> validateValue(Class<T> beanType, String propertyName, Object value, Class<?>... groups)
+    public static <BEAN> Set<ConstraintViolation<BEAN>> validateValue(Class<BEAN> beanType, String propertyName, Object value, Class<?>... groups)
     {
         return VALIDATOR.validateValue(beanType, propertyName, value, groups);
     }
 
-    public static <T> void validateValueAndThrow(Class<T> beanType, String propertyName, Object value, Class<?>... groups)
+    public static <BEAN> void validateValueAndThrow(Class<BEAN> beanType, String propertyName, Object value, Class<?>... groups)
     {
-        Set<ConstraintViolation<T>> violations = validateValue(beanType, propertyName, value, groups);
+        Set<ConstraintViolation<BEAN>> violations = validateValue(beanType, propertyName, value, groups);
         if (!violations.isEmpty()) {
             throw new IllegalArgumentException(collectErrorMessages(violations));
         }
     }
 
-    public static <T> void validateValueAndThrow(Class<T> beanType, String propertyName, Object value, Function<String, String> messageFunction, Class<?>... groups)
+    public static <BEAN> void validateValueAndThrow(Class<BEAN> beanType, String propertyName, Object value, UnaryOperator<String> messageFunction, Class<?>... groups)
     {
-        Set<ConstraintViolation<T>> violations = validateValue(beanType, propertyName, value, groups);
+        Set<ConstraintViolation<BEAN>> violations = validateValue(beanType, propertyName, value, groups);
         if (!violations.isEmpty()) {
             throw new IllegalArgumentException(messageFunction.apply(collectErrorMessages(violations)));
         }
     }
 
-    static <T> String collectErrorMessages(Collection<ConstraintViolation<T>> violations)
+    static <BEAN> String collectErrorMessages(Collection<ConstraintViolation<BEAN>> violations)
     {
         return violations.stream()
                          .map(ConstraintViolation::getMessage)

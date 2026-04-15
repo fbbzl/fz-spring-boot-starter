@@ -7,6 +7,7 @@ import cn.hutool.core.lang.tree.Tree;
 import cn.hutool.core.lang.tree.TreeUtil;
 import cn.hutool.db.Page;
 import cn.hutool.db.PageResult;
+import cn.hutool.db.sql.Order;
 import com.fz.starter.core.util.Generics;
 import com.fz.starter.dal.BaseDal;
 import com.fz.starter.pojo.bo.BaseBo;
@@ -19,6 +20,7 @@ import com.fz.starter.pojo.validation.Validators;
 import com.fz.starter.pojo.validation.group.CRUD;
 import com.fz.starter.pojo.validation.group.CRUD.R;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Positive;
 import jakarta.validation.constraints.Size;
 import lombok.AccessLevel;
 import lombok.Setter;
@@ -122,11 +124,13 @@ public abstract class BaseService<
             @NotNull(message = "root-id can not be null when doing tree-query")
             ID rootId,
             @Validated(CRUD.R.class)
-            DTO dto)
+            DTO dto,
+            @Size(max = 1024, message = "the number of order cannot exceed 1024")
+            Order... orders)
     {
         if (Treeable.class.isAssignableFrom(boClass))
         {
-            List<BO> list = this.list(dto);
+            List<BO> list = this.list(dto, orders);
             operateTemplate.execute(list);
             return TreeUtil.build(list, rootId, DEFAULT_CONFIG, (bo, tree) ->
             {
@@ -143,16 +147,26 @@ public abstract class BaseService<
         return emptyList();
     }
 
-    public List<BO> list(@Validated(CRUD.R.class) DTO dto)
+    public List<BO> list(
+            @Validated(CRUD.R.class)
+            DTO dto,
+            @Size(max = 1024, message = "the number of order cannot exceed 1024")
+            Order... orders)
     {
         if (dto == null) return emptyList();
-        else             return mapper.entityToBo(dal.list(mapper.dtoToEntity(dto)));
+        else             return mapper.entityToBo(dal.list(mapper.dtoToEntity(dto), orders));
     }
 
-    public List<BO> limit(@Validated(CRUD.R.class) DTO dto, int limit)
+    public List<BO> limit(
+            @Validated(CRUD.R.class)
+            DTO dto,
+            @Positive(message = "limit must be positive")
+            int limit,
+            @Size(max = 1024, message = "the number of order cannot exceed 1024")
+            Order... orders)
     {
         if (dto == null) return emptyList();
-        else             return mapper.entityToBo(dal.limit(mapper.dtoToEntity(dto), limit));
+        else             return mapper.entityToBo(dal.limit(mapper.dtoToEntity(dto), limit, orders));
     }
 
     public Map<ID, BO> map(
@@ -190,10 +204,12 @@ public abstract class BaseService<
 
     public List<EO> exportExcel(
             @Validated(CRUD.R.class)
-            DTO dto)
+            DTO dto,
+            @Size(max = 1024, message = "the number of order cannot exceed 1024")
+            Order... orders)
     {
         if (dto == null) return emptyList();
-        else             return mapper.boToEo(this.list(dto));
+        else             return mapper.boToEo(this.list(dto, orders));
     }
 
     public int importExcel(

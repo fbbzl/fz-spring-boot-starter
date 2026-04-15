@@ -10,11 +10,13 @@ import static cn.hutool.core.text.CharSequenceUtil.format;
  * @since 2025/9/2 18:04
  */
 @UtilityClass
-public class SqlConstants
+public class Sqls
 {
 
     public static final String LIMIT_1  = limit(1);
     public static final String DISTINCT = " DISTINCT ";
+    public static final String FOR_UPDATE = " FOR UPDATE ";
+
 
     public static String limit(int limitCount)
     {

@@ -152,7 +152,7 @@ public class WebExceptionAdvice
 
     //************************************************ private start *************************************************//
 
-    private static <T> R<T> badRequest(String message)
+    private static <DATA> R<DATA> badRequest(String message)
     {
         return R.fail(String.valueOf(HttpStatus.BAD_REQUEST.value()), message, null);
     }

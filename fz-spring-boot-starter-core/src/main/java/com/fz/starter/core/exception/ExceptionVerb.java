@@ -38,13 +38,13 @@ public enum ExceptionVerb
 
     String bisCode;
 
-    public <T> Supplier<? extends BizException> on(T subject, Object context)
+    public <SUBJECT> Supplier<? extends BizException> on(SUBJECT subject, Object context)
     {
         Throws.ifNull(subject, () -> "subject can not be null");
         return on(subject.getClass(), context);
     }
 
-    public <T> Supplier<? extends BizException> on(T subject, Object context, Throwable cause)
+    public <SUBJECT> Supplier<? extends BizException> on(SUBJECT subject, Object context, Throwable cause)
     {
         Throws.ifNull(subject, () -> "subject can not be null");
         return on(subject.getClass(), context, cause);

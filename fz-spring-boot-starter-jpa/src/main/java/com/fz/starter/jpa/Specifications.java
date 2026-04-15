@@ -1,6 +1,9 @@
 package com.fz.starter.jpa;
 
+import cn.hutool.core.util.ArrayUtil;
 import cn.hutool.db.sql.Condition.LikeType;
+import cn.hutool.db.sql.Direction;
+import cn.hutool.db.sql.Order;
 import com.fz.starter.pojo.entity.BaseTableEntity;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.criteria.*;
@@ -34,19 +37,24 @@ public class Specifications {
     /**
      * By auto specification.
      *
-     * @param <T>            the type parameter
+     * @param <ENTITY>            the type parameter
      * @param entityManager  the entity manager
      * @param sqlQueryEntity the sql query entity
      * @return the specification
      */
-    public static <T extends BaseTableEntity> Specification<T> byAuto(final EntityManager entityManager, final T sqlQueryEntity) {
-        final Class<T> type = (Class<T>) sqlQueryEntity.getClass();
+    public static <ENTITY extends BaseTableEntity> Specification<ENTITY> byAuto(
+            final EntityManager entityManager,
+            final ENTITY sqlQueryEntity,
+            Order... orders)
+    {
+        final Class<ENTITY> type = (Class<ENTITY>) sqlQueryEntity.getClass();
 
-        return (Root<T> root, CriteriaQuery<?> query, CriteriaBuilder cb) -> {
-            List<Predicate> predicates = new ArrayList<>(10);
-            EntityType<T> entityType = entityManager.getMetamodel().entity(type);
-            Set<Attribute<? super T, ?>> allAttributes = entityType.getAttributes();
+        return (Root<ENTITY> root, CriteriaQuery<?> query, CriteriaBuilder cb) -> {
+            List<Predicate>                   predicates    = new ArrayList<>(10);
+            EntityType<ENTITY>                entityType    = entityManager.getMetamodel().entity(type);
+            Set<Attribute<? super ENTITY, ?>> allAttributes = entityType.getAttributes();
 
+            // for each field
             allAttributes.forEach(field -> {
                 Object queryValue = getValue(sqlQueryEntity, field);
                 if (queryValue == null) return;
@@ -61,15 +69,34 @@ public class Specifications {
                     default                          -> predicates.add(cb.equal(root.get(attribute(entityType, field)), queryValue));
                 }
             });
+
+            // order
+            order(root, cb, orders);
+
             return predicates.isEmpty() ? cb.conjunction() : cb.and(predicates.toArray(EMPTY_PREDICATE));
         };
     }
 
-    private static <T extends BaseTableEntity> Object getValue(T sqlQueryObject, Attribute<? super T, ?> attr) {
+    private static <ENTITY extends BaseTableEntity> Object getValue(ENTITY sqlQueryObject, Attribute<? super ENTITY, ?> attr)
+    {
         return ReflectionUtils.getField((Field) attr.getJavaMember(), sqlQueryObject);
     }
 
-    private static <T, E> SingularAttribute<? super T, E> attribute(EntityType<T> entityType, Attribute<?, E> attr) {
+    private static <ENTITY, E> SingularAttribute<? super ENTITY, E> attribute(EntityType<ENTITY> entityType, Attribute<?, E> attr)
+    {
         return entityType.getSingularAttribute(attr.getName(), attr.getJavaType());
     }
+
+    private static <ENTITY> void order(Root<ENTITY> root, CriteriaBuilder cb, Order... hutoolOrders)
+    {
+        if (ArrayUtil.isEmpty(hutoolOrders)) return;
+
+        for (Order hutoolOrder : hutoolOrders) {
+            if (hutoolOrder.getDirection() == Direction.ASC)
+                cb.asc(root.get(hutoolOrder.getField()));
+            else
+                cb.desc(root.get(hutoolOrder.getField()));
+        }
+    }
+
 }

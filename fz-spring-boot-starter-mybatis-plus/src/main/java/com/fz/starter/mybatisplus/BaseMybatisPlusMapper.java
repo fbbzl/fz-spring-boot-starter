@@ -7,18 +7,16 @@ import cn.hutool.db.Page;
 import cn.hutool.db.PageResult;
 import cn.hutool.db.sql.Direction;
 import cn.hutool.db.sql.Order;
-import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.core.metadata.OrderItem;
 import com.baomidou.mybatisplus.core.toolkit.LambdaUtils;
-import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.core.toolkit.support.ColumnCache;
 import com.baomidou.mybatisplus.extension.plugins.pagination.PageDTO;
 import com.fz.starter.dal.BaseDal;
-import com.fz.starter.dal.SqlConstants;
+import com.fz.starter.dal.Sqls;
 import com.fz.starter.pojo.entity.BaseTableEntity;
 import org.apache.ibatis.executor.BatchResult;
 import org.fz.erwin.exception.Throws;
@@ -35,6 +33,7 @@ import java.util.stream.Stream;
 import static cn.hutool.core.collection.CollUtil.*;
 import static cn.hutool.core.text.CharSequenceUtil.isNotBlank;
 import static com.baomidou.mybatisplus.extension.repository.IRepository.DEFAULT_BATCH_SIZE;
+import static com.fz.starter.dal.Sqls.FOR_UPDATE;
 
 /**
  * @author fengbinbin
@@ -109,15 +108,15 @@ public interface BaseMybatisPlusMapper<ENTITY extends BaseMybatisPlusEntity<ID>,
     }
 
     @Override
-    default List<ENTITY> list(ENTITY entity)
+    default List<ENTITY> list(ENTITY entity, Order... orders)
     {
-        return this.selectList(autoQuery(entity));
+        return this.selectList(order(autoQuery(entity), orders));
     }
 
     @Override
-    default List<ENTITY> limit(ENTITY entity, int limit)
+    default List<ENTITY> limit(ENTITY entity, int limit, Order... orders)
     {
-        return this.selectList(autoQuery(entity).last(SqlConstants.limit(limit)));
+        return this.selectList(order(autoQuery(entity).last(Sqls.limit(limit)), orders));
     }
 
     @Override
@@ -147,7 +146,7 @@ public interface BaseMybatisPlusMapper<ENTITY extends BaseMybatisPlusEntity<ID>,
     {
         if (ArrayUtil.isEmpty(ids)) return;
 
-        this.selectList(new LambdaUpdateWrapper<ENTITY>().in(BaseTableEntity::getId, ids).last(" FOR UPDATE "));
+        this.selectList(new LambdaUpdateWrapper<ENTITY>().in(BaseTableEntity::getId, ids).last(FOR_UPDATE));
     }
 
     @Transactional
@@ -156,7 +155,7 @@ public interface BaseMybatisPlusMapper<ENTITY extends BaseMybatisPlusEntity<ID>,
     {
         if (entity == null) return;
 
-        this.selectList(autoQuery(entity).last(" FOR UPDATE "));
+        this.selectList(autoQuery(entity).last(FOR_UPDATE));
     }
 
     @Override
@@ -218,24 +217,47 @@ public interface BaseMybatisPlusMapper<ENTITY extends BaseMybatisPlusEntity<ID>,
                                   OrderItem.asc(order.getField()) : OrderItem.desc(order.getField())).toArray(OrderItem[]::new);
     }
 
-    default LambdaQueryWrapper<ENTITY> createTimeQuery(boolean isEq, LocalDateTime start, LocalDateTime end)
+    default QueryWrapper<ENTITY> createTimeQuery(ENTITY query, boolean isClose, LocalDateTime start, LocalDateTime end)
     {
-        LambdaQueryWrapper<ENTITY> timeRangeQuery = Wrappers.lambdaQuery();
-
-        if (isEq) timeRangeQuery.ge(start != null, BaseMybatisPlusEntity::getCreateTime, start).le(end != null, BaseMybatisPlusEntity::getCreateTime, end);
-        else timeRangeQuery.gt(start != null, BaseMybatisPlusEntity::getCreateTime, start).lt(end != null, BaseMybatisPlusEntity::getCreateTime, end);
-
-        return timeRangeQuery;
+        return rangeQuery(query, BaseMybatisPlusEntity.Fields.createTime, isClose, start, end);
     }
 
-    default LambdaQueryWrapper<ENTITY> updateTimeQuery(boolean isEq, LocalDateTime start, LocalDateTime end)
+    default QueryWrapper<ENTITY> updateTimeQuery(ENTITY query, boolean isClose, LocalDateTime start, LocalDateTime end)
     {
-        LambdaQueryWrapper<ENTITY> timeRangeQuery = Wrappers.lambdaQuery();
+        return rangeQuery(query, BaseMybatisPlusEntity.Fields.updateTime, isClose, start, end);
+    }
 
-        if (isEq) timeRangeQuery.ge(start != null, BaseMybatisPlusEntity::getUpdateTime, start).le(end != null, BaseMybatisPlusEntity::getUpdateTime, end);
-        else timeRangeQuery.gt(start != null, BaseMybatisPlusEntity::getUpdateTime, start).lt(end != null, BaseMybatisPlusEntity::getUpdateTime, end);
+    default <VALUE extends Comparable<? super VALUE>> QueryWrapper<ENTITY> rangeQuery(
+            ENTITY query,
+            String field,
+            boolean isClose,
+            VALUE... values)
+    {
+        VALUE start = ArrayUtil.min(values);
+        VALUE end   = ArrayUtil.max(values);
 
-        return timeRangeQuery;
+        if (isClose)
+            return autoQuery(query).ge(start != null, field, start).le(end != null, field, end);
+        else
+            return autoQuery(query).gt(start != null, field, start).lt(end != null, field, end);
+    }
+
+    default QueryWrapper<ENTITY> order(QueryWrapper<ENTITY> wrapper, Order... orders)
+    {
+        Map<String, ColumnCache> columnMap = LambdaUtils.getColumnMap(wrapper.getEntityClass());
+        if (columnMap == null) return wrapper;
+
+        // add orders
+        for (Order order : orders) {
+            ColumnCache cache = columnMap.get(LambdaUtils.formatKey(order.getField()));
+            if (cache != null) {
+                if (order.getDirection() == Direction.ASC)
+                    wrapper.orderByAsc(cache.getColumn());
+                else
+                    wrapper.orderByDesc(cache.getColumn());
+            }
+        }
+        return wrapper;
     }
 
     default QueryWrapper<ENTITY> autoQuery(ENTITY query)
@@ -266,14 +288,14 @@ public interface BaseMybatisPlusMapper<ENTITY extends BaseMybatisPlusEntity<ID>,
                 String column = cache.getColumn();
 
                 switch (value) {
-                    case Enum<?> enumVal -> wrapper.eq(column, enumVal.ordinal());
-                    case Number number -> wrapper.eq(column, number);
-                    case LocalDateTime localDateTime -> wrapper.eq(column, localDateTime);
-                    case Date date -> wrapper.eq(column, date);
-                    case Collection<?> col when isNotEmpty(col) -> wrapper.in(column, newHashSet(col));
-                    case String string when stringLike && isNotBlank(string) -> wrapper.like(column, string);
-                    case String string when isNotBlank(string) -> wrapper.eq(column, string);
-                    default -> wrapper.eq(column, value);
+                    case Enum<?>       enumVal                                      -> wrapper.eq(column,   enumVal.ordinal());
+                    case Number        number                                       -> wrapper.eq(column,   number);
+                    case LocalDateTime localDateTime                                -> wrapper.eq(column,   localDateTime);
+                    case Date          date                                         -> wrapper.eq(column,   date);
+                    case Collection<?> col    when isNotEmpty(col)                  -> wrapper.in(column,   newHashSet(col));
+                    case String        string when stringLike && isNotBlank(string) -> wrapper.like(column, string);
+                    case String        string when isNotBlank(string)               -> wrapper.eq(column,   string);
+                    default                                                         -> wrapper.eq(column,   value);
                 }
             }
         }

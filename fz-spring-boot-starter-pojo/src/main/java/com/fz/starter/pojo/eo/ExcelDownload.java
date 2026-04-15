@@ -11,9 +11,9 @@ import jakarta.validation.constraints.Size;
  */
 
 @Schema(description = "excel download general settings object")
-public record ExcelDownload<T>(
+public record ExcelDownload<PARAM>(
         @Schema(description = "query param")
-        T param,
+        PARAM param,
 
         @NotNull(message = "{ExcelDownload.fileName}")
         @Size(max = 255, message = "{ExcelDownload.fileName.length}")

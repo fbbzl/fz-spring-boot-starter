@@ -36,6 +36,10 @@
     </licenses>
 
     <modules>
+        <module>fz-spring-boot-starter-audit</module>
+        <module>fz-spring-boot-starter-audit</module>
+        <module>fz-spring-boot-starter-auth</module>
+        <module>fz-spring-boot-starter-cas</module>
         <module>fz-spring-boot-starter-core</module>
         <module>fz-spring-boot-starter-dal</module>
         <module>fz-spring-boot-starter-generator</module>
@@ -44,7 +48,7 @@
         <module>fz-spring-boot-starter-mybatis-plus</module>
         <module>fz-spring-boot-starter-openapi</module>
         <module>fz-spring-boot-starter-pojo</module>
-        <module>fz-spring-boot-starter-auth</module>
+        <module>fz-spring-boot-starter-rbac</module>
         <module>fz-spring-boot-starter-web</module>
     </modules>
 
@@ -92,6 +96,7 @@
         <!--mybatis plus-->
         <mybatis-plus-bom.version>3.5.15</mybatis-plus-bom.version>
         <mybatis-plus-join-boot-starter.version>1.5.6</mybatis-plus-join-boot-starter.version>
+        <sa-token-spring-boot-starter.version>1.45.0</sa-token-spring-boot-starter.version>
     </properties>
 
     <dependencies>
@@ -190,6 +195,12 @@
                 <groupId>cn.crane4j</groupId>
                 <artifactId>crane4j-spring-boot-starter</artifactId>
                 <version>${crane4j.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>cn.dev33</groupId>
+                <artifactId>sa-token-spring-boot-starter</artifactId>
+                <version>${sa-token-spring-boot-starter.version}</version>
             </dependency>
         </dependencies>
     </dependencyManagement>

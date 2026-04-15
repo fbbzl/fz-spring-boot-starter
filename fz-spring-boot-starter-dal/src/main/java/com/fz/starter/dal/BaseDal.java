@@ -2,6 +2,7 @@ package com.fz.starter.dal;
 
 import cn.hutool.db.Page;
 import cn.hutool.db.PageResult;
+import cn.hutool.db.sql.Order;
 import com.fz.starter.pojo.entity.BaseTableEntity;
 import org.springframework.lang.NonNull;
 import org.springframework.lang.Nullable;
@@ -40,9 +41,9 @@ public interface BaseDal<ENTITY extends BaseTableEntity<ID>, ID extends Serializ
 
     Optional<ENTITY> one(ENTITY entity);
 
-    List<ENTITY> list(ENTITY entity);
+    List<ENTITY> list(ENTITY entity, Order... orders);
 
-    List<ENTITY> limit(ENTITY entity, int limit);
+    List<ENTITY> limit(ENTITY entity, int limit, Order... orders);
 
     PageResult<ENTITY> page(Page page, ENTITY entity);
 

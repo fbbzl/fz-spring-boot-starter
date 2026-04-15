@@ -13,6 +13,7 @@ import com.fz.starter.pojo.eo.ExcelDownload;
 import com.fz.starter.pojo.mapstruct.BaseStructMapper;
 import com.fz.starter.pojo.validation.group.CRUD;
 import com.fz.starter.web.Q.FQ;
+import com.fz.starter.web.Q.OQ;
 import com.fz.starter.web.Q.PQ;
 import com.fz.starter.web.R.PR;
 import io.swagger.v3.oas.annotations.Operation;
@@ -25,6 +26,7 @@ import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
+import org.springframework.lang.Nullable;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
@@ -86,31 +88,23 @@ public abstract class BaseController<
     }
 
     @Operation(description = "List query, null fields do not participate in the query", summary = "List Query")
-    @PostMapping("list")
+    @PostMapping({"list", "list/{limit}"})
     public R<List<BO>> list(
-            @NotNull
-            @Validated(CRUD.R.class)
-            @Parameter(description = "request", required = true)
-            @RequestBody
-            Q<DTO> req)
-    {
-        return R.ok(service.list(req.getData()));
-    }
-
-    @Operation(description = "Limited list query, null fields do not participate in the query", summary = "Limited list Query")
-    @PostMapping( "limit/{limit}")
-    public R<List<BO>> limit(
+            @Nullable
             @Positive(message = "limit must be positive")
-            @Parameter(description = "list data limit", required = true)
-            @PathVariable("limit")
+            @Parameter(description = "list data limit")
+            @PathVariable(value = "limit", required = false)
             Integer limit,
             @NotNull
             @Validated(CRUD.R.class)
             @Parameter(description = "request", required = true)
             @RequestBody
-            Q<DTO> req)
+            OQ<DTO> req)
     {
-        return R.ok(service.limit(req.getData(), limit));
+        if (limit != null)
+            return R.ok(service.limit(req.getData(), limit, req.getOrders()));
+        else
+            return R.ok(service.list(req.getData(), req.getOrders()));
     }
 
     @Operation(description = "For paginated query, null fields do not participate in query", summary = "Page query")
@@ -136,9 +130,9 @@ public abstract class BaseController<
             @Validated(CRUD.R.class)
             @Parameter(description = "tree request", required = true)
             @RequestBody
-            Q<DTO> req)
+            OQ<DTO> req)
     {
-        return R.ok(service.tree(rootId, req.getData()));
+        return R.ok(service.tree(rootId, req.getData(), req.getOrders()));
     }
 
     @Operation(description = "Specify whether primary key data exists", summary = "Specifies whether primary key data exists")
@@ -270,11 +264,11 @@ public abstract class BaseController<
             @NotNull
             @Validated(CRUD.R.class)
             @Parameter(description = "export excel request", required = true)
-            @RequestBody Q<ExcelDownload<DTO>> req) throws IOException
+            @RequestBody OQ<ExcelDownload<DTO>> req) throws IOException
     {
         ExcelDownload<DTO> excelCfg = req.getData();
         this.setResponseHeader(excelCfg);
-        this.doExport(service.exportExcel(excelCfg.param()), excelCfg);
+        this.doExport(service.exportExcel(excelCfg.param(), req.getOrders()), excelCfg);
     }
 
     //******************************************       protected start      ******************************************//

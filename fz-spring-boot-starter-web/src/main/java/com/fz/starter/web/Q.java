@@ -3,6 +3,7 @@ package com.fz.starter.web;
 
 import cn.hutool.core.util.ArrayUtil;
 import cn.hutool.db.Page;
+import cn.hutool.db.sql.Order;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
@@ -44,36 +45,55 @@ public class Q<DATA>
     @Schema(description = "request timestamp")
     long timestamp = System.currentTimeMillis();
 
-    public static <T> Q<T> of(T data)
+    public static <DATA> Q<DATA> of(DATA data)
     {
-        Q<T> q = new Q<>();
+        Q<DATA> q = new Q<>();
         q.setData(data);
         return q;
     }
 
     /**
+     * ordered query request
+     */
+    @Getter
+    @Setter
+    @ToString
+    @Schema(description = "generic ordered request objects")
+    @FieldDefaults(level = PRIVATE)
+    public static class OQ<DATA> extends Q<DATA>
+    {
+
+        @Size(max = 128, message = "{OQ.orders.size}")
+        @Schema(description = "orders")
+        Order[] orders;
+
+        public static <DATA> OQ<DATA> of(DATA data, Order... orders)
+        {
+            OQ<DATA> oq = new OQ<>();
+            oq.setData(data);
+            oq.setOrders(orders);
+            return oq;
+        }
+    }
+
+    /**
      * page request
-     *
-     * @param <T> page request data type
-     * @author fengbinbin
-     * @version 1.0
-     * @since 2025/8/22 15:30
      */
     @Getter
     @Setter
     @ToString
     @Schema(description = "generic paging request objects")
     @FieldDefaults(level = PRIVATE)
-    public static class PQ<T> extends Q<T>
+    public static class PQ<DATA> extends Q<DATA>
     {
 
         @NotNull(message = "{PQ.page}")
         @Schema(description = "paging parameters page numbers start from 0")
         Page page;
 
-        public static <T> PQ<T> of(T data, Page page)
+        public static <DATA> PQ<DATA> of(DATA data, Page page)
         {
-            PQ<T> pq = new PQ<>();
+            PQ<DATA> pq = new PQ<>();
             pq.setData(data);
             pq.setPage(page);
             return pq;
@@ -82,19 +102,15 @@ public class Q<DATA>
 
     /**
      * file upload request
-     *
-     * @author fengbinbin
-     * @version 1.0
-     * @since 2025/9/3 10:13
      */
     @Data
     @FieldDefaults(level = PRIVATE)
     @Schema(description = "generic the file upload request objects")
     @EqualsAndHashCode(callSuper = false)
-    public static class FQ<T> extends Q<T>
+    public static class FQ<DATA> extends Q<DATA>
     {
 
-        @Size(max = 128)
+        @Size(max = 128, message = "{FQ.size}")
         @Schema(description = "uploaded files")
         MultipartFile[] files;
 
