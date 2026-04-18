@@ -10,6 +10,18 @@
         <version>${revision}</version>
     </parent>
 
+    <name>${project.artifactId}</name>
     <artifactId>fz-spring-boot-starter-audit</artifactId>
 
+    <dependencies>
+        <dependency>
+            <groupId>io.github.fbbzl</groupId>
+            <artifactId>fz-spring-boot-starter-dal</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.aspectj</groupId>
+            <artifactId>aspectjweaver</artifactId>
+        </dependency>
+    </dependencies>
 </project>

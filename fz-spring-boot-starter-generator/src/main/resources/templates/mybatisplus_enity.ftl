@@ -51,7 +51,7 @@ public class ${className} extends BaseMybatisPlusEntity<${primaryKeyType}> {
     @Nullable
     </#if>
     <#if field.lengthValidation??>
-    @Length(groups = CRUD.C.class, min = ${field.minLength!1}, max = ${field.maxLength}, message="{${className}.${field.name}.illegal}")
+    @Length(groups = CRUD.C.class, min = ${field.minLength!1}, max = ${field.maxLength?c}, message="{${className}.${field.name}.illegal}")
     </#if>
     ${field.javaType} ${field.name};
     </#if>

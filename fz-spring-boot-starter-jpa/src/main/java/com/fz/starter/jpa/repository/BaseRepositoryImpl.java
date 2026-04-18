@@ -10,6 +10,7 @@ import cn.hutool.db.sql.Direction;
 import cn.hutool.db.sql.Order;
 import com.fz.starter.jpa.BaseJpaEntity;
 import com.fz.starter.jpa.Specifications;
+import com.fz.starter.pojo.entity.BaseTableEntity;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.LockModeType;
 import jakarta.persistence.criteria.*;
@@ -39,7 +40,7 @@ import static cn.hutool.core.collection.CollUtil.isNotEmpty;
  * @version 1.0
  * @since 2020/1/3/001 13:30
  */
-public class BaseRepositoryImpl<ENTITY extends BaseJpaEntity<ID>, ID extends Serializable>
+public class BaseRepositoryImpl<ENTITY extends BaseTableEntity<ID>, ID extends Serializable>
         extends SimpleJpaRepository<ENTITY, ID>
         implements BaseRepository<ENTITY, ID>
 {

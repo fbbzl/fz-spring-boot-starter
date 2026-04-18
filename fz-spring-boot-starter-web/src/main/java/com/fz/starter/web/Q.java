@@ -36,7 +36,7 @@ public class Q<DATA>
      */
     @Schema(description = "request data")
     @Valid
-    @NotNull
+    @NotNull(message = "Q.data")
     DATA data;
 
     /**
@@ -87,7 +87,7 @@ public class Q<DATA>
     public static class PQ<DATA> extends Q<DATA>
     {
 
-        @NotNull(message = "{PQ.page}")
+        @NotNull(message = "{PQ.page.page}")
         @Schema(description = "paging parameters page numbers start from 0")
         Page page;
 
@@ -110,7 +110,7 @@ public class Q<DATA>
     public static class FQ<DATA> extends Q<DATA>
     {
 
-        @Size(max = 128, message = "{FQ.size}")
+        @Size(max = 128, message = "{FQ.files.size}")
         @Schema(description = "uploaded files")
         MultipartFile[] files;
 

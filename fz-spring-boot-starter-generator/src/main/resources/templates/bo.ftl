@@ -31,7 +31,7 @@ public class ${className}Bo extends BaseBo<${primaryKeyType}> {
     /**
      * ${field.comment}
      */
-    @Schema(description = "${field.comment}"<#if field.minLength??>, minLength = ${field.minLength}</#if><#if field.maxLength??>, maxLength = ${field.maxLength}</#if>)
+    @Schema(description = "${field.comment}"<#if field.minLength??>, minLength = ${field.minLength?c}</#if><#if field.maxLength??>, maxLength = ${field.maxLength?c}</#if>)
     ${field.javaType} ${field.name};
     </#if>
 </#list>

@@ -5,13 +5,10 @@ import com.fz.starter.generator.frame.GeneratorImportSelector;
 import com.fz.starter.generator.frame.TypeMapping;
 import com.fz.starter.generator.frame.TypeMapping.DefaultTypeMapping;
 import com.fz.starter.generator.frame.context.MysqlContextLoader;
-import com.fz.starter.generator.frame.invoker.DefaultGeneratorInvoker;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
-import org.springframework.context.annotation.Primary;
-import org.springframework.ui.freemarker.FreeMarkerConfigurationFactoryBean;
 
 /**
  * @author fengbinbin
@@ -21,8 +18,7 @@ import org.springframework.ui.freemarker.FreeMarkerConfigurationFactoryBean;
 @Import({
         MysqlContextLoader.class,
         GeneratorConfigProperties.class,
-        GeneratorImportSelector.class,
-        DefaultGeneratorInvoker.class})
+        GeneratorImportSelector.class})
 @AutoConfiguration
 public class GeneratorConfiguration
 {

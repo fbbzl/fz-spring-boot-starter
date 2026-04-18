@@ -12,10 +12,9 @@ import java.util.function.Supplier;
  * @version 1.0
  * @since 2021/3/2 11:05
  */
-public final class Logs
+public final class L
 {
-
-    private Logs()
+    private L()
     {
         throw new UnsupportedOperationException("This is a utility class and cannot be instantiated");
     }

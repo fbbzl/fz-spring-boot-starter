@@ -19,13 +19,13 @@ public abstract class BaseMetaObjectHandler<ID extends Serializable> implements 
 
     Class<ID> idType = Generics.getGenericSuperType(this.getClass(), BaseMetaObjectHandler.class, 0);
 
-    protected abstract ID getCurrentLoginUserId();
+    protected abstract ID getCurrentUserId();
 
     @Override
     public void insertFill(MetaObject metaObject)
     {
         strictInsertFill(metaObject, BaseMybatisPlusEntity.Fields.createTime, LocalDateTime.class, LocalDateTime.now());
-        strictInsertFill(metaObject, BaseMybatisPlusEntity.Fields.createBy, idType, this.getCurrentLoginUserId());
+        strictInsertFill(metaObject, BaseMybatisPlusEntity.Fields.createBy, idType, this.getCurrentUserId());
 
         this.updateFill(metaObject);
     }
@@ -34,6 +34,6 @@ public abstract class BaseMetaObjectHandler<ID extends Serializable> implements 
     public void updateFill(MetaObject metaObject)
     {
         strictUpdateFill(metaObject, BaseMybatisPlusEntity.Fields.updateTime, LocalDateTime.class, LocalDateTime.now());
-        strictUpdateFill(metaObject, BaseMybatisPlusEntity.Fields.updateBy, idType, this.getCurrentLoginUserId());
+        strictUpdateFill(metaObject, BaseMybatisPlusEntity.Fields.updateBy, idType, this.getCurrentUserId());
     }
 }

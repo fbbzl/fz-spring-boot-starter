@@ -9,7 +9,7 @@
         <version>${revision}</version>
     </parent>
 
-    <artifactId>fz-spring-boot-starter-messages</artifactId>
+    <artifactId>fz-spring-boot-starter-message</artifactId>
 
     <name>${project.artifactId}</name>
 

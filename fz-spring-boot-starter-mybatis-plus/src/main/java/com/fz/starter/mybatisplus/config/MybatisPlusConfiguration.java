@@ -32,7 +32,7 @@ public class MybatisPlusConfiguration
         return new BaseMetaObjectHandler<>()
         {
             @Override
-            protected Long getCurrentLoginUserId()
+            public Long getCurrentUserId()
             {
                 return 0L;
             }

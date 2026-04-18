@@ -7,9 +7,11 @@
     <parent>
         <groupId>io.github.fbbzl</groupId>
         <artifactId>fz-spring-boot-starter</artifactId>
-        <version>1.2.5_3.5.13</version>
+        <version>${revision}</version>
     </parent>
 
-    <artifactId>fz-spring-boot-starter-rbac</artifactId>
+    <name>${project.artifactId}</name>
+    <artifactId>fz-spring-boot-starter-dict</artifactId>
+
 
 </project>

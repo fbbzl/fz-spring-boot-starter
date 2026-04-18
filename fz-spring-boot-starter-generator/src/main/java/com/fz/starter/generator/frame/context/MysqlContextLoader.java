@@ -116,7 +116,7 @@ public class MysqlContextLoader
             fieldInfo.setExample(getExampleValue(dataType));
             fieldInfo.setIsNullable(isNullable);
 
-            // 设置长度验证
+            // validate charactor length
             Object maxLengthObj = column.get("character_maximum_length");
             if (maxLengthObj != null) {
                 Integer maxLength = ((Long) maxLengthObj).intValue();
@@ -153,7 +153,7 @@ public class MysqlContextLoader
             String  columnName = MapUtil.getStr(row, "column_name");
             Boolean nonUnique  = MapUtil.getBool(row, "non_unique");
 
-            // 排除主键索引
+            // exclude primary key indexes
             if ("PRIMARY".equalsIgnoreCase(indexName)) {
                 continue;
             }
@@ -162,7 +162,7 @@ public class MysqlContextLoader
                 Index index = new Index();
                 index.setName(indexName);
                 index.setColumns(new ArrayList<>());
-                index.setUnique(!nonUnique); // 非唯一索引取反为唯一索引
+                index.setUnique(!nonUnique);
                 return index;
             }).getColumns().add(columnName);
         }
@@ -171,9 +171,6 @@ public class MysqlContextLoader
     }
 
 
-    /**
-     * 获取示例值
-     */
     private String getExampleValue(String dataType)
     {
         return switch (dataType.toLowerCase()) {

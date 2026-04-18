@@ -42,7 +42,7 @@
 
         <dependency>
             <groupId>io.github.fbbzl</groupId>
-            <artifactId>fz-spring-boot-starter-messages</artifactId>
+            <artifactId>fz-spring-boot-starter-message</artifactId>
         </dependency>
 
         <dependency>

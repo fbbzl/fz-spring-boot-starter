@@ -40,7 +40,7 @@ import static com.fz.starter.dal.Sqls.FOR_UPDATE;
  * @version 1.0
  * @since 2026/2/8 16:43
  */
-public interface BaseMybatisPlusMapper<ENTITY extends BaseMybatisPlusEntity<ID>, ID extends Serializable>
+public interface BaseMybatisPlusMapper<ENTITY extends BaseTableEntity<ID>, ID extends Serializable>
         extends BaseMapper<ENTITY>,
                 BaseDal<ENTITY, ID>
 {
