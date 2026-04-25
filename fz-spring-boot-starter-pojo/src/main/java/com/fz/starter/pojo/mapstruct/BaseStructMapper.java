@@ -1,9 +1,9 @@
 package com.fz.starter.pojo.mapstruct;
 
+import com.fz.starter.excel.BaseEo;
 import com.fz.starter.pojo.bo.BaseBo;
 import com.fz.starter.pojo.dto.BaseDto;
 import com.fz.starter.pojo.entity.BaseTableEntity;
-import com.fz.starter.pojo.eo.BaseEo;
 
 import java.io.Serializable;
 import java.util.Collection;

@@ -8,12 +8,14 @@ import cn.hutool.db.Page;
 import cn.hutool.db.PageResult;
 import cn.hutool.db.sql.Direction;
 import cn.hutool.db.sql.Order;
+import com.fz.starter.dal.Range;
 import com.fz.starter.jpa.BaseJpaEntity;
 import com.fz.starter.jpa.Specifications;
 import com.fz.starter.pojo.entity.BaseTableEntity;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.LockModeType;
 import jakarta.persistence.criteria.*;
+import org.fz.erwin.exception.Throws;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Example;
 import org.springframework.data.domain.ExampleMatcher;
@@ -24,7 +26,6 @@ import org.springframework.lang.Nullable;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.io.Serializable;
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -32,7 +33,9 @@ import java.util.Set;
 import java.util.function.Consumer;
 import java.util.stream.Stream;
 
+import static cn.hutool.core.collection.CollUtil.isEmpty;
 import static cn.hutool.core.collection.CollUtil.isNotEmpty;
+import static java.util.Collections.emptyList;
 
 /**
  *
@@ -58,36 +61,42 @@ public class BaseRepositoryImpl<ENTITY extends BaseTableEntity<ID>, ID extends S
 
     @Transactional
     @Override
-    public ENTITY create(ENTITY entity)
+    public ENTITY create(@Nullable ENTITY entity)
     {
         return super.saveAndFlush(entity);
     }
 
     @Transactional
     @Override
-    public int create(Iterable<ENTITY> entities)
+    public int create(@Nullable Iterable<ENTITY> entities)
     {
+        if (isEmpty(entities)) return 0;
+
         return super.saveAllAndFlush(entities).size();
     }
 
     @Transactional
     @Override
-    public void delete(ID id)
+    public void delete(@Nullable ID id)
     {
         super.deleteById(id);
     }
 
     @Transactional
     @Override
-    public void delete(Set<ID> ids)
+    public void delete(@Nullable Set<ID> ids)
     {
+        if (isEmpty(ids)) return;
+
         super.deleteAllById(ids);
     }
 
     @Transactional
     @Override
-    public int update(ENTITY entity)
+    public int update(@Nullable ENTITY entity)
     {
+        if (entity == null) return 0;
+
         return this.findById(entity.getId())
                    .map(byId -> {
                        BeanUtil.copyProperties(entity, byId, CopyOptions.create().setIgnoreNullValue(true).setIgnoreError(true));
@@ -98,46 +107,47 @@ public class BaseRepositoryImpl<ENTITY extends BaseTableEntity<ID>, ID extends S
 
     @Transactional
     @Override
-    public int update(Iterable<ENTITY> entities)
+    public int update(@Nullable Iterable<ENTITY> entities)
     {
+        if (isEmpty(entities)) return 0;
         return super.saveAllAndFlush(entities).size();
     }
 
     @Nullable
     @Override
-    public ENTITY byId(ID id)
+    public ENTITY byId(@Nullable ID id)
     {
         return this.findById(id).get();
     }
 
     @Override
-    public List<ENTITY> byIds(Set<ID> ids)
+    public List<ENTITY> byIds(@Nullable Set<ID> ids)
     {
-        return this.findAllById(ids);
+        if (isEmpty(ids)) return emptyList();
+        else              return this.findAllById(ids);
     }
 
     @Override
-    public Optional<ENTITY> one(ENTITY entity)
+    public Optional<ENTITY> one(@Nullable ENTITY entity)
     {
         return super.findOne(Specifications.byAuto(entityManager, entity));
     }
 
     @Override
-    public List<ENTITY> list(ENTITY entity, Order... orders)
+    public List<ENTITY> list(@Nullable ENTITY entity, @Nullable Integer limit, @Nullable Order[] orders, @Nullable Range... ranges)
     {
-        return findAll(Specifications.byAuto(entityManager, entity, orders));
-    }
+        Throws.ifNull(limit, () -> "limit can not be null when doing list-query");
+        if (entity == null) return emptyList();
 
-    @Override
-    public List<ENTITY> limit(ENTITY entity, int limit, Order... orders)
-    {
         PageRequest pageRequest = PageRequest.of(0, limit, toSort(orders));
-        return findAll(Specifications.byAuto(entityManager, entity), pageRequest).getContent();
+        return findAll(Specifications.byAuto(entityManager, entity, ranges), pageRequest).getContent();
     }
 
     @Override
-    public PageResult<ENTITY> page(Page page, ENTITY entity)
+    public PageResult<ENTITY> page(@Nullable Page page, @Nullable ENTITY entity)
     {
+        Throws.ifNull(page, () -> "page can not be null when doing page-query");
+
         PageRequest pageRequest = PageRequest.of(page.getPageNumber(), page.getPageSize(), toSort(page.getOrders()));
 
         org.springframework.data.domain.Page<ENTITY> pageImpl = findAll(Specifications.byAuto(entityManager, entity), pageRequest);
@@ -146,20 +156,20 @@ public class BaseRepositoryImpl<ENTITY extends BaseTableEntity<ID>, ID extends S
     }
 
     @Override
-    public boolean exists(ENTITY entity)
+    public boolean exists(@Nullable ENTITY entity)
     {
         return this.exists(Example.of(entity, ExampleMatcher.matching().withIgnoreNullValues()));
     }
 
     @Override
-    public boolean exists(ID id)
+    public boolean exists(@Nullable ID id)
     {
         return super.existsById(id);
     }
 
     @Transactional
     @Override
-    public void selectForUpdate(List<ID> ids)
+    public void selectForUpdate(@Nullable List<ID> ids)
     {
         if (ArrayUtil.isEmpty(ids)) return;
 
@@ -175,7 +185,7 @@ public class BaseRepositoryImpl<ENTITY extends BaseTableEntity<ID>, ID extends S
 
     @Transactional
     @Override
-    public void selectForUpdate(ENTITY entity)
+    public void selectForUpdate(@Nullable ENTITY entity)
     {
         if (entity == null) return;
 
@@ -186,7 +196,7 @@ public class BaseRepositoryImpl<ENTITY extends BaseTableEntity<ID>, ID extends S
     }
 
     @Override
-    public void increment(String fieldName, int delta, List<ID> ids)
+    public void increment(String fieldName, int delta, @Nullable List<ID> ids)
     {
         CriteriaBuilder        cb     = entityManager.getCriteriaBuilder();
         CriteriaUpdate<ENTITY> update = cb.createCriteriaUpdate(entityClass);
@@ -204,7 +214,7 @@ public class BaseRepositoryImpl<ENTITY extends BaseTableEntity<ID>, ID extends S
     }
 
     @Override
-    public void decrement(String fieldName, int delta, List<ID> ids)
+    public void decrement(String fieldName, int delta, @Nullable List<ID> ids)
     {
         CriteriaBuilder        cb     = entityManager.getCriteriaBuilder();
         CriteriaUpdate<ENTITY> update = cb.createCriteriaUpdate(entityClass);
@@ -222,7 +232,7 @@ public class BaseRepositoryImpl<ENTITY extends BaseTableEntity<ID>, ID extends S
     }
 
     @Override
-    public void doBatchConsume(ENTITY entity, int batchSize, Consumer<List<ENTITY>> recordsConsumer)
+    public void doBatchConsume(@Nullable ENTITY entity, int batchSize, Consumer<List<ENTITY>> recordsConsumer)
     {
         int                                          pageNumber  = 0;
         PageRequest                                  pageRequest = PageRequest.of(pageNumber, batchSize);
@@ -236,16 +246,6 @@ public class BaseRepositoryImpl<ENTITY extends BaseTableEntity<ID>, ID extends S
             pageNumber++;
             pageRequest = PageRequest.of(pageNumber, batchSize);
         } while (pageResult.hasNext());
-    }
-
-    public CriteriaQuery<ENTITY> createTimeQuery(ENTITY query, boolean isClose, LocalDateTime start, LocalDateTime end)
-    {
-        return rangeQuery(query, BaseJpaEntity.Fields.createTime, isClose, start, end);
-    }
-
-    public CriteriaQuery<ENTITY> updateTimeQuery(ENTITY query, boolean isClose, LocalDateTime start, LocalDateTime end)
-    {
-        return rangeQuery(query, BaseJpaEntity.Fields.updateTime, isClose, start, end);
     }
 
     @SafeVarargs

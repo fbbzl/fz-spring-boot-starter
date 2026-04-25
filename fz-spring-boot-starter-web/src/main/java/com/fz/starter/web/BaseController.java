@@ -1,15 +1,14 @@
 package com.fz.starter.web;
 
 import cn.hutool.core.lang.tree.Tree;
-import com.alibaba.excel.EasyExcelFactory;
-import com.alibaba.excel.write.style.column.LongestMatchColumnWidthStyleStrategy;
+import com.fz.starter.audit.frame.annotation.AuditMethod;
 import com.fz.starter.core.util.Generics;
 import com.fz.starter.dal.BaseDal;
+import com.fz.starter.excel.BaseEo;
+import com.fz.starter.excel.ExcelDto;
 import com.fz.starter.pojo.bo.BaseBo;
 import com.fz.starter.pojo.dto.BaseDto;
 import com.fz.starter.pojo.entity.BaseTableEntity;
-import com.fz.starter.pojo.eo.BaseEo;
-import com.fz.starter.pojo.eo.ExcelDownload;
 import com.fz.starter.pojo.mapstruct.BaseStructMapper;
 import com.fz.starter.pojo.validation.group.CRUD;
 import com.fz.starter.web.Q.FQ;
@@ -25,20 +24,17 @@ import jakarta.validation.constraints.Positive;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpHeaders;
 import org.springframework.lang.Nullable;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
-import java.io.OutputStream;
 import java.io.Serializable;
 import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 
-import static cn.hutool.core.io.FileMagicNumber.XLSX;
-import static cn.hutool.core.text.CharSequenceUtil.appendIfMissing;
+import static cn.hutool.core.util.ObjectUtil.defaultIfNull;
 import static java.util.Collections.emptyList;
 import static lombok.AccessLevel.PROTECTED;
 
@@ -49,18 +45,22 @@ import static lombok.AccessLevel.PROTECTED;
  */
 @Slf4j
 @Validated
+@SuppressWarnings("all")
 @FieldDefaults(level = PROTECTED)
 public abstract class BaseController<
-        ID     extends Serializable,
+        ID extends Serializable,
         ENTITY extends BaseTableEntity<ID>,
-        DTO    extends BaseDto<ID>,
-        BO     extends BaseBo<ID>,
-        EO     extends BaseEo>
+        DTO extends BaseDto<ID>,
+        BO extends BaseBo<ID>,
+        EO extends BaseEo>
 {
 
-    @Autowired BaseService<ID, ENTITY, DTO, BO, EO, ? extends BaseDal<ENTITY, ID>, ? extends BaseStructMapper<ENTITY, DTO, BO, EO>> service;
-    @Autowired HttpServletRequest  request;
-    @Autowired HttpServletResponse response;
+    @Autowired
+    BaseService<ID, ENTITY, DTO, BO, EO, ? extends BaseDal<ENTITY, ID>, ? extends BaseStructMapper<ENTITY, DTO, BO, EO>> service;
+    @Autowired
+    HttpServletRequest                                                                                                   request;
+    @Autowired
+    HttpServletResponse                                                                                                  response;
 
     Class<ENTITY> entityClass = Generics.getGenericSuperType(this.getClass(), BaseController.class, 1);
     Class<EO>     excelClass  = Generics.getGenericSuperType(this.getClass(), BaseController.class, 4);
@@ -101,10 +101,7 @@ public abstract class BaseController<
             @RequestBody
             OQ<DTO> req)
     {
-        if (limit != null)
-            return R.ok(service.limit(req.getData(), limit, req.getOrders()));
-        else
-            return R.ok(service.list(req.getData(), req.getOrders()));
+        return R.ok(service.list(req.getData(), limit, req.getOrders(), req.getRanges()));
     }
 
     @Operation(description = "For paginated query, null fields do not participate in query", summary = "Page query")
@@ -120,19 +117,24 @@ public abstract class BaseController<
     }
 
     @Operation(description = "For tree query, null fields do not participate in query", summary = "Tree query, If it weren't be a tree type data, there would be no result")
-    @PostMapping("tree/{rootId}")
+    @PostMapping({"tree/{rootId}", "tree/{rootId}/{limit}"})
     public R<List<Tree<ID>>> tree(
             @NotNull
             @PathVariable("rootId")
             @Parameter(name = "rootId", description = "the root-id of the tree", required = true, example = "1")
             ID rootId,
+            @Nullable
+            @Positive(message = "limit must be positive")
+            @Parameter(description = "tree data limit")
+            @PathVariable(value = "limit", required = false)
+            Integer limit,
             @NotNull
             @Validated(CRUD.R.class)
             @Parameter(description = "tree request", required = true)
             @RequestBody
             OQ<DTO> req)
     {
-        return R.ok(service.tree(rootId, req.getData(), req.getOrders()));
+        return R.ok(service.tree(rootId, req.getData(), defaultIfNull(limit, this.defaultLimit()), req.getOrders()));
     }
 
     @Operation(description = "Specify whether primary key data exists", summary = "Specifies whether primary key data exists")
@@ -158,6 +160,7 @@ public abstract class BaseController<
         return R.ok(service.exists(req.getData()));
     }
 
+    @AuditMethod
     @Operation(description = "Create data", summary = "Create data")
     @PostMapping
     public R<BO> create(
@@ -170,6 +173,7 @@ public abstract class BaseController<
         return R.ok(service.create(req.getData()));
     }
 
+    @AuditMethod(saveParam = false, saveResult = false)
     @Operation(description = "Create data batch", summary = "Create data batch")
     @PostMapping("batch")
     public R<Integer> createBatch(
@@ -181,6 +185,7 @@ public abstract class BaseController<
         return R.ok(service.create(req.getData()));
     }
 
+    @AuditMethod
     @Operation(description = "Update without null fields", summary = "Do update ignore null field value")
     @PutMapping
     public R<Integer> update(
@@ -193,6 +198,7 @@ public abstract class BaseController<
         return R.ok(service.update(req.getData()));
     }
 
+    @AuditMethod(saveParam = false, saveResult = false)
     @Operation(description = "Batch updates without null fields", summary = "Do batch update ignore null field value")
     @PutMapping("batch")
     public R<Integer> updateBatch(
@@ -204,6 +210,7 @@ public abstract class BaseController<
         return R.ok(service.update(req.getData()));
     }
 
+    @AuditMethod
     @Operation(description = "Deleting data is a logical deletion, but this tombstone deletion is equivalent to physical deletion, and the tombstone is only to maximize the value of the data", summary = "Delete data by primary key")
     @DeleteMapping("{id}")
     public R<Void> delete(
@@ -216,6 +223,7 @@ public abstract class BaseController<
         return R.ok();
     }
 
+    @AuditMethod
     @Operation(description = "Deleting data is a logical deletion, but this tombstone deletion is equivalent to physical deletion, and the tombstone is only to maximize the value of the data", summary = "Delete data by primary key set")
     @DeleteMapping("ids")
     public R<Void> delete(
@@ -234,13 +242,14 @@ public abstract class BaseController<
             @NotNull
             @Validated(CRUD.R.class)
             @Parameter(description = "download excel template request", required = true)
-            @RequestBody Q<ExcelDownload<DTO>> req) throws IOException
+            @RequestBody Q<ExcelDto<DTO>> req) throws IOException
     {
-        ExcelDownload<DTO> excelCfg = req.getData();
-        this.setResponseHeader(excelCfg);
-        this.doExport(emptyList(), excelCfg);
+        ExcelDto<DTO> excelDto = req.getData();
+        ExcelDto.setResponseHeader(response, excelDto);
+        ExcelDto.doExport(response, emptyList(), excelClass, excelDto);
     }
 
+    @AuditMethod(saveParam = false, saveResult = false)
     @Operation(description = "Excel to import", summary = "Excel data to import data")
     @PostMapping("excel/import")
     public R<Integer> importExcel(
@@ -249,47 +258,31 @@ public abstract class BaseController<
             @Parameter(description = "excel import object", required = true)
             FQ<DTO> req) throws IOException
     {
-        List<EO> importData =
-                EasyExcelFactory.read(req.getSingleFile().getInputStream())
-                                .head(excelClass)
-                                .headRowNumber(1)
-                                .sheet()
-                                .doReadSync();
+        List<EO> importData = ExcelDto.doImport(req.getSingleFile().getInputStream(), excelClass);
         return R.ok(service.importExcel(importData));
     }
 
+    @AuditMethod(saveParam = false, saveResult = false)
     @Operation(description = "Excel export", summary = "Excel excel data")
-    @PostMapping("excel/export")
+    @PostMapping({"excel/export", "excel/export/{limit}"})
     public void exportExcel(
+            @Nullable
+            @Positive(message = "limit must be positive")
+            @Parameter(description = "export data limit")
+            @PathVariable(value = "limit", required = false)
+            Integer limit,
             @NotNull
             @Validated(CRUD.R.class)
             @Parameter(description = "export excel request", required = true)
-            @RequestBody OQ<ExcelDownload<DTO>> req) throws IOException
+            @RequestBody OQ<ExcelDto<DTO>> req) throws IOException
     {
-        ExcelDownload<DTO> excelCfg = req.getData();
-        this.setResponseHeader(excelCfg);
-        this.doExport(service.exportExcel(excelCfg.param(), req.getOrders()), excelCfg);
+        ExcelDto<DTO> excelDto = req.getData();
+        ExcelDto.setResponseHeader(response, excelDto);
+        ExcelDto.doExport(response, service.exportExcel(excelDto.param(), defaultIfNull(limit, this.defaultLimit()), req.getOrders()), excelClass, excelDto);
     }
 
-    //******************************************       protected start      ******************************************//
-
-    protected void setResponseHeader(ExcelDownload<?> excelCfg)
+    protected Integer defaultLimit()
     {
-        response.setContentType(XLSX.getMimeType());
-
-        String filename = appendIfMissing(excelCfg.fileName(), "." + XLSX);
-
-        response.setHeader(HttpHeaders.CONTENT_DISPOSITION, "attachment;filename=" + filename);
-    }
-
-    protected void doExport(Collection<EO> excelData, ExcelDownload<DTO> config) throws IOException
-    {
-        try (OutputStream os = response.getOutputStream()) {
-            EasyExcelFactory.write(os)
-                            .head(excelClass)
-                            .sheet(config.sheetName())
-                            .registerWriteHandler(new LongestMatchColumnWidthStyleStrategy())
-                            .doWrite(excelData);
-        }
+        return 5000;
     }
 }

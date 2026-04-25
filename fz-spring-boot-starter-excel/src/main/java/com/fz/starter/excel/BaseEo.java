@@ -1,4 +1,4 @@
-package com.fz.starter.pojo.eo;
+package com.fz.starter.excel;
 
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -12,7 +12,7 @@ import lombok.experimental.FieldDefaults;
  * @since 2026/1/21 23:53
  */
 @Getter
-@FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
+@FieldDefaults(level = AccessLevel.PRIVATE)
 public abstract class BaseEo
 {
 }

@@ -4,6 +4,7 @@ package com.fz.starter.web;
 import cn.hutool.core.util.ArrayUtil;
 import cn.hutool.db.Page;
 import cn.hutool.db.sql.Order;
+import com.fz.starter.dal.Range;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
@@ -53,6 +54,31 @@ public class Q<DATA>
     }
 
     /**
+     * range query request
+     */
+    @Getter
+    @Setter
+    @ToString
+    @Schema(description = "generic range query request objects")
+    @FieldDefaults(level = PRIVATE)
+    public static class RQ<DATA> extends Q<DATA>
+    {
+
+        @Valid
+        @Size(max = 128, message = "{RQ.ranges.size}")
+        @Schema(description = "range query conditions")
+        Range[] ranges;
+
+        public static <DATA> RQ<DATA> of(DATA data, Range... ranges)
+        {
+            RQ<DATA> rq = new RQ<>();
+            rq.setData(data);
+            rq.setRanges(ranges);
+            return rq;
+        }
+    }
+
+    /**
      * ordered query request
      */
     @Getter
@@ -60,7 +86,7 @@ public class Q<DATA>
     @ToString
     @Schema(description = "generic ordered request objects")
     @FieldDefaults(level = PRIVATE)
-    public static class OQ<DATA> extends Q<DATA>
+    public static class OQ<DATA> extends RQ<DATA>
     {
 
         @Size(max = 128, message = "{OQ.orders.size}")
@@ -69,9 +95,15 @@ public class Q<DATA>
 
         public static <DATA> OQ<DATA> of(DATA data, Order... orders)
         {
+            return of(data, orders, (Range) null);
+        }
+
+        public static <DATA> OQ<DATA> of(DATA data, Order[] orders, Range... ranges)
+        {
             OQ<DATA> oq = new OQ<>();
             oq.setData(data);
             oq.setOrders(orders);
+            oq.setRanges(ranges);
             return oq;
         }
     }
@@ -84,7 +116,7 @@ public class Q<DATA>
     @ToString
     @Schema(description = "generic paging request objects")
     @FieldDefaults(level = PRIVATE)
-    public static class PQ<DATA> extends Q<DATA>
+    public static class PQ<DATA> extends RQ<DATA>
     {
 
         @NotNull(message = "{PQ.page.page}")
@@ -93,9 +125,15 @@ public class Q<DATA>
 
         public static <DATA> PQ<DATA> of(DATA data, Page page)
         {
+            return of(data, page, (Range) null);
+        }
+        
+        public static <DATA> PQ<DATA> of(DATA data, Page page, Range... ranges)
+        {
             PQ<DATA> pq = new PQ<>();
             pq.setData(data);
             pq.setPage(page);
+            pq.setRanges(ranges);
             return pq;
         }
     }

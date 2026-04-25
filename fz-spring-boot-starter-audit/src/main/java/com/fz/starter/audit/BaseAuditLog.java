@@ -23,27 +23,27 @@ import static lombok.AccessLevel.PRIVATE;
 @Data
 @Schema(description = "audit log")
 @FieldDefaults(level = PRIVATE)
-public abstract class BaseAudit<ID extends Serializable> implements BaseTableEntity<ID>
+public abstract class BaseAuditLog<ID extends Serializable> implements BaseTableEntity<ID>
 {
 
     public static final String STATUS_SUCCESS = "success";
     public static final String STATUS_FAIL    = "fail";
 
-    @NotNull(groups = CRUD.ALL.class, message = "{BaseAudit.operatorId}")
+    @NotNull(groups = CRUD.ALL.class, message = "{BaseAuditLog.operatorId}")
     @Schema(description = "operator user id")
     Long operatorId;
 
-    @NotNull(groups = CRUD.ALL.class, message = "{BaseAudit.operatorName}")
+    @NotNull(groups = CRUD.ALL.class, message = "{BaseAuditLog.operatorName}")
     @Size(max = 128)
     @Schema(description = "operator user name")
     String operatorName;
 
-    @Size(max = 64, message = "{BaseAudit.module}")
-    @NotNull(groups = CRUD.ALL.class, message = "{BaseAudit.module}")
+    @Size(max = 64, message = "{BaseAuditLog.module}")
+    @NotNull(groups = CRUD.ALL.class, message = "{BaseAuditLog.module}")
     @Schema(description = "operation module")
     String module;
 
-    @NotNull(groups = CRUD.ALL.class, message = "{BaseAudit.method}")
+    @NotNull(groups = CRUD.ALL.class, message = "{BaseAuditLog.method}")
     @Schema(description = "method name")
     String method;
 
@@ -55,7 +55,7 @@ public abstract class BaseAudit<ID extends Serializable> implements BaseTableEnt
     @Schema(description = "method result json")
     String result;
 
-    @NotNull(groups = CRUD.ALL.class, message = "{BaseAudit.status}")
+    @NotNull(groups = CRUD.ALL.class, message = "{BaseAuditLog.status}")
     @Schema(description = "method status")
     String status = STATUS_SUCCESS;
 
@@ -63,7 +63,7 @@ public abstract class BaseAudit<ID extends Serializable> implements BaseTableEnt
     @Schema(description = "error message")
     String errorMsg;
 
-    @NotNull(groups = CRUD.ALL.class, message = "{BaseAudit.timeCost}")
+    @NotNull(groups = CRUD.ALL.class, message = "{BaseAuditLog.timeCost}")
     @Schema(description = "method time cost")
     Long timeCost;
 

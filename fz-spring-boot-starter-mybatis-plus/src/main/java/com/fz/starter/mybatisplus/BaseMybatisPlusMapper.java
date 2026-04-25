@@ -16,7 +16,7 @@ import com.baomidou.mybatisplus.core.toolkit.LambdaUtils;
 import com.baomidou.mybatisplus.core.toolkit.support.ColumnCache;
 import com.baomidou.mybatisplus.extension.plugins.pagination.PageDTO;
 import com.fz.starter.dal.BaseDal;
-import com.fz.starter.dal.Sqls;
+import com.fz.starter.dal.Range;
 import com.fz.starter.pojo.entity.BaseTableEntity;
 import org.apache.ibatis.executor.BatchResult;
 import org.fz.erwin.exception.Throws;
@@ -31,9 +31,12 @@ import java.util.function.Consumer;
 import java.util.stream.Stream;
 
 import static cn.hutool.core.collection.CollUtil.*;
+import static cn.hutool.core.text.CharSequenceUtil.isBlank;
 import static cn.hutool.core.text.CharSequenceUtil.isNotBlank;
 import static com.baomidou.mybatisplus.extension.repository.IRepository.DEFAULT_BATCH_SIZE;
 import static com.fz.starter.dal.Sqls.FOR_UPDATE;
+import static com.fz.starter.dal.Sqls.sqlLimit;
+import static java.util.Collections.emptyList;
 
 /**
  * @author fengbinbin
@@ -46,7 +49,7 @@ public interface BaseMybatisPlusMapper<ENTITY extends BaseTableEntity<ID>, ID ex
 {
 
     @Override
-    default ENTITY create(ENTITY entity)
+    default ENTITY create(@Nullable ENTITY entity)
     {
         this.insert(entity);
         return entity;
@@ -54,21 +57,21 @@ public interface BaseMybatisPlusMapper<ENTITY extends BaseTableEntity<ID>, ID ex
 
     @Transactional
     @Override
-    default int create(Iterable<ENTITY> entities)
+    default int create(@Nullable Iterable<ENTITY> entities)
     {
         List<BatchResult> inserts = this.insert(IterUtil.toList(entities), DEFAULT_BATCH_SIZE);
         return effectRows(inserts);
     }
 
     @Override
-    default void delete(ID id)
+    default void delete(@Nullable ID id)
     {
         this.deleteById(id);
     }
 
     @Transactional
     @Override
-    default void delete(Set<ID> ids)
+    default void delete(@Nullable Set<ID> ids)
     {
         if (isEmpty(ids)) return;
 
@@ -76,52 +79,52 @@ public interface BaseMybatisPlusMapper<ENTITY extends BaseTableEntity<ID>, ID ex
     }
 
     @Override
-    default int update(ENTITY entity)
+    default int update(@Nullable ENTITY entity)
     {
         return this.updateById(entity);
     }
 
     @Transactional
     @Override
-    default int update(Iterable<ENTITY> entities)
+    default int update(@Nullable Iterable<ENTITY> entities)
     {
         return effectRows(this.updateById(IterUtil.toList(entities), DEFAULT_BATCH_SIZE));
     }
 
     @Nullable
     @Override
-    default ENTITY byId(ID id)
+    default ENTITY byId(@Nullable ID id)
     {
         return this.selectById(id);
     }
 
     @Override
-    default List<ENTITY> byIds(Set<ID> ids)
+    default List<ENTITY> byIds(@Nullable Set<ID> ids)
     {
-        return this.selectByIds(IterUtil.toList(ids));
+        return this.selectByIds(ids);
     }
 
     @Override
-    default Optional<ENTITY> one(ENTITY entity)
+    default Optional<ENTITY> one(@Nullable ENTITY entity)
     {
         return Optional.ofNullable(this.selectOne(autoQuery(entity)));
     }
 
     @Override
-    default List<ENTITY> list(ENTITY entity, Order... orders)
+    default List<ENTITY> list(@Nullable ENTITY entity, @Nullable Integer limit, @Nullable Order[] orders, @Nullable Range... ranges)
     {
-        return this.selectList(order(autoQuery(entity), orders));
+        Throws.ifNull(limit, () -> "limit can not be null when doing list query");
+        if (entity == null) return emptyList();
+
+        QueryWrapper<ENTITY> wrapper = range(autoQuery(entity), ranges).last(sqlLimit(limit));
+        return this.selectList(order(wrapper, orders));
     }
 
     @Override
-    default List<ENTITY> limit(ENTITY entity, int limit, Order... orders)
+    default PageResult<ENTITY> page(@Nullable Page page, @Nullable ENTITY entity)
     {
-        return this.selectList(order(autoQuery(entity).last(Sqls.limit(limit)), orders));
-    }
+        Throws.ifNull(page, () -> "page can not be null");
 
-    @Override
-    default PageResult<ENTITY> page(Page page, ENTITY entity)
-    {
         IPage<ENTITY> result =
                 this.selectPage(PageDTO.<ENTITY>of(toMybatisPlusPageNumber(page), page.getPageSize()).addOrder(this.toOrderItem(page.getOrders())),
                                 autoQuery(entity));
@@ -129,20 +132,20 @@ public interface BaseMybatisPlusMapper<ENTITY extends BaseTableEntity<ID>, ID ex
     }
 
     @Override
-    default boolean exists(ENTITY entity)
+    default boolean exists(@Nullable ENTITY entity)
     {
         return this.selectCount(autoQuery(entity, false)) > 0;
     }
 
     @Override
-    default boolean exists(ID id)
+    default boolean exists(@Nullable ID id)
     {
         return this.selectCount(new LambdaUpdateWrapper<ENTITY>().eq(BaseTableEntity::getId, id)) > 0;
     }
 
     @Transactional
     @Override
-    default void selectForUpdate(List<ID> ids)
+    default void selectForUpdate(@Nullable List<ID> ids)
     {
         if (ArrayUtil.isEmpty(ids)) return;
 
@@ -151,7 +154,7 @@ public interface BaseMybatisPlusMapper<ENTITY extends BaseTableEntity<ID>, ID ex
 
     @Transactional
     @Override
-    default void selectForUpdate(ENTITY entity)
+    default void selectForUpdate(@Nullable ENTITY entity)
     {
         if (entity == null) return;
 
@@ -159,7 +162,7 @@ public interface BaseMybatisPlusMapper<ENTITY extends BaseTableEntity<ID>, ID ex
     }
 
     @Override
-    default void increment(String columnName, int delta, List<ID> ids)
+    default void increment(String columnName, int delta, @Nullable List<ID> ids)
     {
         if (ArrayUtil.isEmpty(ids)) return;
 
@@ -169,7 +172,7 @@ public interface BaseMybatisPlusMapper<ENTITY extends BaseTableEntity<ID>, ID ex
     }
 
     @Override
-    default void decrement(String columnName, int delta, List<ID> ids)
+    default void decrement(String columnName, int delta, @Nullable List<ID> ids)
     {
         if (ArrayUtil.isEmpty(ids)) return;
 
@@ -179,7 +182,7 @@ public interface BaseMybatisPlusMapper<ENTITY extends BaseTableEntity<ID>, ID ex
     }
 
     @Override
-    default void doBatchConsume(ENTITY entity, int batchSize, Consumer<List<ENTITY>> recordsConsumer)
+    default void doBatchConsume(@Nullable ENTITY entity, int batchSize, Consumer<List<ENTITY>> recordsConsumer)
     {
         int                pageNumber = 0;
         Page               page       = new Page(pageNumber, batchSize);
@@ -217,38 +220,44 @@ public interface BaseMybatisPlusMapper<ENTITY extends BaseTableEntity<ID>, ID ex
                                   OrderItem.asc(order.getField()) : OrderItem.desc(order.getField())).toArray(OrderItem[]::new);
     }
 
-    default QueryWrapper<ENTITY> createTimeQuery(ENTITY query, boolean isClose, LocalDateTime start, LocalDateTime end)
+    default QueryWrapper<ENTITY> range(QueryWrapper<ENTITY> wrapper, Range... ranges)
     {
-        return rangeQuery(query, BaseMybatisPlusEntity.Fields.createTime, isClose, start, end);
-    }
+        if (ArrayUtil.isEmpty(ranges)) return wrapper;
 
-    default QueryWrapper<ENTITY> updateTimeQuery(ENTITY query, boolean isClose, LocalDateTime start, LocalDateTime end)
-    {
-        return rangeQuery(query, BaseMybatisPlusEntity.Fields.updateTime, isClose, start, end);
-    }
+        Map<String, ColumnCache> columnMap = LambdaUtils.getColumnMap(wrapper.getEntityClass());
+        if (columnMap == null) return wrapper;
 
-    default <VALUE extends Comparable<? super VALUE>> QueryWrapper<ENTITY> rangeQuery(
-            ENTITY query,
-            String field,
-            boolean isClose,
-            VALUE... values)
-    {
-        VALUE start = ArrayUtil.min(values);
-        VALUE end   = ArrayUtil.max(values);
+        // add ranges
+        for (Range range : ranges) {
+            if (range == null || isBlank(range.getField())) continue;
 
-        if (isClose)
-            return autoQuery(query).ge(start != null, field, start).le(end != null, field, end);
-        else
-            return autoQuery(query).gt(start != null, field, start).lt(end != null, field, end);
+            ColumnCache cache = columnMap.get(LambdaUtils.formatKey(range.getField()));
+            if (cache == null) continue;
+
+            String  column  = cache.getColumn();
+            Object  start   = range.getStart();
+            Object  end     = range.getEnd();
+            boolean isClose = Boolean.TRUE.equals(range.getClose());
+
+            if (isClose)
+                wrapper.ge(start != null, column, start).le(end != null, column, end);
+            else
+                wrapper.gt(start != null, column, start).lt(end != null, column, end);
+        }
+        return wrapper;
     }
 
     default QueryWrapper<ENTITY> order(QueryWrapper<ENTITY> wrapper, Order... orders)
     {
+        if (ArrayUtil.isEmpty(orders)) return wrapper;
+
         Map<String, ColumnCache> columnMap = LambdaUtils.getColumnMap(wrapper.getEntityClass());
         if (columnMap == null) return wrapper;
 
         // add orders
         for (Order order : orders) {
+            if (order == null || isBlank(order.getField())) continue;
+
             ColumnCache cache = columnMap.get(LambdaUtils.formatKey(order.getField()));
             if (cache != null) {
                 if (order.getDirection() == Direction.ASC)

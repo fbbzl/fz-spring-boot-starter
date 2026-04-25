@@ -11,10 +11,8 @@ import java.lang.annotation.*;
 @Target(ElementType.METHOD)
 @Retention(RetentionPolicy.RUNTIME)
 @Documented
-public @interface AuditLog
+public @interface AuditMethod
 {
-
-    String module() default "";
 
     boolean saveParam() default true;
 

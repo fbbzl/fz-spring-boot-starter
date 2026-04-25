@@ -1,10 +1,10 @@
 package ${moduleName}.service.eo;
 
 import com.alibaba.excel.annotation.ExcelProperty;
+import com.fz.starter.excel.BaseEo;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.experimental.FieldDefaults;
-import com.fz.starter.pojo.eo.BaseEo;
 import lombok.experimental.FieldNameConstants;
 
 import static lombok.AccessLevel.PRIVATE;

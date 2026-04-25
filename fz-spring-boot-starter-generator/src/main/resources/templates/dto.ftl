@@ -41,7 +41,7 @@ public class ${className}Dto extends BaseDto<${primaryKeyType}> {
      * ${field.comment}
      */
     <#if field.isNullable == "NO">
-    @NotNull(message = "{${className}.${field.name}}")
+    @NotNull(message = "{${className}.${field.name}.null}")
     <#else>
     @Nullable
     </#if>

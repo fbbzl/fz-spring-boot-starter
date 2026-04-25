@@ -22,44 +22,42 @@ import java.util.function.Consumer;
 public interface BaseDal<ENTITY extends BaseTableEntity<ID>, ID extends Serializable>
 {
 
-    ENTITY create(ENTITY entity);
+    ENTITY create(@Nullable ENTITY entity);
 
-    int create(Iterable<ENTITY> entities);
+    int create(@Nullable Iterable<ENTITY> entities);
 
-    void delete(ID id);
+    void delete(@Nullable ID id);
 
-    void delete(Set<ID> ids);
+    void delete(@Nullable Set<ID> ids);
 
-    int update(ENTITY entity);
+    int update(@Nullable ENTITY entity);
 
-    int update(Iterable<ENTITY> entities);
+    int update(@Nullable Iterable<ENTITY> entities);
 
     @Nullable
-    ENTITY byId(ID id);
+    ENTITY byId(@Nullable ID id);
 
-    List<ENTITY> byIds(Set<ID> ids);
+    List<ENTITY> byIds(@Nullable Set<ID> ids);
 
-    Optional<ENTITY> one(ENTITY entity);
+    Optional<ENTITY> one(@Nullable ENTITY entity);
 
-    List<ENTITY> list(ENTITY entity, Order... orders);
+    List<ENTITY> list(@Nullable ENTITY entity, @Nullable Integer limit, @Nullable Order[] orders, @Nullable Range... ranges);
 
-    List<ENTITY> limit(ENTITY entity, int limit, Order... orders);
+    PageResult<ENTITY> page(@Nullable Page page, @Nullable ENTITY entity);
 
-    PageResult<ENTITY> page(Page page, ENTITY entity);
+    boolean exists(@Nullable ENTITY entity);
 
-    boolean exists(ENTITY entity);
+    boolean exists(@Nullable ID id);
 
-    boolean exists(ID id);
+    void selectForUpdate(@Nullable List<ID> ids);
 
-    void selectForUpdate(List<ID> ids);
+    void selectForUpdate(@Nullable ENTITY entity);
 
-    void selectForUpdate(ENTITY entity);
+    void increment(String fieldName, int delta, @Nullable List<ID> ids);
 
-    void increment(String fieldName, int delta, List<ID> ids);
+    void decrement(String fieldName, int delta, @Nullable List<ID> ids);
 
-    void decrement(String fieldName, int delta, List<ID> ids);
-
-    void doBatchConsume(ENTITY entity, int batchSize, Consumer<List<ENTITY>> recordsConsumer);
+    void doBatchConsume(@Nullable ENTITY entity, int batchSize, Consumer<List<ENTITY>> recordsConsumer);
 
     default @NonNull PageResult<ENTITY> toPageResult(int pageNumber, int pageSize, long total, List<ENTITY> content)
     {

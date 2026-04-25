@@ -36,7 +36,6 @@ public class JacksonConfiguration
                                           // basic config
                                           .timeZone(TimeZone.getTimeZone("GMT+8"))
                                           .dateFormat(new SimpleDateFormat(NORM_DATETIME_PATTERN))
-
                                           // Serialization
                                           .featuresToDisable(
                                                   SerializationFeature.WRITE_DATES_AS_TIMESTAMPS,
