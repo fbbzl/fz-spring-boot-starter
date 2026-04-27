@@ -61,7 +61,7 @@ public record ExcelDto<PARAM>(
         }
     }
 
-    public static <EO extends BaseEo> List<EO> doImport(InputStream inputStream, Class<EO> excelClass)
+    public static <EO extends BaseEo> List<EO> doRead(InputStream inputStream, Class<EO> excelClass)
     {
         return EasyExcelFactory.read(inputStream)
                                .head(excelClass)

@@ -68,11 +68,10 @@ public class BaseRepositoryImpl<ENTITY extends BaseTableEntity<ID>, ID extends S
 
     @Transactional
     @Override
-    public int create(@Nullable Iterable<ENTITY> entities)
+    public void create(@Nullable Iterable<ENTITY> entities)
     {
-        if (isEmpty(entities)) return 0;
-
-        return super.saveAllAndFlush(entities).size();
+        if (isEmpty(entities)) return;
+        super.saveAllAndFlush(entities);
     }
 
     @Transactional
@@ -107,10 +106,10 @@ public class BaseRepositoryImpl<ENTITY extends BaseTableEntity<ID>, ID extends S
 
     @Transactional
     @Override
-    public int update(@Nullable Iterable<ENTITY> entities)
+    public void update(@Nullable Iterable<ENTITY> entities)
     {
-        if (isEmpty(entities)) return 0;
-        return super.saveAllAndFlush(entities).size();
+        if (isEmpty(entities)) return;
+        super.saveAllAndFlush(entities);
     }
 
     @Nullable

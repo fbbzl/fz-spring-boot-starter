@@ -101,7 +101,7 @@ public abstract class BaseController<
             @RequestBody
             OQ<DTO> req)
     {
-        return R.ok(service.list(req.getData(), limit, req.getOrders(), req.getRanges()));
+        return R.ok(service.list(req.getData(), defaultIfNull(limit, this.defaultLimit()), req.getOrders(), req.getRanges()));
     }
 
     @Operation(description = "For paginated query, null fields do not participate in query", summary = "Page query")
@@ -176,13 +176,14 @@ public abstract class BaseController<
     @AuditMethod(saveParam = false, saveResult = false)
     @Operation(description = "Create data batch", summary = "Create data batch")
     @PostMapping("batch")
-    public R<Integer> createBatch(
+    public R<Void> createBatch(
             @NotNull
             @Parameter(description = "creating batch data", required = true)
             @RequestBody
             Q<Collection<DTO>> req)
     {
-        return R.ok(service.create(req.getData()));
+        service.create(req.getData());
+        return R.ok();
     }
 
     @AuditMethod
@@ -201,13 +202,14 @@ public abstract class BaseController<
     @AuditMethod(saveParam = false, saveResult = false)
     @Operation(description = "Batch updates without null fields", summary = "Do batch update ignore null field value")
     @PutMapping("batch")
-    public R<Integer> updateBatch(
+    public R<Void> updateBatch(
             @NotNull
             @Parameter(name = "req", description = "batch updating data", required = true)
             @RequestBody
             Q<Collection<DTO>> req)
     {
-        return R.ok(service.update(req.getData()));
+        service.update(req.getData());
+        return R.ok();
     }
 
     @AuditMethod
@@ -252,14 +254,15 @@ public abstract class BaseController<
     @AuditMethod(saveParam = false, saveResult = false)
     @Operation(description = "Excel to import", summary = "Excel data to import data")
     @PostMapping("excel/import")
-    public R<Integer> importExcel(
+    public R<Void> importExcel(
             @NotNull
             @Validated(CRUD.C.class)
             @Parameter(description = "excel import object", required = true)
             FQ<DTO> req) throws IOException
     {
-        List<EO> importData = ExcelDto.doImport(req.getSingleFile().getInputStream(), excelClass);
-        return R.ok(service.importExcel(importData));
+        List<EO> readData = ExcelDto.doRead(req.getSingleFile().getInputStream(), excelClass);
+        service.importExcel(readData);
+        return R.ok();
     }
 
     @AuditMethod(saveParam = false, saveResult = false)

@@ -56,16 +56,16 @@ public abstract class BaseAuditLogAspect<ID extends Serializable, AUDIT_LOG exte
     @AfterReturning(pointcut = "@annotation(audit)", returning = "result")
     public void doAfterReturning(JoinPoint joinPoint, AuditMethod audit, Object result)
     {
-        handleLog(joinPoint, audit, null, result);
+        doLog(joinPoint, audit, null, result);
     }
 
     @AfterThrowing(value = "@annotation(audit)", throwing = "err")
     public void doAfterThrowing(JoinPoint joinPoint, AuditMethod audit, Exception err)
     {
-        handleLog(joinPoint, audit, err, null);
+        doLog(joinPoint, audit, err, null);
     }
 
-    protected void handleLog(
+    protected void doLog(
             JoinPoint joinPoint,
             @NotNull AuditMethod audit,
             @Nullable Exception err,
@@ -94,7 +94,7 @@ public abstract class BaseAuditLogAspect<ID extends Serializable, AUDIT_LOG exte
             save(auditLog);
         }
         catch (Exception exp) {
-            log.error("error occur:{}", exp.getMessage());
+            log.error("error occur: {}", exp.getMessage());
         }
         finally {
             METHOD_COST_TIME.remove();

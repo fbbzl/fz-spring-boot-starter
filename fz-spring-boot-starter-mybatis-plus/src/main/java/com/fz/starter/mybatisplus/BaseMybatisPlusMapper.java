@@ -8,7 +8,7 @@ import cn.hutool.db.PageResult;
 import cn.hutool.db.sql.Direction;
 import cn.hutool.db.sql.Order;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
-import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
+import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.core.metadata.OrderItem;
@@ -18,7 +18,6 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.PageDTO;
 import com.fz.starter.dal.BaseDal;
 import com.fz.starter.dal.Range;
 import com.fz.starter.pojo.entity.BaseTableEntity;
-import org.apache.ibatis.executor.BatchResult;
 import org.fz.erwin.exception.Throws;
 import org.springframework.lang.Nullable;
 import org.springframework.transaction.annotation.Transactional;
@@ -57,10 +56,9 @@ public interface BaseMybatisPlusMapper<ENTITY extends BaseTableEntity<ID>, ID ex
 
     @Transactional
     @Override
-    default int create(@Nullable Iterable<ENTITY> entities)
+    default void create(@Nullable Iterable<ENTITY> entities)
     {
-        List<BatchResult> inserts = this.insert(IterUtil.toList(entities), DEFAULT_BATCH_SIZE);
-        return effectRows(inserts);
+        this.insert(IterUtil.toList(entities), DEFAULT_BATCH_SIZE);
     }
 
     @Override
@@ -86,9 +84,9 @@ public interface BaseMybatisPlusMapper<ENTITY extends BaseTableEntity<ID>, ID ex
 
     @Transactional
     @Override
-    default int update(@Nullable Iterable<ENTITY> entities)
+    default void update(@Nullable Iterable<ENTITY> entities)
     {
-        return effectRows(this.updateById(IterUtil.toList(entities), DEFAULT_BATCH_SIZE));
+        this.updateById(IterUtil.toList(entities), DEFAULT_BATCH_SIZE);
     }
 
     @Nullable
@@ -140,7 +138,7 @@ public interface BaseMybatisPlusMapper<ENTITY extends BaseTableEntity<ID>, ID ex
     @Override
     default boolean exists(@Nullable ID id)
     {
-        return this.selectCount(new LambdaUpdateWrapper<ENTITY>().eq(BaseTableEntity::getId, id)) > 0;
+        return this.selectCount(new QueryWrapper<ENTITY>().eq(BaseMybatisPlusEntity.Fields.id, id)) > 0;
     }
 
     @Transactional
@@ -149,7 +147,7 @@ public interface BaseMybatisPlusMapper<ENTITY extends BaseTableEntity<ID>, ID ex
     {
         if (ArrayUtil.isEmpty(ids)) return;
 
-        this.selectList(new LambdaUpdateWrapper<ENTITY>().in(BaseTableEntity::getId, ids).last(FOR_UPDATE));
+        this.selectList(new UpdateWrapper<ENTITY>().in(BaseMybatisPlusEntity.Fields.id, ids).last(FOR_UPDATE));
     }
 
     @Transactional
@@ -166,9 +164,9 @@ public interface BaseMybatisPlusMapper<ENTITY extends BaseTableEntity<ID>, ID ex
     {
         if (ArrayUtil.isEmpty(ids)) return;
 
-        this.update(new LambdaUpdateWrapper<ENTITY>()
+        this.update(new UpdateWrapper<ENTITY>()
                             .setSql(columnName + " = " + columnName + " + " + delta)
-                            .in(BaseTableEntity::getId, ids));
+                            .in(BaseMybatisPlusEntity.Fields.id, ids));
     }
 
     @Override
@@ -176,9 +174,9 @@ public interface BaseMybatisPlusMapper<ENTITY extends BaseTableEntity<ID>, ID ex
     {
         if (ArrayUtil.isEmpty(ids)) return;
 
-        this.update(new LambdaUpdateWrapper<ENTITY>()
+        this.update(new UpdateWrapper<ENTITY>()
                             .setSql(columnName + " = " + columnName + " - " + delta)
-                            .in(BaseTableEntity::getId, ids));
+                            .in(BaseMybatisPlusEntity.Fields.id, ids));
     }
 
     @Override
@@ -196,13 +194,6 @@ public interface BaseMybatisPlusMapper<ENTITY extends BaseTableEntity<ID>, ID ex
             pageNumber++;
             page.setPageNumber(pageNumber);
         } while (pageResult.size() == batchSize);
-    }
-
-    default int effectRows(List<BatchResult> batchResults)
-    {
-        return batchResults.stream()
-                           .mapToInt(result -> Arrays.stream(result.getUpdateCounts()).sum())
-                           .sum();
     }
 
     default int toMybatisPlusPageNumber(Page page)

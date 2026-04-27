@@ -121,35 +121,6 @@ public abstract class BaseService<
         else              return mapper.entityToBo(dal.byIds(ids)).stream().collect(toMap(BaseBo::getId, identity()));
     }
 
-    public List<Tree<ID>> tree(
-            @NotNull(message = "root-id can not be null when doing tree-query")
-            ID rootId,
-            @Validated(CRUD.R.class)
-            DTO dto,
-            @Positive(message = "limit must be positive")
-            Integer limit,
-            @Size(max = 1024, message = "the number of order cannot exceed 1024")
-            Order... orders)
-    {
-        if (Treeable.class.isAssignableFrom(boClass))
-        {
-            List<BO> list = this.list(dto, limit, orders);
-            operateTemplate.execute(list);
-            return TreeUtil.build(list, rootId, DEFAULT_CONFIG, (bo, tree) ->
-            {
-                tree.setId(bo.getId());
-
-                @SuppressWarnings("unchecked")
-                Treeable<ID> treeNodeBo = (Treeable<ID>) bo;
-                tree.setParentId(treeNodeBo.getParentId());
-
-                tree.putExtra("data", bo);
-            });
-        }
-
-        return emptyList();
-    }
-
     public List<BO> list(
             @Validated(CRUD.R.class)
             DTO dto,
@@ -196,6 +167,63 @@ public abstract class BaseService<
         else                    return mappingPage(dal.page(page, mapper.dtoToEntity(dto)), mapper::entityToBo);
     }
 
+    public List<Tree<ID>> tree(
+            @NotNull(message = "root-id can not be null when doing tree-query")
+            ID rootId,
+            @Validated(CRUD.R.class)
+            DTO dto,
+            @Positive(message = "limit must be positive")
+            Integer limit,
+            @Size(max = 1024, message = "the number of order cannot exceed 1024")
+            Order... orders)
+    {
+        return self.tree(rootId, dto, limit, orders, new Range[]{});
+    }
+
+    public List<Tree<ID>> tree(
+            @NotNull(message = "root-id can not be null when doing tree-query")
+            ID rootId,
+            @Validated(CRUD.R.class)
+            DTO dto,
+            @Positive(message = "limit must be positive")
+            Integer limit,
+            @Size(max = 1024, message = "the number of ranges cannot exceed 1024")
+            Range... ranges)
+    {
+        return self.tree(rootId, dto, limit, new Order[]{}, ranges);
+    }
+
+    public List<Tree<ID>> tree(
+            @NotNull(message = "root-id can not be null when doing tree-query")
+            ID rootId,
+            @Validated(CRUD.R.class)
+            DTO dto,
+            @Positive(message = "limit must be positive")
+            Integer limit,
+            @Size(max = 1024, message = "the number of order cannot exceed 1024")
+            Order[] orders,
+            @Size(max = 1024, message = "the number of ranges cannot exceed 1024")
+            Range... ranges)
+    {
+        if (Treeable.class.isAssignableFrom(boClass))
+        {
+            List<BO> list = this.list(dto, limit, orders, ranges);
+            operateTemplate.execute(list);
+            return TreeUtil.build(list, rootId, DEFAULT_CONFIG, (bo, tree) ->
+            {
+                tree.setId(bo.getId());
+
+                @SuppressWarnings("unchecked")
+                Treeable<ID> treeNodeBo = (Treeable<ID>) bo;
+                tree.setParentId(treeNodeBo.getParentId());
+
+                tree.putExtra("data", bo);
+            });
+        }
+
+        return emptyList();
+    }
+
     public boolean exists(
             @NotNull(message = "id can not be null when doing id-exist-query")
             @Validated(CRUD.R.class)
@@ -224,13 +252,13 @@ public abstract class BaseService<
         else             return mapper.boToEo(this.list(dto, limit, orders));
     }
 
-    public int importExcel(
+    public void importExcel(
             @Size(max = 1024, message = "the number of collection cannot exceed 1024")
             Collection<EO> eos)
     {
-        if (isEmpty(eos)) return 0;
+        if (isEmpty(eos)) return;
         Validators.validateAndThrow(eos, CRUD.C.class);
-        return dal.create(mapper.eoToEntity(eos));
+        dal.create(mapper.eoToEntity(eos));
     }
 
     @Nullable
@@ -242,13 +270,13 @@ public abstract class BaseService<
         else             return mapper.entityToBo(dal.create(mapper.dtoToEntity(dto)));
     }
 
-    public int create(
+    public void create(
             @Size(max = 1024, message = "the number of collection cannot exceed 1024")
             Collection<DTO> dtos)
     {
-        if (isEmpty(dtos)) return 0;
+        if (isEmpty(dtos)) return;
         Validators.validateAndThrow(dtos, CRUD.C.class);
-        return dal.create(mapper.dtoToEntity(dtos));
+        dal.create(mapper.dtoToEntity(dtos));
     }
 
     public int update(
@@ -259,13 +287,13 @@ public abstract class BaseService<
         else             return dal.update(mapper.dtoToEntity(dto));
     }
 
-    public int update(
+    public void update(
             @Size(max = 1024, message = "the number of collection cannot exceed 1024")
             Collection<DTO> dtos)
     {
-        if (isEmpty(dtos)) return 0;
+        if (isEmpty(dtos)) return;
         Validators.validateAndThrow(dtos, CRUD.U.class);
-        return dal.update(mapper.dtoToEntity(dtos));
+        dal.update(mapper.dtoToEntity(dtos));
     }
 
     public void delete(
