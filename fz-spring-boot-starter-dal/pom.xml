@@ -10,7 +10,6 @@
     </parent>
 
     <artifactId>fz-spring-boot-starter-dal</artifactId>
-
     <name>${project.artifactId}</name>
 
     <dependencies>

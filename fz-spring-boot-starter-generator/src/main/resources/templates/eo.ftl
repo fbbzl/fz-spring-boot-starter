@@ -1,7 +1,7 @@
 package ${moduleName}.service.eo;
 
 import com.alibaba.excel.annotation.ExcelProperty;
-import com.fz.starter.excel.BaseEo;
+import io.github.fbbzl.starter.excel.BaseEo;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.experimental.FieldDefaults;

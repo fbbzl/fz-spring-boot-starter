@@ -8,7 +8,7 @@ import ${moduleName}.dal.${dalClass};
 
 import ${moduleName}.struct.${className}StructMapper;
 
-import com.fz.starter.web.BaseService;
+import io.github.fbbzl.starter.web.BaseService;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
 import lombok.RequiredArgsConstructor;

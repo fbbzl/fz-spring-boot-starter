@@ -6,7 +6,7 @@ import lombok.AccessLevel;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.experimental.FieldDefaults;
-import com.fz.starter.pojo.dto.BaseDto;
+import io.github.fbbzl.starter.pojo.dto.BaseDto;
 import org.springframework.lang.Nullable;
 import lombok.experimental.FieldNameConstants;
 

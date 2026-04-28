@@ -1,8 +1,8 @@
 package ${moduleName}.dal.entity;
 
 import com.baomidou.mybatisplus.annotation.*;
-import com.fz.starter.mybatisplus.BaseMybatisPlusEntity;
-import com.fz.starter.pojo.validation.group.CRUD;
+import io.github.fbbzl.starter.mybatisplus.BaseMybatisPlusEntity;
+import io.github.fbbzl.starter.pojo.validation.group.CRUD;
 import lombok.*;
 import jakarta.validation.constraints.*;
 import lombok.experimental.FieldDefaults;

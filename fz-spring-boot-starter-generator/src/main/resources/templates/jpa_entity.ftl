@@ -1,11 +1,11 @@
 package ${moduleName}.dal.entity;
 
-import com.fz.starter.jpa.BaseJpaEntity;
+import io.github.fbbzl.starter.jpa.BaseJpaEntity;
 
 import jakarta.persistence.*;
 import jakarta.validation.constraints.*;
 import org.hibernate.annotations.Comment;
-import com.fz.starter.pojo.validation.group.CRUD;
+import io.github.fbbzl.starter.pojo.validation.group.CRUD;
 import lombok.*;
 import lombok.experimental.*;
 import org.hibernate.proxy.HibernateProxy;

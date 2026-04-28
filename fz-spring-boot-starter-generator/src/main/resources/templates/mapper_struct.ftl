@@ -5,7 +5,7 @@ import ${moduleName}.controller.dto.${className}Dto;
 import ${moduleName}.service.bo.${className}Bo;
 import ${moduleName}.service.eo.${className}Eo;
 
-import com.fz.starter.pojo.mapstruct.BaseStructMapper;
+import io.github.fbbzl.starter.pojo.mapstruct.BaseStructMapper;
 
 import org.mapstruct.Mapper;
 import org.mapstruct.MappingConstants.ComponentModel;

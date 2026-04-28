@@ -5,9 +5,9 @@ import ${moduleName}.controller.dto.${className}Dto;
 import ${moduleName}.service.bo.${className}Bo;
 import ${moduleName}.service.eo.${className}Eo;
 
-import com.fz.starter.web.BaseController;
-import com.fz.starter.web.annotation.RestRequestController;
-import com.fz.starter.audit.frame.annotation.AuditModule;
+import io.github.fbbzl.starter.web.BaseController;
+import io.github.fbbzl.starter.web.annotation.RestRequestController;
+import io.github.fbbzl.starter.audit.frame.annotation.AuditModule;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.extern.slf4j.Slf4j;
 import lombok.experimental.FieldDefaults;

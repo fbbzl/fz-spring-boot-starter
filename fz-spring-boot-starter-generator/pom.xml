@@ -10,8 +10,6 @@
     </parent>
 
     <artifactId>fz-spring-boot-starter-generator</artifactId>
-    <description>fz code generator</description>
-
     <name>${project.artifactId}</name>
 
     <dependencies>

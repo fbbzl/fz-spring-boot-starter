@@ -4,7 +4,7 @@ import io.swagger.v3.oas.annotations.media.*;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.experimental.FieldDefaults;
-import com.fz.starter.pojo.bo.BaseBo;
+import io.github.fbbzl.starter.pojo.bo.BaseBo;
 import lombok.experimental.FieldNameConstants;
 
 import static lombok.AccessLevel.PRIVATE;
