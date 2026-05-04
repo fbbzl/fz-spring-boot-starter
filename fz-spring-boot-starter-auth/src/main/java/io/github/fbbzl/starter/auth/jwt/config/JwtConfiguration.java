@@ -1,9 +1,9 @@
-package io.github.fbbzl.starter.jwt.config;
+package io.github.fbbzl.starter.auth.jwt.config;
 
-import io.github.fbbzl.starter.jwt.JwtFactory;
+import io.github.fbbzl.starter.auth.jwt.JwtFactory;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnWebApplication;
-import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 
 /**
@@ -14,9 +14,15 @@ import org.springframework.context.annotation.Bean;
 
 @AutoConfiguration
 @ConditionalOnWebApplication
-@EnableConfigurationProperties(JwtProperties.class)
 public class JwtConfiguration
 {
+
+    @Bean
+    @ConditionalOnMissingBean(JwtProperties.class)
+    public JwtProperties jwtProperties()
+    {
+        return new JwtProperties();
+    }
 
     @Bean
     public JwtFactory jwtFactory(JwtProperties jwtProperties)

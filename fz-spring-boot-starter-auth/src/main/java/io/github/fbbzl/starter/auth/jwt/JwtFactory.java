@@ -1,4 +1,4 @@
-package io.github.fbbzl.starter.jwt;
+package io.github.fbbzl.starter.auth.jwt;
 
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.convert.Convert;
@@ -7,7 +7,7 @@ import cn.hutool.jwt.JWT;
 import cn.hutool.jwt.JWTUtil;
 import cn.hutool.jwt.signers.JWTSigner;
 import cn.hutool.jwt.signers.JWTSignerUtil;
-import io.github.fbbzl.starter.jwt.config.JwtProperties;
+import io.github.fbbzl.starter.auth.jwt.config.JwtProperties;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.constraints.NotNull;
 import lombok.AccessLevel;
@@ -34,7 +34,7 @@ public class JwtFactory
 {
 
     JwtProperties props;
-    JWTSigner         signer;
+    JWTSigner     signer;
     static JwtFactory self;
 
     {
@@ -54,12 +54,12 @@ public class JwtFactory
 
     public static JWT create(@NotNull Object bean)
     {
-        return create(UUID.randomUUID().toString(), bean, JWTSignerUtil.hs256(self.props.getSecret().getBytes()));
+        return create(UUID.randomUUID().toString(), bean, self.signer);
     }
 
     public static JWT create(String subject, @NotNull Object bean)
     {
-        return create(subject, bean, JWTSignerUtil.hs256(self.props.getSecret().getBytes()));
+        return create(subject, bean, self.signer);
     }
 
     public static JWT create(String subject, @NotNull Object bean, JWTSigner signer)

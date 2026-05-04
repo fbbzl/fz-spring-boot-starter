@@ -16,7 +16,7 @@ import static io.github.fbbzl.starter.generator.config.properties.GeneratorConfi
  * @since 2026/2/12 13:38
  */
 @Data
-@FieldDefaults(level = AccessLevel.PRIVATE)
+@FieldDefaults(level = AccessLevel.PROTECTED)
 @ConfigurationProperties(prefix = "code.generator")
 public class GeneratorConfigProperties
 {

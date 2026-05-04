@@ -1,17 +1,23 @@
 package io.github.redisson.config;
 
 
+import io.github.redisson.RObjectInjectPostProcessor;
 import io.github.redisson.RedissonPoolProperties;
+import io.github.redisson.limiter.aspect.RedissonRateLimitAspect;
+import lombok.extern.slf4j.Slf4j;
 import org.redisson.Redisson;
 import org.redisson.api.RedissonClient;
 import org.redisson.config.Config;
 import org.redisson.config.ConstantDelay;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
+import org.springframework.boot.autoconfigure.AutoConfiguration;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnWebApplication;
 import org.springframework.boot.autoconfigure.data.redis.RedisProperties;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Primary;
+import org.springframework.lang.NonNull;
 
 import java.time.Duration;
 
@@ -24,14 +30,18 @@ import static cn.hutool.core.text.CharSequenceUtil.isNotBlank;
  * @version 1.0
  * @since 2026/4/22 10:20
  */
-@Configuration
-@ConditionalOnClass({RedisProperties.class, RedissonPoolProperties.class})
+@Slf4j
+@AutoConfiguration
 @EnableConfigurationProperties(RedissonPoolProperties.class)
+@ConditionalOnBean({RedisProperties.class,
+                    RedissonPoolProperties.class})
 public class RedissonConfiguration
 {
+
+    @Primary
     @Bean(destroyMethod = "shutdown")
     @ConditionalOnMissingBean(RedissonClient.class)
-    public RedissonClient redissonClient(RedisProperties redisProperties, RedissonPoolProperties poolProperties)
+    public RedissonClient redissonClient(@NonNull RedisProperties redisProperties, @NonNull RedissonPoolProperties poolProperties)
     {
         Config config = new Config()
                 .setTcpKeepAlive(poolProperties.getKeepAlive());
@@ -54,6 +64,19 @@ public class RedissonConfiguration
               .setPingConnectionInterval(poolProperties.getPingConnectionInterval());
 
         return Redisson.create(config);
+    }
+
+    @Bean
+    @ConditionalOnWebApplication
+    @ConditionalOnBean(RedissonClient.class)
+    public RedissonRateLimitAspect redissonRateLimitAspect(RedissonClient redissonClient)
+    {
+        return new RedissonRateLimitAspect(redissonClient);
+    }
+    @Bean
+    public RObjectInjectPostProcessor rObjectInjectPostProcessor(RedissonClient redissonClient)
+    {
+        return new RObjectInjectPostProcessor(redissonClient);
     }
 
     private String buildAddress(RedisProperties redisProperties)

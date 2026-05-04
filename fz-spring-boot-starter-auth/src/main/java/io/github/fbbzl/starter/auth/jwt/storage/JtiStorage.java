@@ -1,9 +1,8 @@
-package io.github.fbbzl.starter.jwt.storage;
+package io.github.fbbzl.starter.auth.jwt.storage;
 
 
 import cn.hutool.jwt.JWT;
-
-import io.github.fbbzl.starter.jwt.config.JwtProperties;
+import io.github.fbbzl.starter.auth.jwt.config.JwtProperties;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.AccessLevel;
 import lombok.experimental.FieldDefaults;
@@ -12,8 +11,9 @@ import org.springframework.lang.Nullable;
 
 import static cn.hutool.core.text.CharSequenceUtil.isBlank;
 import static cn.hutool.core.text.CharSequenceUtil.isNotBlank;
-import static io.github.fbbzl.starter.jwt.JwtFactory.jti;
-import static io.github.fbbzl.starter.jwt.JwtFactory.jwt;
+import static io.github.fbbzl.starter.auth.jwt.JwtFactory.jti;
+import static io.github.fbbzl.starter.auth.jwt.JwtFactory.jwt;
+
 
 /**
  *
@@ -25,7 +25,7 @@ import static io.github.fbbzl.starter.jwt.JwtFactory.jwt;
 public abstract class JtiStorage
 {
     @Value("#{jwtProperties.jti}")
-    JwtProperties.JtiStorageProperties jtiProps;
+    JwtProperties.JtiStorageProperties jtiStorageProps;
 
     @Nullable
     public final JWT check(HttpServletRequest request)
