@@ -31,6 +31,10 @@ build/
 
 ### VS Code ###
 .vscode/
+
+### Local tools ###
+.xcodemap/
+
 /generated-sources/
 /*/.flattened-pom.xml
 /.flattened-pom.xml

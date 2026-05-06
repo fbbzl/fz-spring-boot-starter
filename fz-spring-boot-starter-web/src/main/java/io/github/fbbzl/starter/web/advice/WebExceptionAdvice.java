@@ -15,6 +15,7 @@ import org.springframework.core.annotation.Order;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageConversionException;
 import org.springframework.validation.BindException;
 import org.springframework.validation.FieldError;
@@ -54,13 +55,13 @@ public class WebExceptionAdvice
     /**
      * business exception
      */
-    @ResponseStatus(HttpStatus.OK)
     @ExceptionHandler(BizException.class)
-    public Object handleBizException(BizException exception)
+    public ResponseEntity<R<Void>> handleBizException(BizException exception)
     {
         String bizExceptionMessage = getRootCauseMessage(exception);
+        int    httpStatusCode      = exception.getVerb().getHttpStatusCode();
         log.error("business exception occurred: {}", defaultIfBlank(bizExceptionMessage, "business exception"));
-        return R.fail(exception.getVerb().getBisCode(), bizExceptionMessage);
+        return ResponseEntity.status(httpStatusCode).body(R.fail(String.valueOf(httpStatusCode), bizExceptionMessage, null));
     }
 
     /**

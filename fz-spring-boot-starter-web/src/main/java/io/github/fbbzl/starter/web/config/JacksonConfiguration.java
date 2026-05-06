@@ -9,7 +9,9 @@ import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.fasterxml.jackson.datatype.jsr310.deser.LocalDateTimeDeserializer;
 import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateTimeSerializer;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnWebApplication;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Primary;
 import org.springframework.http.converter.json.Jackson2ObjectMapperBuilder;
 
 import java.text.SimpleDateFormat;
@@ -26,10 +28,12 @@ import static cn.hutool.core.date.DatePattern.NORM_DATETIME_PATTERN;
  */
 
 @AutoConfiguration
+@ConditionalOnWebApplication
 public class JacksonConfiguration
 {
 
     @Bean
+    @Primary
     public Jackson2ObjectMapperBuilder jackson2ObjectMapperBuilder()
     {
         return Jackson2ObjectMapperBuilder.json()

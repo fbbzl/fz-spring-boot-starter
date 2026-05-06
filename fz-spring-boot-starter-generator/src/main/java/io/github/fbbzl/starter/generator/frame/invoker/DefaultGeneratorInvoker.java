@@ -39,7 +39,8 @@ import java.util.Map;
 
 import static cn.hutool.core.collection.CollUtil.isEmpty;
 import static cn.hutool.core.date.DatePattern.NORM_DATETIME_FORMATTER;
-import static cn.hutool.core.text.CharSequenceUtil.*;
+import static cn.hutool.core.text.CharSequenceUtil.removePrefix;
+import static cn.hutool.core.text.CharSequenceUtil.upperFirst;
 import static java.lang.Boolean.TRUE;
 
 /**
@@ -84,7 +85,7 @@ public class DefaultGeneratorInvoker implements GeneratorInvoker, CommandLineRun
         for (String tableName : tableNames) {
             try {
                 Table table = ddlContext.getTableContext(tableName.trim());
-                Throws.ifNull(table, () -> format("table [{}] not exist", tableName));
+                Throws.ifNull(table, "table [{}] not exist", tableName);
 
                 Map<String, Object> ftlContext = this.tableContextToFtlContext(table);
                 for (BaseGenerator generator : generators) {

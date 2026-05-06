@@ -3,6 +3,7 @@ package io.github.fbbzl.starter.auth.jwt;
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.convert.Convert;
 import cn.hutool.core.lang.UUID;
+import cn.hutool.json.JSONObject;
 import cn.hutool.jwt.JWT;
 import cn.hutool.jwt.JWTUtil;
 import cn.hutool.jwt.signers.JWTSigner;
@@ -68,7 +69,7 @@ public class JwtFactory
         Duration expires = self.props.getExpires();
         return JWT.create()
                   .setPayload(ISSUED_AT, now.toEpochMilli())
-                  .setPayload(EXPIRES_AT, now.plus(expires))
+                  .setPayload(EXPIRES_AT, now.plus(expires).toEpochMilli())
                   .addPayloads(BeanUtil.beanToMap(bean))
                   .setIssuer(self.props.getIssuer())
                   .setSubject(subject)
@@ -80,7 +81,7 @@ public class JwtFactory
     public static JWT jwt(HttpServletRequest request)
     {
         String token = request.getHeader(self.props.getHeader());
-        Throws.ifBlank(token, () -> "token can not be null or blank");
+        Throws.ifBlank(token, "token can not be null or blank");
 
         token = token.substring(self.props.getPrefix().length()).trim();
 
@@ -134,16 +135,17 @@ public class JwtFactory
     public static <BEAN> BEAN payloadsBean(HttpServletRequest request, Class<BEAN> beanType)
     {
         if (hasNull(request, beanType)) return null;
-
-        return BeanUtil.toBean(jwt(request), beanType);
+        return payloadsBean(jwt(request), beanType);
     }
 
     @Nullable
     public static <BEAN> BEAN payloadsBean(JWT jwt, Class<BEAN> beanType)
     {
         if (hasNull(jwt, beanType)) return null;
+        JSONObject payloads = jwt.getPayloads();
+        if (payloads == null) return null;
 
-        return BeanUtil.toBean(jwt.getPayloads(), beanType);
+        return BeanUtil.toBean(payloads, beanType);
     }
 
 }

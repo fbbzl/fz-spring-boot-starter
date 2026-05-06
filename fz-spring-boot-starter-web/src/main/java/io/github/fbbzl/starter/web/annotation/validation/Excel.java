@@ -48,10 +48,10 @@ public @interface Excel
         public boolean isValid(@NotNull MultipartFile file, ConstraintValidatorContext context)
         {
             try {
-                Throws.ifNull(file, () -> "Uploaded file is null");
-                Throws.ifTrue(file.isEmpty(), () -> "Uploaded file is empty, 0 bytes");
+                Throws.ifNull(file, "Uploaded file is null");
+                Throws.ifTrue(file.isEmpty(), "Uploaded file is empty, 0 bytes");
                 Throws.ifFalse(endWithAnyIgnoreCase(file.getOriginalFilename(), excelExtensions),
-                               () -> "Only Excel files in " + Arrays.toString(excelExtensions) + " format are supported");
+                               "Only Excel files in {} format are supported", Arrays.toString(excelExtensions));
             }
             catch (IllegalArgumentException illegalArg) {
                 this.resetConstraintViolationWithTemplate(context, illegalArg.getMessage());

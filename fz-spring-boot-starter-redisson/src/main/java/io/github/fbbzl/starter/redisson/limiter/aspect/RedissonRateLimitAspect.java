@@ -1,7 +1,7 @@
-package io.github.redisson.limiter.aspect;
+package io.github.fbbzl.starter.redisson.limiter.aspect;
 
 import cn.hutool.extra.servlet.JakartaServletUtil;
-import io.github.redisson.annotation.RateLimit;
+import io.github.fbbzl.starter.redisson.annotation.RateLimit;
 import jakarta.servlet.UnavailableException;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.AccessLevel;
@@ -33,7 +33,6 @@ import static java.time.temporal.ChronoUnit.MILLIS;
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class RedissonRateLimitAspect
 {
-
     @Autowired
     HttpServletRequest request;
     final RedissonClient redissonClient;

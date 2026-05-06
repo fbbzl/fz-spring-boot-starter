@@ -1,4 +1,4 @@
-package io.github.redisson.annotation;
+package io.github.fbbzl.starter.redisson.annotation;
 
 import org.redisson.api.RateType;
 

@@ -65,7 +65,7 @@ public class MysqlContextLoader
         if (dataSource == null) throw new DbRuntimeException("datasource is null, please check");
 
         try (Connection conn = dataSource.getConnection()) {
-            Throws.ifFalse(conn.isValid(3), () -> "the database connection is invalid");
+            Throws.ifFalse(conn.isValid(3), "the database connection is invalid");
         }
         catch (Exception e) {
             throw new DbRuntimeException("database connection failed：" + e.getMessage(), e);
@@ -75,7 +75,7 @@ public class MysqlContextLoader
 
         if (tables.isEmpty()) return null;
 
-        Map<String, Object> table = tables.iterator().next();
+        Map<String, Object> table = tables.getFirst();
 
         String tableComment = MapUtil.getStr(table, "table_comment");
 

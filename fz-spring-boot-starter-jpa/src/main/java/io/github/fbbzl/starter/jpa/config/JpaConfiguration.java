@@ -52,7 +52,7 @@ public class JpaConfiguration
             BeanFactory beanFactory)
     {
         List<String> basePackages = AutoConfigurationPackages.get(beanFactory);
-        Throws.ifEmpty(basePackages, () -> "Unable to determine the JPA entity scanning base package! Make sure that the main class is labeled @SpringBootApplication");
+        Throws.ifEmpty(basePackages, "Unable to determine the JPA entity scanning base package! Make sure that the main class is labeled @SpringBootApplication");
         log.info("jpa starter scans packages -> {}", basePackages);
 
         return builder

@@ -4,6 +4,7 @@ package io.github.fbbzl.starter.web;
 import cn.hutool.core.util.ArrayUtil;
 import cn.hutool.db.Page;
 import cn.hutool.db.sql.Order;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import io.github.fbbzl.starter.dal.Range;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.Valid;
@@ -45,6 +46,10 @@ public class Q<DATA>
      */
     @Schema(description = "request timestamp")
     long timestamp = System.currentTimeMillis();
+
+    @Size(max = 64)
+    @Schema(description = "request identifier")
+    String requestId;
 
     public static <DATA> Q<DATA> of(DATA data)
     {
@@ -187,13 +192,14 @@ public class Q<DATA>
     @FieldDefaults(level = PRIVATE)
     @Schema(description = "generic the file upload request objects")
     @EqualsAndHashCode(callSuper = false)
-    public static class FQ<DATA> extends Q<DATA>
+    public static class FQ
     {
 
         @Size(max = 128, message = "{FQ.files.size}")
         @Schema(description = "uploaded files")
         MultipartFile[] files;
 
+        @JsonIgnoreProperties
         public MultipartFile getSingleFile()
         {
             return ArrayUtil.get(files, 0);

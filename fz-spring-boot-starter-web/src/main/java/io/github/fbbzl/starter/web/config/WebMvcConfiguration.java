@@ -5,6 +5,7 @@ import io.github.fbbzl.starter.web.advice.WebRequestAdvice;
 import io.github.fbbzl.starter.web.advice.WebResponseOperateAdvice;
 import io.github.fbbzl.starter.web.advice.WebResponseWrapAdvice;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnWebApplication;
 import org.springframework.context.annotation.Import;
 
 /**
@@ -19,4 +20,8 @@ import org.springframework.context.annotation.Import;
         WebResponseWrapAdvice.class
 })
 @AutoConfiguration
-public class WebMvcConfiguration {}
+@ConditionalOnWebApplication
+public class WebMvcConfiguration
+{
+
+}

@@ -4,6 +4,7 @@ import ${moduleName}.dal.entity.${className};
 import ${moduleName}.controller.dto.${className}Dto;
 import ${moduleName}.service.bo.${className}Bo;
 import ${moduleName}.service.eo.${className}Eo;
+import ${moduleName}.service.${className}Service;
 
 import io.github.fbbzl.starter.web.BaseController;
 import io.github.fbbzl.starter.web.annotation.RestRequestController;
@@ -31,4 +32,4 @@ import static lombok.AccessLevel.PRIVATE;
 @RestRequestController(mapping = "${requestMapping}")
 @Tag(name = "${tableComment}API", description = "api for ${tableComment}")
 @FieldDefaults(level = PRIVATE, makeFinal = true)
-public class ${className}Controller extends BaseController<${primaryKeyType}, ${className}, ${className}Dto, ${className}Bo, ${className}Eo> {}
+public class ${className}Controller extends BaseController<${primaryKeyType}, ${className}, ${className}Service, ${className}Dto, ${className}Bo, ${className}Eo> {}

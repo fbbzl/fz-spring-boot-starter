@@ -15,7 +15,6 @@ import io.github.fbbzl.starter.pojo.entity.BaseTableEntity;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.LockModeType;
 import jakarta.persistence.criteria.*;
-import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
 import org.fz.erwin.exception.Throws;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Example;
@@ -79,7 +78,7 @@ public class BaseRepositoryImpl<ENTITY extends BaseTableEntity<ID>, ID extends S
     @Override
     public void delete(@Nullable ID id)
     {
-        super.deleteById(id);
+        if (id != null) super.deleteById(id);
     }
 
     @Transactional
@@ -95,8 +94,8 @@ public class BaseRepositoryImpl<ENTITY extends BaseTableEntity<ID>, ID extends S
     @Override
     public ENTITY update(@Nullable ENTITY entity)
     {
-        Throws.ifNull(entity, () -> "entity can not be null when doing update");
-        Throws.ifNull(entity.getId(), () -> "id can not be null when doing update");
+        Throws.ifNull(entity, "entity can not be null when doing update");
+        Throws.ifNull(entity.getId(), "id can not be null when doing update");
 
         this.findById(entity.getId()).ifPresent(byId -> {
             BeanUtil.copyProperties(entity, byId, CopyOptions.create().setIgnoreNullValue(true).setIgnoreError(true));
@@ -118,7 +117,8 @@ public class BaseRepositoryImpl<ENTITY extends BaseTableEntity<ID>, ID extends S
     @Override
     public ENTITY byId(@Nullable ID id)
     {
-        return this.findById(id).get();
+        if (id != null) return this.findById(id).get();
+        else return null;
     }
 
     @Override
@@ -135,9 +135,9 @@ public class BaseRepositoryImpl<ENTITY extends BaseTableEntity<ID>, ID extends S
     }
 
     @Override
-    public List<ENTITY> list(@Nullable ENTITY entity, @Nullable Integer limit, @Nullable Order[] orders, @Nullable Range @MonotonicNonNull ... ranges)
+    public List<ENTITY> list(@Nullable ENTITY entity, @Nullable Integer limit, @Nullable Order[] orders, @Nullable Range[] ranges)
     {
-        Throws.ifNull(limit, () -> "limit can not be null when doing list-query");
+        Throws.ifNull(limit, "limit can not be null when doing list-query");
         if (entity == null) return emptyList();
 
         PageRequest pageRequest = PageRequest.of(0, limit, toSort(orders));
@@ -145,9 +145,27 @@ public class BaseRepositoryImpl<ENTITY extends BaseTableEntity<ID>, ID extends S
     }
 
     @Override
+    @SuppressWarnings("unchecked")
+    public List<ID> ids(@Nullable ENTITY entity, @Nullable Integer limit)
+    {
+        Throws.ifNull(limit, "limit can not be null when doing ids-query");
+        if (entity == null) return emptyList();
+
+        CriteriaBuilder      cb   = entityManager.getCriteriaBuilder();
+        CriteriaQuery<Object> cq   = cb.createQuery();
+        Root<ENTITY>         root = cq.from(entityClass);
+        cq.select(root.get(BaseJpaEntity.Fields.id));
+
+        Predicate predicate = Specifications.byAuto(entityManager, entity).toPredicate(root, cq, cb);
+        if (predicate != null) cq.where(predicate);
+
+        return entityManager.createQuery(cq).setMaxResults(limit).getResultList().stream().map(id -> (ID) id).toList();
+    }
+
+    @Override
     public PageResult<ENTITY> page(@Nullable Page page, @Nullable ENTITY entity)
     {
-        Throws.ifNull(page, () -> "page can not be null when doing page-query");
+        Throws.ifNull(page, "page can not be null when doing page-query");
 
         PageRequest pageRequest = PageRequest.of(page.getPageNumber(), page.getPageSize(), toSort(page.getOrders()));
 
@@ -285,7 +303,7 @@ public class BaseRepositoryImpl<ENTITY extends BaseTableEntity<ID>, ID extends S
         return cq;
     }
 
-    public CriteriaQuery<ENTITY> order(Root<ENTITY> root, CriteriaQuery<ENTITY> criteriaQuery, CriteriaBuilder cb, Order... orders)
+    public <RESULT> CriteriaQuery<RESULT> order(Root<ENTITY> root, CriteriaQuery<RESULT> criteriaQuery, CriteriaBuilder cb, Order... orders)
     {
         if (ArrayUtil.isNotEmpty(orders)) {
             criteriaQuery.orderBy(Stream.of(orders)

@@ -26,7 +26,7 @@ public class MybatisPlusConfiguration
 {
 
     @Bean
-    @ConditionalOnMissingBean
+    @ConditionalOnMissingBean(BaseMetaObjectHandler.class)
     public BaseMetaObjectHandler<Long> defaultNoLogin()
     {
         return new BaseMetaObjectHandler<>()

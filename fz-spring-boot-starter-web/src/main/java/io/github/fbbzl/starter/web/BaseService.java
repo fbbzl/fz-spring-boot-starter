@@ -8,6 +8,7 @@ import cn.hutool.core.lang.tree.TreeUtil;
 import cn.hutool.db.Page;
 import cn.hutool.db.PageResult;
 import cn.hutool.db.sql.Order;
+import io.github.fbbzl.starter.core.exception.ExceptionVerb;
 import io.github.fbbzl.starter.core.util.Generics;
 import io.github.fbbzl.starter.dal.BaseDal;
 import io.github.fbbzl.starter.dal.Range;
@@ -59,32 +60,40 @@ import static java.util.stream.Collectors.toMap;
 @Validated
 @FieldDefaults(level = AccessLevel.PROTECTED)
 public abstract class BaseService<
-        ID     extends Serializable,
+        ID extends Serializable,
         ENTITY extends BaseTableEntity<ID>,
-        DTO    extends BaseDto<ID>,
-        BO     extends BaseBo<ID>,
-        EO     extends BaseEo,
-        DAL    extends BaseDal<ENTITY, ID>,
+        DTO extends BaseDto<ID>,
+        BO extends BaseBo<ID>,
+        EO extends BaseEo,
+        DAL extends BaseDal<ENTITY, ID>,
         STRUCT_MAPPER extends BaseStructMapper<ENTITY, DTO, BO, EO>> implements BeanNameAware, Container<ID>
 {
-
     Class<ENTITY> entityClass = Generics.getGenericSuperType(this.getClass(), BaseService.class, 1);
     Class<ENTITY> dtoClass    = Generics.getGenericSuperType(this.getClass(), BaseService.class, 2);
     Class<ENTITY> boClass     = Generics.getGenericSuperType(this.getClass(), BaseService.class, 3);
     Class<ENTITY> eoClass     = Generics.getGenericSuperType(this.getClass(), BaseService.class, 4);
 
-    @Autowired DAL             dal;
-    @Autowired STRUCT_MAPPER   mapper;
-    @Setter    String          beanName;
-    @Autowired OperateTemplate operateTemplate;
+    @Autowired
+    DAL             dal;
+    @Autowired
+    STRUCT_MAPPER   struct;
+    @Setter
+    String          beanName;
+    @Autowired
+    OperateTemplate operateTemplate;
 
     @Autowired
-    @Lazy BaseService<ID, ENTITY, DTO, BO, EO, DAL, STRUCT_MAPPER> self;
+    @Lazy
+    BaseService<ID, ENTITY, DTO, BO, EO, DAL, STRUCT_MAPPER> self;
+
+    public STRUCT_MAPPER struct() {
+        return struct;
+    }
 
     @Override
     public String getNamespace()
     {
-        Throws.ifBlank(beanName, () -> "beanName can not be blank");
+        Throws.ifBlank(beanName, "beanName can not be blank");
         // bean name as namespace
         return beanName;
     }
@@ -101,8 +110,8 @@ public abstract class BaseService<
             ID id)
     {
         ENTITY entity = dal.byId(id);
-        if (entity != null) return mapper.entityToBo(entity);
-        else                return null;
+        if (entity != null) return struct.entityToBo(entity);
+        else                throw ExceptionVerb.RESOURCE_NOT_FOUND.on(entityClass, id).get();
     }
 
     public List<BO> byIds(
@@ -110,7 +119,7 @@ public abstract class BaseService<
             Set<ID> ids)
     {
         if (isEmpty(ids)) return emptyList();
-        else              return mapper.entityToBo(dal.byIds(ids));
+        else return struct.entityToBo(dal.byIds(ids));
     }
 
     public Map<ID, BO> map(
@@ -118,7 +127,23 @@ public abstract class BaseService<
             Set<ID> ids)
     {
         if (isEmpty(ids)) return emptyMap();
-        else              return mapper.entityToBo(dal.byIds(ids)).stream().collect(toMap(BaseBo::getId, identity()));
+        else return struct.entityToBo(dal.byIds(ids)).stream().collect(toMap(BaseBo::getId, identity()));
+    }
+
+    public List<BO> list(
+            @Validated(CRUD.R.class)
+            DTO dto)
+    {
+        return self.list(dto, Integer.MAX_VALUE, null, null);
+    }
+
+    public List<BO> list(
+            @Validated(CRUD.R.class)
+            DTO dto,
+            @Positive(message = "limit must be positive")
+            Integer limit)
+    {
+        return self.list(dto, limit, null, null);
     }
 
     public List<BO> list(
@@ -127,9 +152,9 @@ public abstract class BaseService<
             @Positive(message = "limit must be positive")
             Integer limit,
             @Size(max = 1024, message = "the number of order cannot exceed 1024")
-            Order... orders)
+            Order[] orders)
     {
-        return self.list(dto, limit, orders, new Range[]{});
+        return self.list(dto, limit, orders, null);
     }
 
     public List<BO> list(
@@ -138,9 +163,27 @@ public abstract class BaseService<
             @Positive(message = "limit must be positive")
             Integer limit,
             @Size(max = 1024, message = "the number of ranges cannot exceed 1024")
-            Range... ranges)
+            Range[] ranges)
     {
-        return self.list(dto, limit, new Order[]{}, ranges);
+        return self.list(dto, limit, null, ranges);
+    }
+
+    public List<BO> list(
+            @Validated(CRUD.R.class)
+            DTO dto,
+            @Size(max = 1024, message = "the number of ranges cannot exceed 1024")
+            Range[] ranges)
+    {
+        return self.list(dto, Integer.MAX_VALUE, null, ranges);
+    }
+
+    public List<BO> list(
+            @Validated(CRUD.R.class)
+            DTO dto,
+            @Size(max = 1024, message = "the number of order cannot exceed 1024")
+            Order[] orders)
+    {
+        return self.list(dto, Integer.MAX_VALUE, orders, null);
     }
 
     public List<BO> list(
@@ -151,10 +194,28 @@ public abstract class BaseService<
             @Size(max = 1024, message = "the number of order cannot exceed 1024")
             Order[] orders,
             @Size(max = 1024, message = "the number of ranges cannot exceed 1024")
-            Range... ranges)
+            Range[] ranges)
     {
         if (dto == null) return emptyList();
-        else             return mapper.entityToBo(dal.list(mapper.dtoToEntity(dto), limit, orders, ranges));
+        else return struct.entityToBo(dal.list(struct.dtoToEntity(dto), limit, orders, ranges));
+    }
+
+    public List<ID> ids(
+            @Validated(CRUD.R.class)
+            DTO dto)
+    {
+        if (dto == null) return emptyList();
+        else return dal.ids(struct.dtoToEntity(dto), Integer.MAX_VALUE);
+    }
+
+    public List<ID> ids(
+            @Validated(CRUD.R.class)
+            DTO dto,
+            @Positive(message = "limit must be positive")
+            Integer limit)
+    {
+        if (dto == null) return emptyList();
+        else return dal.ids(struct.dtoToEntity(dto), limit);
     }
 
     public PageResult<BO> page(
@@ -164,7 +225,27 @@ public abstract class BaseService<
             DTO dto)
     {
         if (hasNull(dto, page)) return emptyPage();
-        else                    return mappingPage(dal.page(page, mapper.dtoToEntity(dto)), mapper::entityToBo);
+        else return mappingPage(dal.page(page, struct.dtoToEntity(dto)), struct::entityToBo);
+    }
+
+    public List<Tree<ID>> tree(
+            @NotNull(message = "root-id can not be null when doing tree-query")
+            ID rootId,
+            @Validated(CRUD.R.class)
+            DTO dto)
+    {
+        return self.tree(rootId, dto, Integer.MAX_VALUE, null, null);
+    }
+
+    public List<Tree<ID>> tree(
+            @NotNull(message = "root-id can not be null when doing tree-query")
+            ID rootId,
+            @Validated(CRUD.R.class)
+            DTO dto,
+            @Positive(message = "limit must be positive")
+            Integer limit)
+    {
+        return self.tree(rootId, dto, limit, null, null);
     }
 
     public List<Tree<ID>> tree(
@@ -175,9 +256,9 @@ public abstract class BaseService<
             @Positive(message = "limit must be positive")
             Integer limit,
             @Size(max = 1024, message = "the number of order cannot exceed 1024")
-            Order... orders)
+            Order[] orders)
     {
-        return self.tree(rootId, dto, limit, orders, new Range[]{});
+        return self.tree(rootId, dto, limit, orders, null);
     }
 
     public List<Tree<ID>> tree(
@@ -188,9 +269,31 @@ public abstract class BaseService<
             @Positive(message = "limit must be positive")
             Integer limit,
             @Size(max = 1024, message = "the number of ranges cannot exceed 1024")
-            Range... ranges)
+            Range[] ranges)
     {
-        return self.tree(rootId, dto, limit, new Order[]{}, ranges);
+        return self.tree(rootId, dto, limit, null, ranges);
+    }
+
+    public List<Tree<ID>> tree(
+            @NotNull(message = "root-id can not be null when doing tree-query")
+            ID rootId,
+            @Validated(CRUD.R.class)
+            DTO dto,
+            @Size(max = 1024, message = "the number of ranges cannot exceed 1024")
+            Range[] ranges)
+    {
+        return self.tree(rootId, dto, Integer.MAX_VALUE, null, ranges);
+    }
+
+    public List<Tree<ID>> tree(
+            @NotNull(message = "root-id can not be null when doing tree-query")
+            ID rootId,
+            @Validated(CRUD.R.class)
+            DTO dto,
+            @Size(max = 1024, message = "the number of order cannot exceed 1024")
+            Order[] orders)
+    {
+        return self.tree(rootId, dto, Integer.MAX_VALUE, orders, null);
     }
 
     public List<Tree<ID>> tree(
@@ -203,10 +306,9 @@ public abstract class BaseService<
             @Size(max = 1024, message = "the number of order cannot exceed 1024")
             Order[] orders,
             @Size(max = 1024, message = "the number of ranges cannot exceed 1024")
-            Range... ranges)
+            Range[] ranges)
     {
-        if (Treeable.class.isAssignableFrom(boClass))
-        {
+        if (Treeable.class.isAssignableFrom(boClass)) {
             List<BO> list = this.list(dto, limit, orders, ranges);
             operateTemplate.execute(list);
             return TreeUtil.build(list, rootId, DEFAULT_CONFIG, (bo, tree) ->
@@ -237,7 +339,7 @@ public abstract class BaseService<
             @Validated(CRUD.R.class)
             DTO dto)
     {
-        return dal.exists(mapper.dtoToEntity(dto));
+        return dal.exists(struct.dtoToEntity(dto));
     }
 
     public List<EO> exportExcel(
@@ -249,7 +351,7 @@ public abstract class BaseService<
             Order... orders)
     {
         if (dto == null) return emptyList();
-        else             return mapper.boToEo(this.list(dto, limit, orders));
+        else return struct.boToEo(this.list(dto, limit, orders));
     }
 
     public void importExcel(
@@ -258,7 +360,7 @@ public abstract class BaseService<
     {
         if (isEmpty(eos)) return;
         Validators.validateAndThrow(eos, CRUD.C.class);
-        dal.create(mapper.eoToEntity(eos));
+        dal.create(struct.eoToEntity(eos));
     }
 
     public BO create(
@@ -266,7 +368,7 @@ public abstract class BaseService<
             @Validated(CRUD.C.class)
             DTO dto)
     {
-        return mapper.entityToBo(dal.create(mapper.dtoToEntity(dto)));
+        return struct.entityToBo(dal.create(struct.dtoToEntity(dto)));
     }
 
     public void create(
@@ -275,7 +377,7 @@ public abstract class BaseService<
     {
         if (isEmpty(dtos)) return;
         Validators.validateAndThrow(dtos, CRUD.C.class);
-        dal.create(mapper.dtoToEntity(dtos));
+        dal.create(struct.dtoToEntity(dtos));
     }
 
     public BO update(
@@ -283,7 +385,7 @@ public abstract class BaseService<
             @Validated(CRUD.U.class)
             DTO dto)
     {
-        return mapper.entityToBo(dal.update(mapper.dtoToEntity(dto)));
+        return struct.entityToBo(dal.update(struct.dtoToEntity(dto)));
     }
 
     public void update(
@@ -292,7 +394,7 @@ public abstract class BaseService<
     {
         if (isEmpty(dtos)) return;
         Validators.validateAndThrow(dtos, CRUD.U.class);
-        dal.update(mapper.dtoToEntity(dtos));
+        dal.update(struct.dtoToEntity(dtos));
     }
 
     public void delete(

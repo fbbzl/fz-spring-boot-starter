@@ -1,4 +1,4 @@
-package io.github.redisson;
+package io.github.fbbzl.starter.redisson.config;
 
 import lombok.AccessLevel;
 import lombok.Data;

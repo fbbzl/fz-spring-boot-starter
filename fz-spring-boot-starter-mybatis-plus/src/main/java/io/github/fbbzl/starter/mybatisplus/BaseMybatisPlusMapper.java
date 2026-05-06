@@ -14,7 +14,6 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.core.metadata.OrderItem;
 import com.baomidou.mybatisplus.core.toolkit.LambdaUtils;
 import com.baomidou.mybatisplus.core.toolkit.support.ColumnCache;
-import com.baomidou.mybatisplus.extension.plugins.pagination.PageDTO;
 import io.github.fbbzl.starter.dal.BaseDal;
 import io.github.fbbzl.starter.dal.Range;
 import io.github.fbbzl.starter.pojo.entity.BaseTableEntity;
@@ -116,9 +115,9 @@ public interface BaseMybatisPlusMapper<ENTITY extends BaseTableEntity<ID>, ID ex
     }
 
     @Override
-    default List<ENTITY> list(@Nullable ENTITY entity, @Nullable Integer limit, @Nullable Order[] orders, @Nullable Range... ranges)
+    default List<ENTITY> list(@Nullable ENTITY entity, @Nullable Integer limit, @Nullable Order[] orders, @Nullable Range[] ranges)
     {
-        Throws.ifNull(limit, () -> "limit can not be null when doing list query");
+        Throws.ifNull(limit, "limit can not be null when doing list query");
         if (entity == null) return emptyList();
 
         QueryWrapper<ENTITY> wrapper = range(autoQuery(entity), ranges).last(sqlLimit(limit));
@@ -126,12 +125,25 @@ public interface BaseMybatisPlusMapper<ENTITY extends BaseTableEntity<ID>, ID ex
     }
 
     @Override
+    @SuppressWarnings("unchecked")
+    default List<ID> ids(@Nullable ENTITY entity, @Nullable Integer limit)
+    {
+        Throws.ifNull(limit, "limit can not be null when doing ids query");
+        if (entity == null) return emptyList();
+
+        QueryWrapper<ENTITY> wrapper = autoQuery(entity)
+                .select(BaseMybatisPlusEntity.Fields.id)
+                .last(sqlLimit(limit));
+        return this.selectObjs(wrapper).stream().map(id -> (ID) id).toList();
+    }
+
+    @Override
     default PageResult<ENTITY> page(@Nullable Page page, @Nullable ENTITY entity)
     {
-        Throws.ifNull(page, () -> "page can not be null");
+        Throws.ifNull(page, "page can not be null");
 
         IPage<ENTITY> result =
-                this.selectPage(PageDTO.<ENTITY>of(toMybatisPlusPageNumber(page), page.getPageSize()).addOrder(this.toOrderItem(page.getOrders())),
+                this.selectPage(com.baomidou.mybatisplus.extension.plugins.pagination.Page.<ENTITY>of(toMybatisPlusPageNumber(page), page.getPageSize()).addOrder(this.toOrderItem(page.getOrders())),
                                 autoQuery(entity));
         return this.toPageResult(page.getPageNumber(), page.getPageSize(), result.getTotal(), result.getRecords());
     }
@@ -280,10 +292,10 @@ public interface BaseMybatisPlusMapper<ENTITY extends BaseTableEntity<ID>, ID ex
             Class<ENTITY> queryClass = (Class<ENTITY>) query.getClass();
             String                   queryClassName = queryClass.getName();
             Map<String, ColumnCache> columnMap      = LambdaUtils.getColumnMap(queryClass);
-            Throws.ifEmpty(columnMap, () -> "entity [" + queryClassName + "] has none TableField");
+            Throws.ifEmpty(columnMap, "entity [{}] has none TableField", queryClassName);
 
             Field[] fields = ReflectUtil.getFields(query.getClass());
-            Throws.ifEmpty(fields, () -> "fields of [" + queryClassName + "] has none TableField");
+            Throws.ifEmpty(fields, "fields of [{}] has none TableField", queryClassName);
 
             for (Field field : fields) {
                 String fieldName = field.getName();

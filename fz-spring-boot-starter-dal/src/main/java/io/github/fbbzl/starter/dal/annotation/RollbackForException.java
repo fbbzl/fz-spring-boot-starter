@@ -21,28 +21,37 @@ import java.lang.annotation.*;
 @Transactional(rollbackFor = Exception.class)
 public @interface RollbackForException
 {
-    @AliasFor("transactionManager")
+    @AliasFor(annotation = Transactional.class, attribute = "transactionManager")
     String value() default "";
 
-    @AliasFor("value")
+    @AliasFor(annotation = Transactional.class, attribute = "value")
     String transactionManager() default "";
 
+    @AliasFor(annotation = Transactional.class, attribute = "label")
     String[] label() default {};
 
+    @AliasFor(annotation = Transactional.class, attribute = "propagation")
     Propagation propagation() default Propagation.REQUIRED;
 
+    @AliasFor(annotation = Transactional.class, attribute = "isolation")
     Isolation isolation() default Isolation.DEFAULT;
 
+    @AliasFor(annotation = Transactional.class, attribute = "timeout")
     int timeout() default TransactionDefinition.TIMEOUT_DEFAULT;
 
+    @AliasFor(annotation = Transactional.class, attribute = "timeoutString")
     String timeoutString() default "";
 
+    @AliasFor(annotation = Transactional.class, attribute = "readOnly")
     boolean readOnly() default false;
 
+    @AliasFor(annotation = Transactional.class, attribute = "rollbackForClassName")
     String[] rollbackForClassName() default {};
 
+    @AliasFor(annotation = Transactional.class, attribute = "noRollbackFor")
     Class<? extends Throwable>[] noRollbackFor() default {};
 
+    @AliasFor(annotation = Transactional.class, attribute = "noRollbackForClassName")
     String[] noRollbackForClassName() default {};
 
 }

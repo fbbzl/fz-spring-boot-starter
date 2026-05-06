@@ -6,8 +6,13 @@ import jakarta.persistence.*;
 import jakarta.validation.constraints.*;
 import org.hibernate.annotations.Comment;
 import io.github.fbbzl.starter.pojo.validation.group.CRUD;
-import lombok.*;
-import lombok.experimental.*;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+import lombok.ToString;
+import lombok.experimental.FieldDefaults;
+import lombok.experimental.FieldNameConstants;
 import org.hibernate.proxy.HibernateProxy;
 import java.util.Objects;
 import org.springframework.lang.Nullable;
@@ -39,6 +44,7 @@ import cn.hutool.core.lang.RegexPool;
 @Comment("${tableComment}")
 @FieldNameConstants
 @FieldDefaults(level = PRIVATE)
+@ToString(callSuper = true, onlyExplicitlyIncluded = true)
 @Table(name = "${tableName}", schema = "${schemaName}")
 public class ${className} extends BaseJpaEntity<${primaryKeyType}> {
 <#-- 遍历字段生成实体属性 -->
@@ -58,6 +64,7 @@ public class ${className} extends BaseJpaEntity<${primaryKeyType}> {
     <#if field.lengthValidation??>
     @Length(groups = CRUD.C.class, min = ${field.minLength!1}, max = ${field.maxLength?c}, message = "{${className}.${field.name}.illegal}")
     </#if>
+    @ToString.Include
     ${field.javaType} ${field.name};
     </#if>
 </#list>

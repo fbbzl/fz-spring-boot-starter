@@ -41,7 +41,12 @@ public interface BaseDal<ENTITY extends BaseTableEntity<ID>, ID extends Serializ
 
     Optional<ENTITY> one(@Nullable ENTITY entity);
 
-    List<ENTITY> list(@Nullable ENTITY entity, @Nullable Integer limit, @Nullable Order[] orders, @Nullable Range ... ranges);
+    List<ENTITY> list(@Nullable ENTITY entity, @Nullable Integer limit, @Nullable Order[] orders, @Nullable Range[] ranges);
+
+    default List<ID> ids(@Nullable ENTITY entity, @Nullable Integer limit)
+    {
+        return this.list(entity, limit, null, null).stream().map(BaseTableEntity::getId).toList();
+    }
 
     PageResult<ENTITY> page(@Nullable Page page, @Nullable ENTITY entity);
 

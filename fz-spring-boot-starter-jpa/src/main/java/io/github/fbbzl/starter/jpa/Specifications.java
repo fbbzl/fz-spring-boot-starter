@@ -60,7 +60,7 @@ public class Specifications {
             final Range[] ranges,
             Order... orders)
     {
-        Throws.ifNull(sqlQueryEntity, () -> "sqlQueryEntity can not be null when building specification");
+        Throws.ifNull(sqlQueryEntity, "sqlQueryEntity can not be null when building specification");
 
         final Class<ENTITY> type = (Class<ENTITY>) sqlQueryEntity.getClass();
 

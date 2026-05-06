@@ -2,7 +2,6 @@ package io.github.fbbzl.starter.core.annotation;
 
 import lombok.NonNull;
 import org.fz.erwin.exception.Throws;
-import org.fz.erwin.lambda.Try;
 import org.springframework.boot.env.YamlPropertySourceLoader;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.core.annotation.AliasFor;
@@ -48,7 +47,6 @@ public @interface YamlSource
      * @version 1.0
      * @since 2021/5/11 11:01
      */
-
     class YamlAndPropertySourceFactory extends DefaultPropertySourceFactory
     {
 
@@ -60,9 +58,9 @@ public @interface YamlSource
 
             if (isYml(resource)) {
                 List<org.springframework.core.env.PropertySource<?>> sources = new YamlPropertySourceLoader().load(resource.getFilename(), resource);
-                Throws.ifEmpty(sources, Try.get(() -> "can not find resource [" + encodedResource.getResource().getURL() + "]"));
+                Throws.ifEmpty(sources, "can not find resource [{}]", encodedResource.getResource().getURL());
 
-                return sources.iterator().next();
+                return sources.getFirst();
             }
 
             return super.createPropertySource(name, encodedResource);
@@ -73,7 +71,7 @@ public @interface YamlSource
         private boolean isYml(Resource resource)
         {
             String filename = resource.getFilename();
-            Throws.ifBlank(filename, () -> "resource filename is null or blank");
+            Throws.ifBlank(filename, "resource filename is null or blank");
 
             return filename.endsWith(".yml") || filename.endsWith(".yaml");
         }

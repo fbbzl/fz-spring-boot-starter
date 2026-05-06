@@ -48,22 +48,23 @@ import static lombok.AccessLevel.PROTECTED;
 @SuppressWarnings("all")
 @FieldDefaults(level = PROTECTED)
 public abstract class BaseController<
-        ID extends Serializable,
-        ENTITY extends BaseTableEntity<ID>,
-        DTO extends BaseDto<ID>,
-        BO extends BaseBo<ID>,
-        EO extends BaseEo>
+        ID      extends Serializable,
+        ENTITY  extends BaseTableEntity<ID>,
+        SERVICE extends BaseService<ID, ENTITY, DTO, BO, EO, ? extends BaseDal<ENTITY, ID>, ? extends BaseStructMapper<ENTITY, DTO, BO, EO>>,
+        DTO     extends BaseDto<ID>,
+        BO      extends BaseBo<ID>,
+        EO      extends BaseEo>
 {
 
     @Autowired
-    BaseService<ID, ENTITY, DTO, BO, EO, ? extends BaseDal<ENTITY, ID>, ? extends BaseStructMapper<ENTITY, DTO, BO, EO>> service;
+    SERVICE             service;
     @Autowired
-    HttpServletRequest                                                                                                   request;
+    HttpServletRequest  request;
     @Autowired
-    HttpServletResponse                                                                                                  response;
+    HttpServletResponse response;
 
     Class<ENTITY> entityClass = Generics.getGenericSuperType(this.getClass(), BaseController.class, 1);
-    Class<EO>     excelClass  = Generics.getGenericSuperType(this.getClass(), BaseController.class, 4);
+    Class<EO>     excelClass  = Generics.getGenericSuperType(this.getClass(), BaseController.class, 5);
 
     @Operation(description = "Based on the primary key query, it does not contain data that has been logically deleted", summary = "Query by primary key")
     @GetMapping("{id}")
@@ -134,7 +135,7 @@ public abstract class BaseController<
             @RequestBody
             OQ<DTO> req)
     {
-        return service.tree(rootId, req.getData(), defaultIfNull(limit, this.defaultLimit()), req.getOrders());
+        return service.tree(rootId, req.getData(), defaultIfNull(limit, this.defaultLimit()), req.getOrders(), req.getRanges());
     }
 
     @Operation(description = "Specify whether primary key data exists", summary = "Specifies whether primary key data exists")
@@ -254,7 +255,7 @@ public abstract class BaseController<
             @NotNull
             @Validated(CRUD.C.class)
             @Parameter(description = "excel import object", required = true)
-            FQ<DTO> req) throws IOException
+            FQ req) throws IOException
     {
         List<EO> readData = ExcelDto.doRead(req.getSingleFile().getInputStream(), excelClass);
         service.importExcel(readData);

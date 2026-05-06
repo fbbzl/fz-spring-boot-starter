@@ -26,8 +26,6 @@ import org.springframework.lang.Nullable;
 
 import java.io.Serializable;
 
-import static cn.hutool.core.text.CharSequenceUtil.format;
-
 /**
  *
  * @author fz
@@ -106,8 +104,8 @@ public abstract class BaseAuditLogAspect<ID extends Serializable, AUDIT_LOG exte
         Class<?> targetClass = AopUtils.getTargetClass(joinPoint.getTarget());
 
         AuditModule auditModule = AnnotationUtil.getAnnotation(targetClass, AuditModule.class);
-        Throws.ifNull(auditModule, () -> format("missing @AuditModule on class [{}]", targetClass.getName()));
-        Throws.ifNull(auditModule.value(), () -> format("@AuditModule value can not be blank on class [{}]", targetClass.getName()));
+        Throws.ifNull(auditModule, "missing @AuditModule on class [{}]", targetClass.getName());
+        Throws.ifNull(auditModule.value(), "@AuditModule value can not be blank on class [{}]", targetClass.getName());
 
         return auditModule.value();
     }

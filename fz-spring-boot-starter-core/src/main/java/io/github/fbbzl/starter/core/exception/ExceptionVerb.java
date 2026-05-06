@@ -23,30 +23,31 @@ import static cn.hutool.core.text.CharSequenceUtil.toCamelCase;
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public enum ExceptionVerb
 {
+    INVALID_INPUT(400),
+    UNAUTHORIZED(401),
+    FORBIDDEN(403),
+    RESOURCE_NOT_FOUND(404),
+    UNSUPPORTED_OPERATION(405),
+    OPERATION_TIMEOUT(408),
+    DATA_CONFLICT(409),
+    DUPLICATE_ENTRY(409),
+    ILLEGAL_STATE(422),
+    REQUEST_LIMITED(429),
+    INTERNAL_ERROR(500),
+    SERVICE_UNAVAILABLE(503),
+    UNKNOWN(500);
 
-    ACCESS_DENIED("403"),
-    INVALID_INPUT("400"),
-    ILLEGAL_STATE("422"),
-    UNSUPPORTED_OPERATION("405"),
-    RESOURCE_NOT_FOUND("404"),
-    DATA_CONFLICT("409"),
-    DUPLICATE_ENTRY("409"),
-    OPERATION_TIMEOUT("408"),
-    INTERNAL_ERROR("500"),
-    SERVICE_UNAVAILABLE("503"),
-    UNKNOWN("500");
-
-    String bisCode;
+    int httpStatusCode;
 
     public <SUBJECT> Supplier<? extends BizException> on(SUBJECT subject, Object context)
     {
-        Throws.ifNull(subject, () -> "subject can not be null");
+        Throws.ifNull(subject, "subject can not be null");
         return on(subject.getClass(), context);
     }
 
     public <SUBJECT> Supplier<? extends BizException> on(SUBJECT subject, Object context, Throwable cause)
     {
-        Throws.ifNull(subject, () -> "subject can not be null");
+        Throws.ifNull(subject, "subject can not be null");
         return on(subject.getClass(), context, cause);
     }
 

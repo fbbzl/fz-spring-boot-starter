@@ -29,13 +29,13 @@ import org.springframework.lang.Nullable;
  * @since ${date}
  */
 @TableName("${tableName}")
-@Getter
-@Setter
+@Data
 @NoArgsConstructor
 @AllArgsConstructor
 @FieldNameConstants
 @FieldDefaults(level = PRIVATE)
 @EqualsAndHashCode(callSuper = true)
+@ToString(callSuper = true)
 public class ${className} extends BaseMybatisPlusEntity<${primaryKeyType}> {
 <#-- 遍历字段生成实体属性 -->
 <#list fields as field>
