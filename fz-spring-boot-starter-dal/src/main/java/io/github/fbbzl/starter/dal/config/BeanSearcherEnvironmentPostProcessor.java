@@ -24,8 +24,9 @@ public class BeanSearcherEnvironmentPostProcessor implements EnvironmentPostProc
     {
         Map<String, Object> defaults = new LinkedHashMap<>();
         defaults.put("bean-searcher.params.pagination.default-size", 10);
-        defaults.put("bean-searcher.params.pagination.start",        1);
-        defaults.put("bean-searcher.field-convertor.zone-id",        "Asia/Shanghai");
+        defaults.put("bean-searcher.params.pagination.start",        0);
+        defaults.put("bean-searcher.field-convertor.zone-id",        "GMT+8");
+        defaults.put("bean-searcher.params.convertor.zone-id",       "GMT+8");
 
         MutablePropertySources propertySources = environment.getPropertySources();
         MapPropertySource propertySource = new MapPropertySource(PROPERTY_SOURCE_NAME, defaults);
