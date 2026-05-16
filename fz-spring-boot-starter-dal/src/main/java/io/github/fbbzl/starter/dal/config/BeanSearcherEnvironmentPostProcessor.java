@@ -7,6 +7,7 @@ import org.springframework.core.env.ConfigurableEnvironment;
 import org.springframework.core.env.MapPropertySource;
 import org.springframework.core.env.MutablePropertySources;
 
+import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
@@ -19,17 +20,13 @@ public class BeanSearcherEnvironmentPostProcessor implements EnvironmentPostProc
 {
     private static final String PROPERTY_SOURCE_NAME = "beanSearcherDefaults";
 
+    private static final Map<String, Object> DEFAULT_PROPERTIES = createDefaultProperties();
+
     @Override
     public void postProcessEnvironment(ConfigurableEnvironment environment, SpringApplication application)
     {
-        Map<String, Object> defaults = new LinkedHashMap<>();
-        defaults.put("bean-searcher.params.pagination.default-size", 10);
-        defaults.put("bean-searcher.params.pagination.start",        0);
-        defaults.put("bean-searcher.field-convertor.zone-id",        "GMT+8");
-        defaults.put("bean-searcher.params.convertor.zone-id",       "GMT+8");
-
         MutablePropertySources propertySources = environment.getPropertySources();
-        MapPropertySource propertySource = new MapPropertySource(PROPERTY_SOURCE_NAME, defaults);
+        MapPropertySource propertySource = new MapPropertySource(PROPERTY_SOURCE_NAME, DEFAULT_PROPERTIES);
         if (propertySources.contains(PROPERTY_SOURCE_NAME))
             propertySources.replace(PROPERTY_SOURCE_NAME, propertySource);
         else
@@ -40,5 +37,15 @@ public class BeanSearcherEnvironmentPostProcessor implements EnvironmentPostProc
     public int getOrder()
     {
         return Ordered.LOWEST_PRECEDENCE;
+    }
+
+    private static Map<String, Object> createDefaultProperties()
+    {
+        Map<String, Object> defaults = new LinkedHashMap<>();
+        defaults.put("bean-searcher.params.pagination.default-size", 10);
+        defaults.put("bean-searcher.params.pagination.start",        0);
+        defaults.put("bean-searcher.field-convertor.zone-id",        "GMT+8");
+        defaults.put("bean-searcher.params.convertor.zone-id",       "GMT+8");
+        return Collections.unmodifiableMap(defaults);
     }
 }

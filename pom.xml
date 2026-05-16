@@ -52,7 +52,7 @@
 
     <properties>
         <!--project-->
-        <fz.version>1.3.24</fz.version>
+        <fz.version>1.3.25</fz.version>
         <revision>${fz.version}_${spring-boot.version}</revision>
 
         <!--java-->
