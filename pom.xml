@@ -48,6 +48,7 @@
         <module>fz-spring-boot-starter-pojo</module>
         <module>fz-spring-boot-starter-redisson</module>
         <module>fz-spring-boot-starter-web</module>
+        <module>fz-spring-boot-starter-webflux</module>
     </modules>
 
     <properties>
@@ -61,8 +62,6 @@
         <!--maven-->
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <flatten-maven-plugin.version>1.7.3</flatten-maven-plugin.version>
-        <maven.compiler.release>${java.version}</maven.compiler.release>
-
         <maven-compiler-plugin.version>3.15.0</maven-compiler-plugin.version>
         <maven-javadoc-plugin.version>3.12.0</maven-javadoc-plugin.version>
         <maven-gpg-plugin.version>3.2.8</maven-gpg-plugin.version>
@@ -79,7 +78,7 @@
         <swagger-annotations-jakarta.version>2.2.48</swagger-annotations-jakarta.version>
 
         <!--util-->
-        <erwin.version>1.2.10-RELEASE</erwin.version>
+        <erwin.version>1.2.11</erwin.version>
 
         <!--data assemble-->
         <crane4j.version>2.10.0</crane4j.version>
@@ -105,6 +104,9 @@
 
         <!--open api-->
         <springdoc-openapi-starter-webmvc-ui.version>2.8.17</springdoc-openapi-starter-webmvc-ui.version>
+
+        <!--webflux-->
+        <springdoc-openapi-starter-webflux-ui.version>${springdoc-openapi-starter-webmvc-ui.version}</springdoc-openapi-starter-webflux-ui.version>
     </properties>
 
     <dependencies>
@@ -180,6 +182,12 @@
             </dependency>
 
             <dependency>
+                <groupId>io.github.fbbzl</groupId>
+                <artifactId>fz-spring-boot-starter-webflux</artifactId>
+                <version>${revision}</version>
+            </dependency>
+
+            <dependency>
                 <groupId>com.baomidou</groupId>
                 <artifactId>mybatis-plus-bom</artifactId>
                 <version>${mybatis-plus-bom.version}</version>
@@ -239,6 +247,18 @@
                 <groupId>org.springdoc</groupId>
                 <artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
                 <version>${springdoc-openapi-starter-webmvc-ui.version}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>org.springframework.boot</groupId>
+                        <artifactId>spring-boot-starter-logging</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+
+            <dependency>
+                <groupId>org.springdoc</groupId>
+                <artifactId>springdoc-openapi-starter-webflux-ui</artifactId>
+                <version>${springdoc-openapi-starter-webflux-ui.version}</version>
                 <exclusions>
                     <exclusion>
                         <groupId>org.springframework.boot</groupId>
