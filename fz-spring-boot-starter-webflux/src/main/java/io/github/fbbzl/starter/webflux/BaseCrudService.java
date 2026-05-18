@@ -34,10 +34,7 @@ import org.springframework.lang.Nullable;
 import org.springframework.validation.annotation.Validated;
 
 import java.io.Serializable;
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.function.Function;
 
 import static cn.hutool.core.collection.CollUtil.isEmpty;
@@ -375,13 +372,24 @@ public abstract class BaseCrudService<
     }
 
     // Create a batch of business objects.
-    public void create(
+    public List<BO> create(
             @Size(max = 1024, message = "the number of collection cannot exceed 1024")
             Collection<DTO> dtos)
     {
-        if (isEmpty(dtos)) return;
+        if (isEmpty(dtos)) return emptyList();
         Validators.validateAndThrow(dtos, CRUD.C.class);
-        dal.create(struct.dtoToEntity(dtos));
+        List<ENTITY> entities = struct.dtoToEntity(dtos);
+        return struct.entityToBo(dal.create(entities));
+    }
+
+    public List<BO> create(
+            @Size(max = 1024, message = "the number of array cannot exceed 1024")
+            DTO[] dtos)
+    {
+        if (dtos == null || dtos.length == 0) return emptyList();
+        Validators.validateAndThrow(dtos, CRUD.C.class);
+        ENTITY[] entities = struct.dtoToEntity(dtos);
+        return struct.entityToBo(dal.create(Arrays.asList(entities)));
     }
 
     // Update one business object.

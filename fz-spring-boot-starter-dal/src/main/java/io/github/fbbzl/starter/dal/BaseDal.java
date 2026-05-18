@@ -24,7 +24,7 @@ public interface BaseDal<ENTITY extends BaseTableEntity<ID>, ID extends Serializ
 
     ENTITY create(@Nullable ENTITY entity);
 
-    void create(@Nullable Iterable<ENTITY> entities);
+    List<ENTITY> create(@Nullable Iterable<ENTITY> entities);
 
     void delete(@Nullable ID id);
 

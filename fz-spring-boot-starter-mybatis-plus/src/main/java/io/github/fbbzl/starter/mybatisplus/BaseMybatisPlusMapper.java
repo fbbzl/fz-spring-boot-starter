@@ -58,9 +58,12 @@ public interface BaseMybatisPlusMapper<ENTITY extends BaseTableEntity<ID>, ID ex
 
     @Transactional
     @Override
-    default void create(@Nullable Iterable<ENTITY> entities)
+    default List<ENTITY> create(@Nullable Iterable<ENTITY> entities)
     {
-        this.insert(IterUtil.toList(entities), DEFAULT_BATCH_SIZE);
+        if (isEmpty(entities)) return emptyList();
+        List<ENTITY> entityList = IterUtil.toList(entities);
+        this.insert(entityList, DEFAULT_BATCH_SIZE);
+        return entityList;
     }
 
     @Override
