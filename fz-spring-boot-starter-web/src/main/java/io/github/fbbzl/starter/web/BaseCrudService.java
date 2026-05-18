@@ -34,7 +34,10 @@ import org.springframework.lang.Nullable;
 import org.springframework.validation.annotation.Validated;
 
 import java.io.Serializable;
-import java.util.*;
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.function.Function;
 
 import static cn.hutool.core.collection.CollUtil.isEmpty;
@@ -358,10 +361,7 @@ public abstract class BaseCrudService<
             @Size(max = 1024, message = "the number of array cannot exceed 1024")
             DTO[] dtos)
     {
-        if (dtos == null || dtos.length == 0) return emptyList();
-        Validators.validateAndThrow(dtos, CRUD.C.class);
-        ENTITY[] entities = struct.dtoToEntity(dtos);
-        return struct.entityToBo(dal.create(Arrays.asList(entities)));
+        return create(List.of(dtos));
     }
 
     public BO update(
