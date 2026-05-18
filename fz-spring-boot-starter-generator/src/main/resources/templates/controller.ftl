@@ -4,8 +4,6 @@ import ${moduleName}.dal.entity.${className};
 import ${moduleName}.controller.dto.${className}Dto;
 import ${moduleName}.service.bo.${className}Bo;
 import ${moduleName}.service.${className}Service;
-import ${moduleName}.dal.${dalClass};
-import ${moduleName}.struct.${className}StructMapper;
 <#if excel>
 import ${moduleName}.service.eo.${className}Eo;
 
@@ -39,7 +37,7 @@ import static lombok.AccessLevel.PRIVATE;
 @Tag(name = "${tableComment}API", description = "api for ${tableComment}")
 @FieldDefaults(level = PRIVATE, makeFinal = true)
 <#if excel>
-public class ${className}Controller extends BaseCrudExcelController<${primaryKeyType}, ${className}, ${className}Service, ${className}Dto, ${className}Bo, ${className}Eo, ${dalClass}, ${className}StructMapper> {}
+public class ${className}Controller extends BaseCrudExcelController<${primaryKeyType}, ${className}, ${className}Service, ${className}Dto, ${className}Bo, ${className}Eo> {}
 <#else>
-public class ${className}Controller extends BaseCrudController<${primaryKeyType}, ${className}, ${className}Service, ${className}Dto, ${className}Bo, ${dalClass}, ${className}StructMapper> {}
+public class ${className}Controller extends BaseCrudController<${primaryKeyType}, ${className}, ${className}Service, ${className}Dto, ${className}Bo> {}
 </#if>

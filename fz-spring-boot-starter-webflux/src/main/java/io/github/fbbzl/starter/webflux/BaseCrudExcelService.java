@@ -6,7 +6,7 @@ import io.github.fbbzl.starter.excel.BaseEo;
 import io.github.fbbzl.starter.pojo.bo.BaseBo;
 import io.github.fbbzl.starter.pojo.dto.BaseDto;
 import io.github.fbbzl.starter.pojo.entity.BaseTableEntity;
-import io.github.fbbzl.starter.pojo.mapstruct.BaseStructMapper;
+import io.github.fbbzl.starter.pojo.mapstruct.BaseCrudExcelStructMapper;
 import io.github.fbbzl.starter.pojo.validation.Validators;
 import io.github.fbbzl.starter.pojo.validation.group.CRUD;
 import jakarta.validation.constraints.Positive;
@@ -34,7 +34,7 @@ public abstract class BaseCrudExcelService<
         BO            extends BaseBo<ID>,
         EO            extends BaseEo,
         DAL           extends BaseDal<ENTITY, ID>,
-        STRUCT_MAPPER extends BaseStructMapper<ENTITY, DTO, BO, EO>>
+        STRUCT_MAPPER extends BaseCrudExcelStructMapper<ENTITY, DTO, BO, EO>>
         extends BaseCrudService<ID, ENTITY, DTO, BO, DAL, STRUCT_MAPPER>
 {
 

@@ -3,11 +3,9 @@ package io.github.fbbzl.starter.web;
 import cn.hutool.core.lang.tree.Tree;
 import io.github.fbbzl.starter.audit.frame.annotation.AuditMethod;
 import io.github.fbbzl.starter.core.util.Generics;
-import io.github.fbbzl.starter.dal.BaseDal;
 import io.github.fbbzl.starter.pojo.bo.BaseBo;
 import io.github.fbbzl.starter.pojo.dto.BaseDto;
 import io.github.fbbzl.starter.pojo.entity.BaseTableEntity;
-import io.github.fbbzl.starter.pojo.mapstruct.BaseCrudStructMapper;
 import io.github.fbbzl.starter.pojo.validation.group.CRUD;
 import io.github.fbbzl.starter.web.Q.OQ;
 import io.github.fbbzl.starter.web.Q.PQ;
@@ -43,11 +41,9 @@ import static lombok.AccessLevel.PROTECTED;
 public abstract class BaseCrudController<
         ID      extends Serializable,
         ENTITY  extends BaseTableEntity<ID>,
-        SERVICE extends BaseCrudService<ID, ENTITY, DTO, BO, DAL, STRUCT_MAPPER>,
+        SERVICE extends BaseCrudService<ID, ENTITY, DTO, BO, ?, ?>,
         DTO     extends BaseDto<ID>,
-        BO      extends BaseBo<ID>,
-        DAL     extends BaseDal<ENTITY, ID>,
-        STRUCT_MAPPER extends BaseCrudStructMapper<ENTITY, DTO, BO>>
+        BO      extends BaseBo<ID>>
 {
 
     @Autowired

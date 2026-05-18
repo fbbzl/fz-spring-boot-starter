@@ -19,11 +19,11 @@ import java.util.List;
  * @since 2026/1/21 23:53
  */
 @SuppressWarnings("all")
-public interface BaseStructMapper<
+public interface BaseCrudExcelStructMapper<
         ENTITY extends BaseTableEntity<? extends Serializable>,
-        DTO extends BaseDto<? extends Serializable>,
-        BO extends BaseBo<? extends Serializable>,
-        EO extends BaseEo> extends BaseCrudStructMapper<ENTITY, DTO, BO>
+        DTO    extends BaseDto<? extends Serializable>,
+        BO     extends BaseBo<? extends Serializable>,
+        EO     extends BaseEo> extends BaseCrudStructMapper<ENTITY, DTO, BO>
 {
 
     EO entityToEo(ENTITY entity);

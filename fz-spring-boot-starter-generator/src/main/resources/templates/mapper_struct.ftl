@@ -6,7 +6,7 @@ import ${moduleName}.service.bo.${className}Bo;
 <#if excel>
 import ${moduleName}.service.eo.${className}Eo;
 
-import io.github.fbbzl.starter.pojo.mapstruct.BaseStructMapper;
+import io.github.fbbzl.starter.pojo.mapstruct.BaseCrudExcelStructMapper;
 <#else>
 import io.github.fbbzl.starter.pojo.mapstruct.BaseCrudStructMapper;
 </#if>
@@ -28,7 +28,7 @@ import org.mapstruct.ReportingPolicy;
         nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE,
         unmappedTargetPolicy = ReportingPolicy.IGNORE)
 <#if excel>
-public interface ${className}StructMapper extends BaseStructMapper<${className}, ${className}Dto, ${className}Bo, ${className}Eo> {}
+public interface ${className}StructMapper extends BaseCrudExcelStructMapper<${className}, ${className}Dto, ${className}Bo, ${className}Eo> {}
 <#else>
 public interface ${className}StructMapper extends BaseCrudStructMapper<${className}, ${className}Dto, ${className}Bo> {}
 </#if>

@@ -4,13 +4,11 @@ import com.alibaba.excel.EasyExcelFactory;
 import com.alibaba.excel.write.style.column.LongestMatchColumnWidthStyleStrategy;
 import io.github.fbbzl.starter.audit.frame.annotation.AuditMethod;
 import io.github.fbbzl.starter.core.util.Generics;
-import io.github.fbbzl.starter.dal.BaseDal;
 import io.github.fbbzl.starter.excel.BaseEo;
 import io.github.fbbzl.starter.excel.ExcelDto;
 import io.github.fbbzl.starter.pojo.bo.BaseBo;
 import io.github.fbbzl.starter.pojo.dto.BaseDto;
 import io.github.fbbzl.starter.pojo.entity.BaseTableEntity;
-import io.github.fbbzl.starter.pojo.mapstruct.BaseStructMapper;
 import io.github.fbbzl.starter.pojo.validation.group.CRUD;
 import io.github.fbbzl.starter.webflux.Q.FQ;
 import io.github.fbbzl.starter.webflux.Q.OQ;
@@ -54,13 +52,11 @@ import static java.util.Collections.emptyList;
 public abstract class BaseCrudExcelController<
         ID      extends Serializable,
         ENTITY  extends BaseTableEntity<ID>,
-        SERVICE extends BaseCrudExcelService<ID, ENTITY, DTO, BO, EO, DAL, STRUCT_MAPPER>,
+        SERVICE extends BaseCrudExcelService<ID, ENTITY, DTO, BO, EO, ?, ?>,
         DTO     extends BaseDto<ID>,
         BO      extends BaseBo<ID>,
-        EO      extends BaseEo,
-        DAL     extends BaseDal<ENTITY, ID>,
-        STRUCT_MAPPER extends BaseStructMapper<ENTITY, DTO, BO, EO>>
-        extends BaseCrudController<ID, ENTITY, SERVICE, DTO, BO, DAL, STRUCT_MAPPER>
+        EO      extends BaseEo>
+        extends BaseCrudController<ID, ENTITY, SERVICE, DTO, BO>
 {
 
     Class<EO> excelClass = Generics.getGenericSuperType(this.getClass(), BaseCrudExcelController.class, 5);
