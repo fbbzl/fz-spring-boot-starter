@@ -5,6 +5,7 @@ import cn.crane4j.core.container.Container;
 import cn.crane4j.core.support.OperateTemplate;
 import cn.hutool.core.lang.tree.Tree;
 import cn.hutool.core.lang.tree.TreeUtil;
+import cn.hutool.core.util.ArrayUtil;
 import cn.hutool.db.Page;
 import cn.hutool.db.PageResult;
 import cn.hutool.db.sql.Order;
@@ -345,6 +346,15 @@ public abstract class BaseCrudService<
             DTO dto)
     {
         return struct.entityToBo(dal.create(struct.dtoToEntity(dto)));
+    }
+
+    public void create(
+            @Size(max = 1024, message = "the number of collection cannot exceed 1024")
+            DTO[] dtos)
+    {
+        if (ArrayUtil.isEmpty(dtos)) return;
+        Validators.validateAndThrow(dtos, CRUD.C.class);
+        dal.create(List.of(struct.dtoToEntity(dtos)));
     }
 
     public void create(
