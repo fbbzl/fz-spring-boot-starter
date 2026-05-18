@@ -23,32 +23,8 @@ public interface BaseStructMapper<
         ENTITY extends BaseTableEntity<? extends Serializable>,
         DTO extends BaseDto<? extends Serializable>,
         BO extends BaseBo<? extends Serializable>,
-        EO extends BaseEo>
+        EO extends BaseEo> extends BaseCrudStructMapper<ENTITY, DTO, BO>
 {
-
-    BO entityToBo(ENTITY entity);
-
-    ENTITY boToEntity(BO bo);
-
-    List<BO> entityToBo(Collection<ENTITY> entities);
-
-    BO[] entityToBo(ENTITY... entities);
-
-    List<ENTITY> boToEntity(Collection<BO> bos);
-
-    ENTITY[] boToEntity(BO... bos);
-
-    DTO entityToDto(ENTITY entity);
-
-    ENTITY dtoToEntity(DTO dto);
-
-    List<DTO> entityToDto(Collection<ENTITY> entities);
-
-    DTO[] entityToDto(ENTITY... entities);
-
-    List<ENTITY> dtoToEntity(Collection<DTO> dtos);
-
-    ENTITY[] dtoToEntity(DTO... dtos);
 
     EO entityToEo(ENTITY entity);
 
@@ -61,18 +37,6 @@ public interface BaseStructMapper<
     List<ENTITY> eoToEntity(Collection<EO> eos);
 
     ENTITY[] eoToEntity(EO... eos);
-
-    BO dtoToBo(DTO dto);
-
-    DTO boToDto(BO bo);
-
-    List<BO> dtoToBo(Collection<DTO> dtos);
-
-    BO[] dtoToBo(DTO... dtos);
-
-    List<DTO> boToDto(Collection<BO> bos);
-
-    DTO[] boToDto(BO... bos);
 
     EO dtoToEo(DTO dto);
 

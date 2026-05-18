@@ -5,6 +5,7 @@ import cn.hutool.core.io.FileUtil;
 import cn.hutool.core.io.file.FileWriter;
 import cn.hutool.core.text.CharSequenceUtil;
 import io.github.fbbzl.starter.generator.config.properties.GeneratorConfigProperties;
+import io.github.fbbzl.starter.generator.config.properties.GeneratorConfigProperties.DalPlatform;
 import io.github.fbbzl.starter.generator.frame.BaseGenerator;
 import io.github.fbbzl.starter.generator.frame.context.Field;
 import io.github.fbbzl.starter.generator.frame.context.Index;
@@ -126,6 +127,11 @@ public class DefaultGeneratorInvoker implements GeneratorInvoker, CommandLineRun
         ftlContext.put("author",         author);
         ftlContext.put("primaryKeyType", genCfg.getPrimaryKeyType());
         ftlContext.put("date",           NORM_DATETIME_FORMATTER.format(LocalDateTime.now()));
+        ftlContext.put("excel",          genCfg.isExcel());
+        if (genCfg.getPlatformType() == DalPlatform.JPA)
+            ftlContext.put("dalClass", ftlContext.get("className") + "Repository");
+        else
+            ftlContext.put("dalClass", ftlContext.get("className") + "Mapper");
 
         List<Field> fields = tableContext.getFields();
         ftlContext.put("columns", fields.stream().map(Field::getName).toArray());

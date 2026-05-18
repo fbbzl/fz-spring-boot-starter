@@ -4,7 +4,7 @@ import cn.hutool.core.map.MapUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import cn.hutool.core.util.TypeUtil;
-import io.github.fbbzl.starter.webflux.BaseController;
+import io.github.fbbzl.starter.webflux.BaseCrudController;
 import io.github.fbbzl.starter.webflux.Q;
 import io.swagger.v3.core.converter.AnnotatedType;
 import io.swagger.v3.core.converter.ModelConverters;
@@ -46,7 +46,7 @@ public class ROperationCustomizer implements GlobalOperationCustomizer, GlobalOp
         if (ObjectUtil.isNull(operation)) {
             return operation;
         }
-        if (!BaseController.class.equals(handlerMethod.getMethod().getDeclaringClass())) {
+        if (!BaseCrudController.class.isAssignableFrom(handlerMethod.getBeanType())) {
             return operation;
         }
 

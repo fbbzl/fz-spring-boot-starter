@@ -28,6 +28,7 @@ public class GeneratorConfigProperties
     String      modulePackage;
     String      tablePrefix;
     String      author;
+    boolean     excel;
 
     public enum DalPlatform
     {

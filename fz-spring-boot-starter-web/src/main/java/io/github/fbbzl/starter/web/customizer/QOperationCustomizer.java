@@ -4,7 +4,7 @@ import cn.hutool.core.map.MapUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import cn.hutool.core.util.TypeUtil;
-import io.github.fbbzl.starter.web.BaseController;
+import io.github.fbbzl.starter.web.BaseCrudController;
 import io.github.fbbzl.starter.web.Q;
 import io.swagger.v3.core.converter.AnnotatedType;
 import io.swagger.v3.core.converter.ModelConverters;
@@ -21,8 +21,10 @@ import org.springdoc.core.customizers.GlobalOpenApiCustomizer;
 import org.springdoc.core.customizers.GlobalOperationCustomizer;
 import org.springframework.core.GenericTypeResolver;
 import org.springframework.core.MethodParameter;
+import org.springframework.lang.Nullable;
 import org.springframework.web.method.HandlerMethod;
 
+import java.lang.annotation.Annotation;
 import java.lang.reflect.*;
 import java.util.*;
 
@@ -33,10 +35,12 @@ import java.util.*;
  * @version 1.0
  * @since 2026/5/14 23:30
  */
-public class ROperationCustomizer implements GlobalOperationCustomizer, GlobalOpenApiCustomizer
+public class QOperationCustomizer implements GlobalOperationCustomizer, GlobalOpenApiCustomizer
 {
     private static final String APPLICATION_JSON     = org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
     private static final String MULTIPART_FORM_DATA = org.springframework.http.MediaType.MULTIPART_FORM_DATA_VALUE;
+    private static final String FILES_PROPERTY      = "files";
+    private static final String REF_SEPARATOR       = "/";
 
     private final Map<String, Schema> referencedSchemas = MapUtil.newConcurrentHashMap();
 
@@ -46,7 +50,7 @@ public class ROperationCustomizer implements GlobalOperationCustomizer, GlobalOp
         if (ObjectUtil.isNull(operation)) {
             return operation;
         }
-        if (!BaseController.class.equals(handlerMethod.getMethod().getDeclaringClass())) {
+        if (!supportsController(handlerMethod)) {
             return operation;
         }
 
@@ -73,10 +77,20 @@ public class ROperationCustomizer implements GlobalOperationCustomizer, GlobalOp
 
         String contentType = resolveContentType(requestBodyParameter);
         if (isMultipartFormData(contentType)) {
-            applyMultipartFileSchema(schema);
+            applyMultipartFormDataSchema(schema);
         }
         applySchema(requestBody, schema, contentType, isMultipartFormData(contentType));
         return operation;
+    }
+
+    protected boolean supportsController(HandlerMethod handlerMethod)
+    {
+        return supportsControllerClass(handlerMethod.getBeanType());
+    }
+
+    protected boolean supportsControllerClass(Class<?> controllerClass)
+    {
+        return BaseCrudController.class.isAssignableFrom(controllerClass);
     }
 
     @Override
@@ -101,28 +115,35 @@ public class ROperationCustomizer implements GlobalOperationCustomizer, GlobalOp
         referencedSchemas.forEach(schemas::putIfAbsent);
     }
 
-    private MethodParameter findRequestBodyParameter(HandlerMethod handlerMethod)
+    @Nullable
+    protected MethodParameter findRequestBodyParameter(HandlerMethod handlerMethod)
     {
         MethodParameter fallback = null;
         for (MethodParameter methodParameter : handlerMethod.getMethodParameters()) {
             MethodParameter typedParameter = methodParameter.withContainingClass(handlerMethod.getBeanType());
-            if (methodParameter.hasParameterAnnotation(org.springframework.web.bind.annotation.RequestBody.class)) {
+            if (isExplicitRequestBodyParameter(methodParameter)) {
                 return typedParameter;
             }
             Class<?> parameterType = typedParameter.getParameterType();
-            if (fallback == null && isSupportedRequestParameter(parameterType)) {
+            if (fallback == null && supportsFallbackRequestBodyParameter(parameterType)) {
                 fallback = typedParameter;
             }
         }
         return fallback;
     }
 
-    private boolean isSupportedRequestParameter(Class<?> parameterType)
+    protected boolean isExplicitRequestBodyParameter(MethodParameter methodParameter)
+    {
+        return methodParameter.hasParameterAnnotation(org.springframework.web.bind.annotation.RequestBody.class);
+    }
+
+    protected boolean supportsFallbackRequestBodyParameter(Class<?> parameterType)
     {
         return Q.class.isAssignableFrom(parameterType) || Q.FQ.class.isAssignableFrom(parameterType);
     }
 
-    private Type resolveParameterType(MethodParameter methodParameter, Class<?> controllerClass)
+    @Nullable
+    protected Type resolveParameterType(MethodParameter methodParameter, Class<?> controllerClass)
     {
         Type actualType = GenericTypeResolver.resolveType(methodParameter.getGenericParameterType(), controllerClass);
         if (ObjectUtil.isNull(actualType) || TypeUtil.isUnknown(actualType) || TypeUtil.hasTypeVariable(actualType)) {
@@ -131,32 +152,38 @@ public class ROperationCustomizer implements GlobalOperationCustomizer, GlobalOp
         return actualType;
     }
 
-    private Schema<?> resolveRequestBodySchema(Type requestBodyType, MethodParameter methodParameter)
+    @Nullable
+    protected Schema<?> resolveRequestBodySchema(Type requestBodyType, MethodParameter methodParameter)
     {
         return resolveSchema(requestBodyType, methodParameter.getParameterAnnotations(), true);
     }
 
-    private String resolveContentType(MethodParameter methodParameter)
+    protected String resolveContentType(MethodParameter methodParameter)
     {
-        if (Q.FQ.class.isAssignableFrom(methodParameter.getParameterType())) {
+        if (isMultipartFormDataParameter(methodParameter)) {
             return MULTIPART_FORM_DATA;
         }
         return APPLICATION_JSON;
     }
 
-    private boolean isMultipartFormData(String contentType)
+    protected boolean isMultipartFormDataParameter(MethodParameter methodParameter)
+    {
+        return Q.FQ.class.isAssignableFrom(methodParameter.getParameterType());
+    }
+
+    protected boolean isMultipartFormData(String contentType)
     {
         return MULTIPART_FORM_DATA.equals(contentType);
     }
 
-    private void applyMultipartFileSchema(Schema<?> schema)
+    protected void applyMultipartFormDataSchema(Schema<?> schema)
     {
         Schema<?> multipartSchema = dereference(schema);
         if (ObjectUtil.isNull(multipartSchema) || MapUtil.isEmpty(multipartSchema.getProperties())) {
             return;
         }
 
-        Schema<?> filesSchema = (Schema<?>) multipartSchema.getProperties().get("files");
+        Schema<?> filesSchema = (Schema<?>) multipartSchema.getProperties().get(FILES_PROPERTY);
         if (ObjectUtil.isNull(filesSchema)) {
             return;
         }
@@ -169,10 +196,11 @@ public class ROperationCustomizer implements GlobalOperationCustomizer, GlobalOp
         binaryFilesSchema.setMaxItems(filesSchema.getMaxItems());
         binaryFilesSchema.setMinItems(filesSchema.getMinItems());
         binaryFilesSchema.items(binaryFileSchema);
-        multipartSchema.addProperty("files", binaryFilesSchema);
+        multipartSchema.addProperty(FILES_PROPERTY, binaryFilesSchema);
     }
 
-    private Schema<?> resolveSchema(Type type, java.lang.annotation.Annotation[] annotations, boolean resolveAsRef)
+    @Nullable
+    protected Schema<?> resolveSchema(Type type, Annotation[] annotations, boolean resolveAsRef)
     {
         AnnotatedType annotatedType = new AnnotatedType(type).resolveAsRef(resolveAsRef);
         if (ObjectUtil.isNotNull(annotations)) {
@@ -191,7 +219,7 @@ public class ROperationCustomizer implements GlobalOperationCustomizer, GlobalOp
         return resolvedSchema.schema;
     }
 
-    private void applyGenericPropertyAnnotations(Type type, Schema<?> schema)
+    protected void applyGenericPropertyAnnotations(Type type, Schema<?> schema)
     {
         applyGenericPropertyAnnotations(type, schema, new LinkedHashMap<>(), new HashSet<>());
     }
@@ -296,7 +324,7 @@ public class ROperationCustomizer implements GlobalOperationCustomizer, GlobalOp
         }
     }
 
-    private void applySchemaAnnotation(io.swagger.v3.oas.annotations.media.Schema schemaAnnotation, Schema<?> schema)
+    private void applySchemaAnnotation(@Nullable io.swagger.v3.oas.annotations.media.Schema schemaAnnotation, Schema<?> schema)
     {
         if (ObjectUtil.isNull(schemaAnnotation) || ObjectUtil.isNull(schema)) {
             return;
@@ -324,12 +352,13 @@ public class ROperationCustomizer implements GlobalOperationCustomizer, GlobalOp
         }
     }
 
+    @Nullable
     private Schema<?> dereference(Schema<?> schema)
     {
         if (ObjectUtil.isNull(schema) || StrUtil.isBlank(schema.get$ref())) {
             return schema;
         }
-        String schemaName = StrUtil.subAfter(schema.get$ref(), "/", true);
+        String schemaName = StrUtil.subAfter(schema.get$ref(), REF_SEPARATOR, true);
         return ObjectUtil.defaultIfNull(referencedSchemas.get(schemaName), schema);
     }
 
@@ -369,6 +398,7 @@ public class ROperationCustomizer implements GlobalOperationCustomizer, GlobalOp
         return type;
     }
 
+    @Nullable
     private Class<?> resolveRawClass(Type rawType)
     {
         if (rawType instanceof Class<?> clazz) {

@@ -1,24 +1,19 @@
-package io.github.fbbzl.starter.web;
+package io.github.fbbzl.starter.webflux;
 
 import cn.hutool.core.lang.tree.Tree;
 import io.github.fbbzl.starter.audit.frame.annotation.AuditMethod;
 import io.github.fbbzl.starter.core.util.Generics;
 import io.github.fbbzl.starter.dal.BaseDal;
-import io.github.fbbzl.starter.excel.BaseEo;
-import io.github.fbbzl.starter.excel.ExcelDto;
 import io.github.fbbzl.starter.pojo.bo.BaseBo;
 import io.github.fbbzl.starter.pojo.dto.BaseDto;
 import io.github.fbbzl.starter.pojo.entity.BaseTableEntity;
-import io.github.fbbzl.starter.pojo.mapstruct.BaseStructMapper;
+import io.github.fbbzl.starter.pojo.mapstruct.BaseCrudStructMapper;
 import io.github.fbbzl.starter.pojo.validation.group.CRUD;
-import io.github.fbbzl.starter.web.Q.FQ;
-import io.github.fbbzl.starter.web.Q.OQ;
-import io.github.fbbzl.starter.web.Q.PQ;
-import io.github.fbbzl.starter.web.R.PR;
+import io.github.fbbzl.starter.webflux.Q.OQ;
+import io.github.fbbzl.starter.webflux.Q.PQ;
+import io.github.fbbzl.starter.webflux.R.PR;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
 import lombok.experimental.FieldDefaults;
@@ -28,14 +23,12 @@ import org.springframework.lang.Nullable;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
-import java.io.IOException;
 import java.io.Serializable;
 import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 
 import static cn.hutool.core.util.ObjectUtil.defaultIfNull;
-import static java.util.Collections.emptyList;
 import static lombok.AccessLevel.PROTECTED;
 
 /**
@@ -47,24 +40,20 @@ import static lombok.AccessLevel.PROTECTED;
 @Validated
 @SuppressWarnings("all")
 @FieldDefaults(level = PROTECTED)
-public abstract class BaseController<
+public abstract class BaseCrudController<
         ID      extends Serializable,
         ENTITY  extends BaseTableEntity<ID>,
-        SERVICE extends BaseService<ID, ENTITY, DTO, BO, EO, ? extends BaseDal<ENTITY, ID>, ? extends BaseStructMapper<ENTITY, DTO, BO, EO>>,
+        SERVICE extends BaseCrudService<ID, ENTITY, DTO, BO, DAL, STRUCT_MAPPER>,
         DTO     extends BaseDto<ID>,
         BO      extends BaseBo<ID>,
-        EO      extends BaseEo>
+        DAL     extends BaseDal<ENTITY, ID>,
+        STRUCT_MAPPER extends BaseCrudStructMapper<ENTITY, DTO, BO>>
 {
 
     @Autowired
-    SERVICE             service;
-    @Autowired
-    HttpServletRequest  request;
-    @Autowired
-    HttpServletResponse response;
+    SERVICE service;
 
-    Class<ENTITY> entityClass = Generics.getGenericSuperType(this.getClass(), BaseController.class, 1);
-    Class<EO>     excelClass  = Generics.getGenericSuperType(this.getClass(), BaseController.class, 5);
+    Class<ENTITY> entityClass = Generics.getGenericSuperType(this.getClass(), BaseCrudController.class, 1);
 
     @Operation(description = "Based on the primary key query, it does not contain data that has been logically deleted", summary = "Query by primary key")
     @GetMapping("{id}")
@@ -233,51 +222,6 @@ public abstract class BaseController<
             Q<Set<ID>> req)
     {
         service.delete(req.getData());
-    }
-
-    @Operation(description = "Get an excel template", summary = "The Excel template you need to use to get Excel upload data")
-    @PostMapping("excel/template")
-    public void excelTemplate(
-            @NotNull
-            @Validated(CRUD.R.class)
-            @Parameter(description = "download excel template request", required = true)
-            @RequestBody Q<ExcelDto<DTO>> req) throws IOException
-    {
-        ExcelDto<DTO> excelDto = req.getData();
-        ExcelDto.setResponseHeader(response, excelDto);
-        ExcelDto.doExport(response, emptyList(), excelClass, excelDto);
-    }
-
-    @AuditMethod(saveParam = false, saveResult = false)
-    @Operation(description = "Excel to import", summary = "Excel data to import data")
-    @PostMapping("excel/import")
-    public void importExcel(
-            @NotNull
-            @Validated(CRUD.C.class)
-            @Parameter(description = "excel import object", required = true)
-            FQ req) throws IOException
-    {
-        List<EO> readData = ExcelDto.doRead(req.getSingleFile().getInputStream(), excelClass);
-        service.importExcel(readData);
-    }
-
-    @AuditMethod(saveParam = false, saveResult = false)
-    @Operation(description = "Excel export", summary = "Excel excel data")
-    @PostMapping({"excel/export", "excel/export/{limit}"})
-    public void exportExcel(
-            @Nullable
-            @Positive(message = "limit must be positive")
-            @Parameter(description = "export data limit")
-            @PathVariable(value = "limit", required = false)
-            Integer limit,
-            @NotNull
-            @Validated(CRUD.R.class)
-            @Parameter(description = "export excel request", required = true)
-            @RequestBody OQ<ExcelDto<DTO>> req) throws IOException
-    {
-        ExcelDto<DTO> excelDto = req.getData();
-        ExcelDto.setResponseHeader(response, excelDto);
-        ExcelDto.doExport(response, service.exportExcel(excelDto.param(), defaultIfNull(limit, this.defaultLimit()), req.getOrders()), excelClass, excelDto);
     }
 
     protected Integer defaultLimit()

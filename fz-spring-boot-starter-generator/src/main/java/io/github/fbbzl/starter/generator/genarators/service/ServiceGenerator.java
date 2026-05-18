@@ -1,7 +1,6 @@
 package io.github.fbbzl.starter.generator.genarators.service;
 
 import freemarker.template.Template;
-import io.github.fbbzl.starter.generator.config.properties.GeneratorConfigProperties.DalPlatform;
 import io.github.fbbzl.starter.generator.frame.BaseGenerator;
 import lombok.extern.slf4j.Slf4j;
 
@@ -23,13 +22,6 @@ public class ServiceGenerator extends BaseGenerator
     {
         String servicePackage  = ftlContext.get("moduleName") + ".service";
         String serviceFileName = ftlContext.get("className") + "Service.java";
-
-        DalPlatform platformType = genCfg.getPlatformType();
-
-        if (platformType == DalPlatform.JPA)
-            ftlContext.put("dalClass", ftlContext.get("className") + "Repository");
-        else
-            ftlContext.put("dalClass", ftlContext.get("className") + "Mapper");
 
         return javaFilePath(servicePackage, serviceFileName);
     }

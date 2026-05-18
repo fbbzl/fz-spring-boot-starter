@@ -1,7 +1,8 @@
 package io.github.fbbzl.starter.web.config;
 
-import io.github.fbbzl.starter.web.customizer.ROperationCustomizer;
+import io.github.fbbzl.starter.web.customizer.QOperationCustomizer;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnWebApplication;
 import org.springframework.context.annotation.Bean;
 
@@ -15,8 +16,9 @@ import org.springframework.context.annotation.Bean;
 public class OpenApiConfiguration
 {
     @Bean
-    public ROperationCustomizer roperationCustomizer()
+    @ConditionalOnMissingBean
+    public QOperationCustomizer roperationCustomizer()
     {
-        return new ROperationCustomizer();
+        return new QOperationCustomizer();
     }
 }
