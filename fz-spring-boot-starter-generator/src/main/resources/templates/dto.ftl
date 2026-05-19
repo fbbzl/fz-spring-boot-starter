@@ -42,7 +42,7 @@ public class ${className}Dto extends BaseDto<${primaryKeyType}> {
     <#else>
     @Nullable
     </#if>
-    @Schema(description = "${field.comment}"<#if field.minLength??>, minLength = ${field.minLength?c}</#if><#if field.maxLength??>, maxLength = ${field.maxLength?c}</#if>)
+    @Schema(description = "${field.comment}"<#if field.example??>, example = "${field.example?j_string}"</#if><#if field.minLength??>, minLength = ${field.minLength?c}</#if><#if field.maxLength??>, maxLength = ${field.maxLength?c}</#if>)
     <#if field.lengthValidation??>
     @Length(min = ${field.minLength!1}, max = ${field.maxLength?c})
     </#if>

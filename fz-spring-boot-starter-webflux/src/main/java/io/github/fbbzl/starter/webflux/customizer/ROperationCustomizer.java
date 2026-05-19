@@ -12,6 +12,7 @@ import io.swagger.v3.core.converter.ResolvedSchema;
 import io.swagger.v3.oas.models.Components;
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.Operation;
+import io.swagger.v3.oas.models.examples.Example;
 import io.swagger.v3.oas.models.media.ArraySchema;
 import io.swagger.v3.oas.models.media.Content;
 import io.swagger.v3.oas.models.media.MediaType;
@@ -38,6 +39,8 @@ public class ROperationCustomizer implements GlobalOperationCustomizer, GlobalOp
 {
     private static final String APPLICATION_JSON     = org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
     private static final String MULTIPART_FORM_DATA = org.springframework.http.MediaType.MULTIPART_FORM_DATA_VALUE;
+    private static final String FILES_PROPERTY      = "files";
+    private static final String REF_SEPARATOR       = "/";
     private static final String TYPE_ARRAY          = "array";
     private static final String TYPE_BOOLEAN        = "boolean";
     private static final String TYPE_INTEGER        = "integer";
@@ -91,7 +94,7 @@ public class ROperationCustomizer implements GlobalOperationCustomizer, GlobalOp
     @Override
     public void customise(OpenAPI openApi)
     {
-        if (ObjectUtil.isNull(openApi) || MapUtil.isEmpty(referencedSchemas)) {
+        if (ObjectUtil.isNull(openApi)) {
             return;
         }
 
@@ -107,7 +110,63 @@ public class ROperationCustomizer implements GlobalOperationCustomizer, GlobalOp
             components.setSchemas(schemas);
         }
 
-        referencedSchemas.forEach(schemas::putIfAbsent);
+        Map<String, Schema> componentSchemas = schemas;
+        componentSchemas.forEach(referencedSchemas::putIfAbsent);
+        referencedSchemas.forEach((schemaName, referencedSchema) -> {
+            Schema existingSchema = componentSchemas.get(schemaName);
+            if (ObjectUtil.isNull(existingSchema)) {
+                componentSchemas.put(schemaName, referencedSchema);
+                return;
+            }
+            applySchemaExample(existingSchema, referencedSchema.getExample());
+        });
+        applyOpenApiExamples(openApi);
+    }
+
+    private void applyOpenApiExamples(OpenAPI openApi)
+    {
+        if (ObjectUtil.isNull(openApi) || ObjectUtil.isNull(openApi.getPaths())) {
+            return;
+        }
+
+        openApi.getPaths().values().forEach(pathItem -> {
+            if (ObjectUtil.isNull(pathItem)) {
+                return;
+            }
+            pathItem.readOperations().forEach(this::applyOperationExamples);
+        });
+    }
+
+    private void applyOperationExamples(Operation operation)
+    {
+        if (ObjectUtil.isNull(operation)) {
+            return;
+        }
+
+        if (ObjectUtil.isNotNull(operation.getRequestBody())
+            && MapUtil.isNotEmpty(operation.getRequestBody().getContent())) {
+            operation.getRequestBody().getContent().forEach((contentType, mediaType) -> {
+                if (ObjectUtil.isNull(mediaType) || ObjectUtil.isNull(mediaType.getSchema())) {
+                    return;
+                }
+                applyExample(mediaType, mediaType.getSchema(), contentType);
+            });
+        }
+
+        if (MapUtil.isEmpty(operation.getResponses())) {
+            return;
+        }
+        operation.getResponses().values().forEach(apiResponse -> {
+            if (ObjectUtil.isNull(apiResponse) || MapUtil.isEmpty(apiResponse.getContent())) {
+                return;
+            }
+            apiResponse.getContent().forEach((contentType, mediaType) -> {
+                if (ObjectUtil.isNull(mediaType) || ObjectUtil.isNull(mediaType.getSchema())) {
+                    return;
+                }
+                applyExample(mediaType, mediaType.getSchema(), contentType);
+            });
+        });
     }
 
     private MethodParameter findRequestBodyParameter(HandlerMethod handlerMethod)
@@ -165,7 +224,7 @@ public class ROperationCustomizer implements GlobalOperationCustomizer, GlobalOp
             return;
         }
 
-        Schema<?> filesSchema = (Schema<?>) multipartSchema.getProperties().get("files");
+        Schema<?> filesSchema = (Schema<?>) multipartSchema.getProperties().get(FILES_PROPERTY);
         if (ObjectUtil.isNull(filesSchema)) {
             return;
         }
@@ -178,7 +237,7 @@ public class ROperationCustomizer implements GlobalOperationCustomizer, GlobalOp
         binaryFilesSchema.setMaxItems(filesSchema.getMaxItems());
         binaryFilesSchema.setMinItems(filesSchema.getMinItems());
         binaryFilesSchema.items(binaryFileSchema);
-        multipartSchema.addProperty("files", binaryFilesSchema);
+        multipartSchema.addProperty(FILES_PROPERTY, binaryFilesSchema);
     }
 
     private Schema<?> resolveSchema(Type type, java.lang.annotation.Annotation[] annotations, boolean resolveAsRef)
@@ -338,7 +397,7 @@ public class ROperationCustomizer implements GlobalOperationCustomizer, GlobalOp
         if (ObjectUtil.isNull(schema) || StrUtil.isBlank(schema.get$ref())) {
             return schema;
         }
-        String schemaName = StrUtil.subAfter(schema.get$ref(), "/", true);
+        String schemaName = StrUtil.subAfter(schema.get$ref(), REF_SEPARATOR, true);
         return ObjectUtil.defaultIfNull(referencedSchemas.get(schemaName), schema);
     }
 
@@ -452,15 +511,35 @@ public class ROperationCustomizer implements GlobalOperationCustomizer, GlobalOp
 
     private void applyExample(MediaType mediaType, Schema<?> schema, String contentType)
     {
-        if (!APPLICATION_JSON.equals(contentType)
-            || ObjectUtil.isNotNull(mediaType.getExample())
-            || MapUtil.isNotEmpty(mediaType.getExamples())) {
+        if (!isJsonContentType(contentType) || ObjectUtil.isNull(schema)) {
             return;
         }
 
         Object example = buildExample(schema, new HashSet<>());
         if (ObjectUtil.isNotNull(example)) {
             mediaType.setExample(example);
+            mediaType.addExamples("default", new Example().value(example));
+            applySchemaExample(schema, example);
+        }
+    }
+
+    private boolean isJsonContentType(String contentType)
+    {
+        return APPLICATION_JSON.equals(contentType) || StrUtil.startWith(contentType, APPLICATION_JSON + ";");
+    }
+
+    private void applySchemaExample(Schema<?> schema, Object example)
+    {
+        if (ObjectUtil.isNull(schema) || ObjectUtil.isNull(example)) {
+            return;
+        }
+        if (ObjectUtil.isNull(schema.getExample())) {
+            schema.setExample(example);
+        }
+
+        Schema<?> actualSchema = dereference(schema);
+        if (ObjectUtil.isNotNull(actualSchema) && ObjectUtil.isNull(actualSchema.getExample())) {
+            actualSchema.setExample(example);
         }
     }
 

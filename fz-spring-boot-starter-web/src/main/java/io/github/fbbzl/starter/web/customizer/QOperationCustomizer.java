@@ -94,12 +94,7 @@ public class QOperationCustomizer implements GlobalOperationCustomizer, GlobalOp
 
     protected boolean supportsController(HandlerMethod handlerMethod)
     {
-        return supportsControllerClass(handlerMethod.getBeanType());
-    }
-
-    protected boolean supportsControllerClass(Class<?> controllerClass)
-    {
-        return BaseCrudController.class.isAssignableFrom(controllerClass);
+        return BaseCrudController.class.isAssignableFrom(handlerMethod.getBeanType());
     }
 
     @Override
@@ -150,17 +145,33 @@ public class QOperationCustomizer implements GlobalOperationCustomizer, GlobalOp
 
     private void applyOperationExamples(Operation operation)
     {
-        if (ObjectUtil.isNull(operation)
-            || ObjectUtil.isNull(operation.getRequestBody())
-            || MapUtil.isEmpty(operation.getRequestBody().getContent())) {
+        if (ObjectUtil.isNull(operation)) {
             return;
         }
 
-        operation.getRequestBody().getContent().forEach((contentType, mediaType) -> {
-            if (ObjectUtil.isNull(mediaType) || ObjectUtil.isNull(mediaType.getSchema())) {
+        if (ObjectUtil.isNotNull(operation.getRequestBody())
+            && MapUtil.isNotEmpty(operation.getRequestBody().getContent())) {
+            operation.getRequestBody().getContent().forEach((contentType, mediaType) -> {
+                if (ObjectUtil.isNull(mediaType) || ObjectUtil.isNull(mediaType.getSchema())) {
+                    return;
+                }
+                applyExample(mediaType, mediaType.getSchema(), contentType);
+            });
+        }
+
+        if (MapUtil.isEmpty(operation.getResponses())) {
+            return;
+        }
+        operation.getResponses().values().forEach(apiResponse -> {
+            if (ObjectUtil.isNull(apiResponse) || MapUtil.isEmpty(apiResponse.getContent())) {
                 return;
             }
-            applyExample(mediaType, mediaType.getSchema(), contentType);
+            apiResponse.getContent().forEach((contentType, mediaType) -> {
+                if (ObjectUtil.isNull(mediaType) || ObjectUtil.isNull(mediaType.getSchema())) {
+                    return;
+                }
+                applyExample(mediaType, mediaType.getSchema(), contentType);
+            });
         });
     }
 
