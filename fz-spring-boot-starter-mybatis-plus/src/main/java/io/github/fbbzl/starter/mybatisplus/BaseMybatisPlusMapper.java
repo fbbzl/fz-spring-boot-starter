@@ -141,10 +141,7 @@ public interface BaseMybatisPlusMapper<ENTITY extends BaseTableEntity<ID>, ID ex
     default PageResult<ENTITY> page(@Nullable Page page, @Nullable ENTITY entity)
     {
         Throws.ifNull(page, "page can not be null");
-
-        HP<ENTITY> hp = HP.of(page);
-        this.selectPage(hp, autoQuery(entity));
-        return hp.toPageResult();
+        return this.selectPage(HP.of(page), autoQuery(entity)).toPageResult();
     }
 
     @Override
