@@ -1,9 +1,8 @@
 package io.github.fbbzl.starter.core.util;
 
+import io.github.fbbzl.starter.core.util.Throws.ExceptionSupplier;
+import io.github.fbbzl.starter.core.util.Throws.MessageSupplier;
 import lombok.experimental.UtilityClass;
-import org.fz.erwin.exception.Throws;
-import org.fz.erwin.exception.Throws.ExceptionSupplier;
-import org.fz.erwin.exception.Throws.MessageSupplier;
 
 import java.util.Collection;
 import java.util.Map;

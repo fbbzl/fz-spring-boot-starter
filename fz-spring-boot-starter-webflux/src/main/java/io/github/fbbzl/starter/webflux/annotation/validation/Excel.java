@@ -6,7 +6,7 @@ import jakarta.validation.ConstraintValidator;
 import jakarta.validation.ConstraintValidatorContext;
 import jakarta.validation.Payload;
 import jakarta.validation.constraints.NotNull;
-import org.fz.erwin.exception.Throws;
+import io.github.fbbzl.starter.core.util.Throws;
 import org.springframework.http.codec.multipart.FilePart;
 
 import java.lang.annotation.ElementType;

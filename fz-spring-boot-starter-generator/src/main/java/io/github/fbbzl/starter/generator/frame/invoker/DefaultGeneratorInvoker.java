@@ -24,7 +24,7 @@ import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
-import org.fz.erwin.exception.Throws;
+import io.github.fbbzl.starter.core.util.Throws;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Primary;
 import org.springframework.ui.freemarker.FreeMarkerTemplateUtils;

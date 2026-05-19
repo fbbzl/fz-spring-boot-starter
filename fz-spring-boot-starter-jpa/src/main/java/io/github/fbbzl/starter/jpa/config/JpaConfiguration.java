@@ -2,7 +2,7 @@ package io.github.fbbzl.starter.jpa.config;
 
 import io.github.fbbzl.starter.jpa.annotation.EnableSpecificationRepository;
 import lombok.extern.slf4j.Slf4j;
-import org.fz.erwin.exception.Throws;
+import io.github.fbbzl.starter.core.util.Throws;
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.AutoConfigurationPackages;

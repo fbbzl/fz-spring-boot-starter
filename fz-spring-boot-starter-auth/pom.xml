@@ -27,6 +27,11 @@
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-autoconfigure</artifactId>
         </dependency>
+
+        <dependency>
+            <groupId>io.github.fbbzl</groupId>
+            <artifactId>fz-spring-boot-starter-core</artifactId>
+        </dependency>
     </dependencies>
 
 

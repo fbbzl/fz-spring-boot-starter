@@ -22,6 +22,11 @@
             <groupId>io.github.fbbzl</groupId>
             <artifactId>fz-spring-boot-starter-dal</artifactId>
         </dependency>
+
+        <dependency>
+            <groupId>io.github.fbbzl</groupId>
+            <artifactId>fz-spring-boot-starter-core</artifactId>
+        </dependency>
     </dependencies>
 
 </project>

@@ -1,7 +1,7 @@
 package io.github.fbbzl.starter.core.util;
 
 import lombok.experimental.UtilityClass;
-import org.fz.erwin.lambda.Try.LambdasException;
+import io.github.fbbzl.starter.core.util.Try.LambdasException;
 
 import java.lang.invoke.*;
 import java.lang.invoke.MethodHandles.Lookup;
