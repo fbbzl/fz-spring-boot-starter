@@ -10,8 +10,6 @@ import cn.hutool.db.sql.Order;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
-import com.baomidou.mybatisplus.core.metadata.IPage;
-import com.baomidou.mybatisplus.core.metadata.OrderItem;
 import com.baomidou.mybatisplus.core.toolkit.LambdaUtils;
 import com.baomidou.mybatisplus.core.toolkit.support.ColumnCache;
 import io.github.fbbzl.starter.dal.BaseDal;
@@ -20,7 +18,6 @@ import io.github.fbbzl.starter.pojo.entity.BaseTableEntity;
 import io.github.fbbzl.starter.pojo.validation.group.CRUD;
 import jakarta.validation.constraints.NotNull;
 import org.fz.erwin.exception.Throws;
-import org.springframework.lang.NonNull;
 import org.springframework.lang.Nullable;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.validation.annotation.Validated;
@@ -30,7 +27,6 @@ import java.lang.reflect.Field;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.function.Consumer;
-import java.util.stream.Stream;
 
 import static cn.hutool.core.collection.CollUtil.*;
 import static cn.hutool.core.text.CharSequenceUtil.isBlank;
@@ -43,7 +39,7 @@ import static java.util.Collections.emptyList;
 /**
  * @author fengbinbin
  * @version 1.0
- * @since 2026/2/8 16:43
+ * @since 2026/3/8 16:43
  */
 public interface BaseMybatisPlusMapper<ENTITY extends BaseTableEntity<ID>, ID extends Serializable>
         extends BaseMapper<ENTITY>,
@@ -146,20 +142,9 @@ public interface BaseMybatisPlusMapper<ENTITY extends BaseTableEntity<ID>, ID ex
     {
         Throws.ifNull(page, "page can not be null");
 
-        return this.toPageResult(this.selectPage(toMybatisPlusPage(page), autoQuery(entity)));
-    }
-
-    default com.baomidou.mybatisplus.extension.plugins.pagination.Page<ENTITY> toMybatisPlusPage(Page hutoolPage)
-    {
-        return com.baomidou.mybatisplus.extension.plugins.pagination.Page.<ENTITY>of(hutoolPage.getPageNumber() + 1L, hutoolPage.getPageSize()).addOrder(this.toOrderItem(hutoolPage.getOrders()));
-    }
-
-    default @NonNull PageResult<ENTITY> toPageResult(IPage<ENTITY> page)
-    {
-        PageResult<ENTITY> pageResult =
-                new PageResult<>((int) page.getCurrent() - 1, (int) page.getSize(), (int) page.getTotal());
-        pageResult.addAll(page.getRecords());
-        return pageResult;
+        HP<ENTITY> hp = HP.of(page);
+        this.selectPage(hp, autoQuery(entity));
+        return hp.toPageResult();
     }
 
     @Override
@@ -227,16 +212,6 @@ public interface BaseMybatisPlusMapper<ENTITY extends BaseTableEntity<ID>, ID ex
             pageNumber++;
             page.setPageNumber(pageNumber);
         } while (pageResult.size() == batchSize);
-    }
-
-    default OrderItem[] toOrderItem(Order... orders)
-    {
-        if (ArrayUtil.isEmpty(orders)) return new OrderItem[]{};
-
-        return Stream.of(orders)
-                     .map(order ->
-                                  order.getDirection() == Direction.ASC ?
-                                  OrderItem.asc(order.getField()) : OrderItem.desc(order.getField())).toArray(OrderItem[]::new);
     }
 
     default QueryWrapper<ENTITY> range(QueryWrapper<ENTITY> wrapper, Range... ranges)
