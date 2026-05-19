@@ -12,6 +12,7 @@ import io.swagger.v3.core.converter.ResolvedSchema;
 import io.swagger.v3.oas.models.Components;
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.Operation;
+import io.swagger.v3.oas.models.examples.Example;
 import io.swagger.v3.oas.models.media.ArraySchema;
 import io.swagger.v3.oas.models.media.Content;
 import io.swagger.v3.oas.models.media.MediaType;
@@ -104,7 +105,7 @@ public class QOperationCustomizer implements GlobalOperationCustomizer, GlobalOp
     @Override
     public void customise(OpenAPI openApi)
     {
-        if (ObjectUtil.isNull(openApi) || MapUtil.isEmpty(referencedSchemas)) {
+        if (ObjectUtil.isNull(openApi)) {
             return;
         }
 
@@ -120,7 +121,47 @@ public class QOperationCustomizer implements GlobalOperationCustomizer, GlobalOp
             components.setSchemas(schemas);
         }
 
-        referencedSchemas.forEach(schemas::putIfAbsent);
+        Map<String, Schema> componentSchemas = schemas;
+        componentSchemas.forEach(referencedSchemas::putIfAbsent);
+        referencedSchemas.forEach((schemaName, referencedSchema) -> {
+            Schema existingSchema = componentSchemas.get(schemaName);
+            if (ObjectUtil.isNull(existingSchema)) {
+                componentSchemas.put(schemaName, referencedSchema);
+                return;
+            }
+            applySchemaExample(existingSchema, referencedSchema.getExample());
+        });
+        applyOpenApiExamples(openApi);
+    }
+
+    private void applyOpenApiExamples(OpenAPI openApi)
+    {
+        if (ObjectUtil.isNull(openApi) || ObjectUtil.isNull(openApi.getPaths())) {
+            return;
+        }
+
+        openApi.getPaths().values().forEach(pathItem -> {
+            if (ObjectUtil.isNull(pathItem)) {
+                return;
+            }
+            pathItem.readOperations().forEach(this::applyOperationExamples);
+        });
+    }
+
+    private void applyOperationExamples(Operation operation)
+    {
+        if (ObjectUtil.isNull(operation)
+            || ObjectUtil.isNull(operation.getRequestBody())
+            || MapUtil.isEmpty(operation.getRequestBody().getContent())) {
+            return;
+        }
+
+        operation.getRequestBody().getContent().forEach((contentType, mediaType) -> {
+            if (ObjectUtil.isNull(mediaType) || ObjectUtil.isNull(mediaType.getSchema())) {
+                return;
+            }
+            applyExample(mediaType, mediaType.getSchema(), contentType);
+        });
     }
 
     @Nullable
@@ -481,15 +522,35 @@ public class QOperationCustomizer implements GlobalOperationCustomizer, GlobalOp
 
     private void applyExample(MediaType mediaType, Schema<?> schema, String contentType)
     {
-        if (!APPLICATION_JSON.equals(contentType)
-            || ObjectUtil.isNotNull(mediaType.getExample())
-            || MapUtil.isNotEmpty(mediaType.getExamples())) {
+        if (!isJsonContentType(contentType) || ObjectUtil.isNull(schema)) {
             return;
         }
 
         Object example = buildExample(schema, new HashSet<>());
         if (ObjectUtil.isNotNull(example)) {
             mediaType.setExample(example);
+            mediaType.addExamples("default", new Example().value(example));
+            applySchemaExample(schema, example);
+        }
+    }
+
+    private boolean isJsonContentType(String contentType)
+    {
+        return APPLICATION_JSON.equals(contentType) || StrUtil.startWith(contentType, APPLICATION_JSON + ";");
+    }
+
+    private void applySchemaExample(Schema<?> schema, Object example)
+    {
+        if (ObjectUtil.isNull(schema) || ObjectUtil.isNull(example)) {
+            return;
+        }
+        if (ObjectUtil.isNull(schema.getExample())) {
+            schema.setExample(example);
+        }
+
+        Schema<?> actualSchema = dereference(schema);
+        if (ObjectUtil.isNotNull(actualSchema) && ObjectUtil.isNull(actualSchema.getExample())) {
+            actualSchema.setExample(example);
         }
     }
 

@@ -27,9 +27,6 @@ public class ${className}Eo extends BaseEo {
     <#-- 排除父类字段 id, createTime, createBy, updateTime, updateBy, deleted 字段 -->
     <#if !["id", "createTime", "createBy", "updateTime", "updateBy", "deleted"]?seq_contains(field.name)>
 
-    /**
-     * ${field.comment}
-     */
     @ExcelProperty("${field.comment}")
     ${field.javaType} ${field.name};
     </#if>
