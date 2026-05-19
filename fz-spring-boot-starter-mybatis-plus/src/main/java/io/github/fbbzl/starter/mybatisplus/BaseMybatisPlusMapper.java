@@ -149,22 +149,17 @@ public interface BaseMybatisPlusMapper<ENTITY extends BaseTableEntity<ID>, ID ex
         return this.toPageResult(this.selectPage(toMybatisPlusPage(page), autoQuery(entity)));
     }
 
-    default com.baomidou.mybatisplus.extension.plugins.pagination.Page<ENTITY> toMybatisPlusPage(Page page)
+    default com.baomidou.mybatisplus.extension.plugins.pagination.Page<ENTITY> toMybatisPlusPage(Page hutoolPage)
     {
-        return com.baomidou.mybatisplus.extension.plugins.pagination.Page.<ENTITY>of(page.getPageNumber() + 1L, page.getPageSize()).addOrder(this.toOrderItem(page.getOrders()));
+        return com.baomidou.mybatisplus.extension.plugins.pagination.Page.<ENTITY>of(hutoolPage.getPageNumber() + 1L, hutoolPage.getPageSize()).addOrder(this.toOrderItem(hutoolPage.getOrders()));
     }
 
     default @NonNull PageResult<ENTITY> toPageResult(IPage<ENTITY> page)
     {
         PageResult<ENTITY> pageResult =
-                new PageResult<>((int) page.getCurrent(), (int) page.getSize(), (int) page.getPages());
+                new PageResult<>((int) page.getCurrent() - 1, (int) page.getSize(), (int) page.getTotal());
         pageResult.addAll(page.getRecords());
         return pageResult;
-    }
-
-    default com.baomidou.mybatisplus.extension.plugins.pagination.Page<ENTITY> toPlusResult(Page page)
-    {
-        return com.baomidou.mybatisplus.extension.plugins.pagination.Page.of(page.getPageNumber() + 1L, page.getPageSize());
     }
 
     @Override
