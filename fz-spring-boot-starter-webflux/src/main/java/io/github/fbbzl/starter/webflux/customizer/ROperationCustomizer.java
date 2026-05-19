@@ -21,6 +21,7 @@ import org.springdoc.core.customizers.GlobalOpenApiCustomizer;
 import org.springdoc.core.customizers.GlobalOperationCustomizer;
 import org.springframework.core.GenericTypeResolver;
 import org.springframework.core.MethodParameter;
+import org.springframework.lang.Nullable;
 import org.springframework.web.method.HandlerMethod;
 
 import java.lang.reflect.*;
@@ -37,6 +38,14 @@ public class ROperationCustomizer implements GlobalOperationCustomizer, GlobalOp
 {
     private static final String APPLICATION_JSON     = org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
     private static final String MULTIPART_FORM_DATA = org.springframework.http.MediaType.MULTIPART_FORM_DATA_VALUE;
+    private static final String TYPE_ARRAY          = "array";
+    private static final String TYPE_BOOLEAN        = "boolean";
+    private static final String TYPE_INTEGER        = "integer";
+    private static final String TYPE_NUMBER         = "number";
+    private static final String TYPE_OBJECT         = "object";
+    private static final String TYPE_STRING         = "string";
+    private static final String FORMAT_DATE         = "date";
+    private static final String FORMAT_DATE_TIME    = "date-time";
 
     private final Map<String, Schema> referencedSchemas = MapUtil.newConcurrentHashMap();
 
@@ -433,10 +442,146 @@ public class ROperationCustomizer implements GlobalOperationCustomizer, GlobalOp
             content.addMediaType(contentType, new MediaType());
         }
 
-        for (MediaType mediaType : content.values()) {
+        content.forEach((mediaTypeName, mediaType) -> {
             if (ObjectUtil.isNotNull(mediaType)) {
                 mediaType.setSchema(schema);
+                applyExample(mediaType, schema, mediaTypeName);
             }
+        });
+    }
+
+    private void applyExample(MediaType mediaType, Schema<?> schema, String contentType)
+    {
+        if (!APPLICATION_JSON.equals(contentType)
+            || ObjectUtil.isNotNull(mediaType.getExample())
+            || MapUtil.isNotEmpty(mediaType.getExamples())) {
+            return;
         }
+
+        Object example = buildExample(schema, new HashSet<>());
+        if (ObjectUtil.isNotNull(example)) {
+            mediaType.setExample(example);
+        }
+    }
+
+    @Nullable
+    private Object buildExample(Schema<?> schema, Set<String> visitedSchemas)
+    {
+        if (ObjectUtil.isNull(schema)) {
+            return null;
+        }
+
+        String schemaKey = ObjectUtil.defaultIfNull(schema.get$ref(), String.valueOf(System.identityHashCode(schema)));
+        if (!visitedSchemas.add(schemaKey)) {
+            return null;
+        }
+
+        Schema<?> actualSchema = dereference(schema);
+        if (ObjectUtil.isNotNull(actualSchema.getExample())) {
+            return actualSchema.getExample();
+        }
+        if (ObjectUtil.isNotNull(actualSchema.getExamples()) && !actualSchema.getExamples().isEmpty()) {
+            return actualSchema.getExamples().get(0);
+        }
+        if (ObjectUtil.isNotNull(actualSchema.getDefault())) {
+            return actualSchema.getDefault();
+        }
+        if (ObjectUtil.isNotNull(actualSchema.getEnum()) && !actualSchema.getEnum().isEmpty()) {
+            return actualSchema.getEnum().get(0);
+        }
+
+        Object composedExample = buildComposedExample(actualSchema, visitedSchemas);
+        if (ObjectUtil.isNotNull(composedExample)) {
+            return composedExample;
+        }
+
+        if (actualSchema instanceof ArraySchema arraySchema) {
+            Object itemExample = buildExample(arraySchema.getItems(), visitedSchemas);
+            return ObjectUtil.isNull(itemExample) ? List.of() : List.of(itemExample);
+        }
+
+        if (MapUtil.isNotEmpty(actualSchema.getProperties())) {
+            Map<String, Object> example = new LinkedHashMap<>();
+            actualSchema.getProperties().forEach((name, property) -> {
+                if (!(property instanceof Schema<?> propertySchema)
+                    || Boolean.TRUE.equals(propertySchema.getReadOnly())) {
+                    return;
+                }
+
+                Object propertyExample = buildExample(propertySchema, new HashSet<>(visitedSchemas));
+                if (ObjectUtil.isNotNull(propertyExample)) {
+                    example.put(name, propertyExample);
+                }
+            });
+            return example;
+        }
+
+        return defaultExample(actualSchema);
+    }
+
+    @Nullable
+    private Object buildComposedExample(Schema<?> schema, Set<String> visitedSchemas)
+    {
+        if (ObjectUtil.isNull(schema)) {
+            return null;
+        }
+
+        if (ObjectUtil.isNotNull(schema.getAllOf()) && !schema.getAllOf().isEmpty()) {
+            Map<String, Object> example = new LinkedHashMap<>();
+            for (Schema<?> composedSchema : schema.getAllOf()) {
+                Object composedExample = buildExample(composedSchema, new HashSet<>(visitedSchemas));
+                if (composedExample instanceof Map<?, ?> composedMap) {
+                    composedMap.forEach((key, value) -> {
+                        if (key instanceof String fieldName && ObjectUtil.isNotNull(value)) {
+                            example.put(fieldName, value);
+                        }
+                    });
+                }
+            }
+            return example.isEmpty() ? null : example;
+        }
+
+        if (ObjectUtil.isNotNull(schema.getOneOf()) && !schema.getOneOf().isEmpty()) {
+            return buildExample(schema.getOneOf().get(0), visitedSchemas);
+        }
+        if (ObjectUtil.isNotNull(schema.getAnyOf()) && !schema.getAnyOf().isEmpty()) {
+            return buildExample(schema.getAnyOf().get(0), visitedSchemas);
+        }
+        return null;
+    }
+
+    @Nullable
+    private Object defaultExample(Schema<?> schema)
+    {
+        if (ObjectUtil.isNull(schema)) {
+            return null;
+        }
+
+        String type = schema.getType();
+        if (TYPE_STRING.equals(type)) {
+            if (FORMAT_DATE.equals(schema.getFormat())) {
+                return "2026-01-01";
+            }
+            if (FORMAT_DATE_TIME.equals(schema.getFormat())) {
+                return "2026-01-01T00:00:00";
+            }
+            return TYPE_STRING;
+        }
+        if (TYPE_INTEGER.equals(type)) {
+            return 0;
+        }
+        if (TYPE_NUMBER.equals(type)) {
+            return 0;
+        }
+        if (TYPE_BOOLEAN.equals(type)) {
+            return Boolean.TRUE;
+        }
+        if (TYPE_OBJECT.equals(type)) {
+            return new LinkedHashMap<>();
+        }
+        if (TYPE_ARRAY.equals(type)) {
+            return List.of();
+        }
+        return null;
     }
 }
