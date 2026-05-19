@@ -20,6 +20,7 @@ import io.github.fbbzl.starter.pojo.entity.BaseTableEntity;
 import io.github.fbbzl.starter.pojo.validation.group.CRUD;
 import jakarta.validation.constraints.NotNull;
 import org.fz.erwin.exception.Throws;
+import org.springframework.lang.NonNull;
 import org.springframework.lang.Nullable;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.validation.annotation.Validated;
@@ -145,10 +146,25 @@ public interface BaseMybatisPlusMapper<ENTITY extends BaseTableEntity<ID>, ID ex
     {
         Throws.ifNull(page, "page can not be null");
 
-        IPage<ENTITY> result =
-                this.selectPage(com.baomidou.mybatisplus.extension.plugins.pagination.Page.<ENTITY>of(toMybatisPlusPageNumber(page), page.getPageSize()).addOrder(this.toOrderItem(page.getOrders())),
-                                autoQuery(entity));
-        return this.toPageResult(page.getPageNumber(), page.getPageSize(), result.getTotal(), result.getRecords());
+        return this.toPageResult(this.selectPage(toMybatisPlusPage(page), autoQuery(entity)));
+    }
+
+    default com.baomidou.mybatisplus.extension.plugins.pagination.Page<ENTITY> toMybatisPlusPage(Page page)
+    {
+        return com.baomidou.mybatisplus.extension.plugins.pagination.Page.<ENTITY>of(page.getPageNumber() + 1L, page.getPageSize()).addOrder(this.toOrderItem(page.getOrders()));
+    }
+
+    default @NonNull PageResult<ENTITY> toPageResult(IPage<ENTITY> page)
+    {
+        PageResult<ENTITY> pageResult =
+                new PageResult<>((int) page.getCurrent(), (int) page.getSize(), (int) page.getPages());
+        pageResult.addAll(page.getRecords());
+        return pageResult;
+    }
+
+    default com.baomidou.mybatisplus.extension.plugins.pagination.Page<ENTITY> toPlusResult(Page page)
+    {
+        return com.baomidou.mybatisplus.extension.plugins.pagination.Page.of(page.getPageNumber() + 1L, page.getPageSize());
     }
 
     @Override
@@ -216,11 +232,6 @@ public interface BaseMybatisPlusMapper<ENTITY extends BaseTableEntity<ID>, ID ex
             pageNumber++;
             page.setPageNumber(pageNumber);
         } while (pageResult.size() == batchSize);
-    }
-
-    default int toMybatisPlusPageNumber(Page page)
-    {
-        return page.getPageNumber() + 1;
     }
 
     default OrderItem[] toOrderItem(Order... orders)
