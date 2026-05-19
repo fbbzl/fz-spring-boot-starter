@@ -8,7 +8,7 @@ import cn.hutool.json.JSONUtil;
 import io.github.fbbzl.starter.audit.BaseAuditLog;
 import io.github.fbbzl.starter.audit.frame.annotation.AuditMethod;
 import io.github.fbbzl.starter.audit.frame.annotation.AuditModule;
-import io.github.fbbzl.starter.core.util.F;
+import io.github.fbbzl.starter.core.util.Futures;
 import io.github.fbbzl.starter.dal.BaseDal;
 import jakarta.validation.constraints.NotNull;
 import lombok.AccessLevel;
@@ -117,7 +117,7 @@ public abstract class BaseAuditLogAspect<ID extends Serializable, AUDIT_LOG exte
             return;
         }
 
-        F.runAsync(() -> auditDal.create(audit));
+        Futures.runAsync(() -> auditDal.create(audit));
     }
 
 }
