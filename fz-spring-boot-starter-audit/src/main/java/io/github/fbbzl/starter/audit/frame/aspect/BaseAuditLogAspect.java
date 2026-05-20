@@ -41,8 +41,6 @@ public abstract class BaseAuditLogAspect<ID extends Serializable, AUDIT_LOG exte
 
     protected abstract AUDIT_LOG buildAuditLog(AuditMethod auditLog);
 
-    protected abstract void setCurrentUser(AUDIT_LOG audit);
-
     static final ThreadLocal<Long> METHOD_COST_TIME = new NamedThreadLocal<>("CostTime");
 
     @Before(value = "@annotation(audit)")
@@ -72,7 +70,6 @@ public abstract class BaseAuditLogAspect<ID extends Serializable, AUDIT_LOG exte
         try {
             AUDIT_LOG auditLog = this.buildAuditLog(audit);
             auditLog.setModule(this.getModule(joinPoint));
-            this.setCurrentUser(auditLog);
             auditLog.setMethod(joinPoint.getSignature().getName());
             auditLog.setTimeCost(System.currentTimeMillis() - METHOD_COST_TIME.get());
 
