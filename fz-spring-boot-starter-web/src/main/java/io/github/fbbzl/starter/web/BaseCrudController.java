@@ -177,17 +177,6 @@ public abstract class BaseCrudController<
         return service.update(req.getData());
     }
 
-    @AuditMethod
-    @Operation(description = "[BASE] Update by map without null fields", summary = "[BASE] Do update by map ignore null field value")
-    @PatchMapping
-    public BO patch(
-            @NotNull
-            @RequestBody
-            Q<Map<String, Object>> req)
-    {
-        return service.update(req.getData());
-    }
-
     @AuditMethod(saveParam = false, saveResult = false)
     @Operation(description = "[BASE] Batch updates without null fields", summary = "[BASE] Do batch update ignore null field value")
     @PutMapping("batch")
@@ -197,6 +186,17 @@ public abstract class BaseCrudController<
             Q<Collection<DTO>> req)
     {
         service.update(req.getData());
+    }
+
+    @AuditMethod
+    @Operation(description = "[BASE] Update by map without null fields", summary = "[BASE] Do update by map ignore null field value")
+    @PatchMapping
+    public BO patch(
+            @NotNull
+            @RequestBody
+            Q<Map<String, Object>> req)
+    {
+        return service.patch(req.getData());
     }
 
     @AuditMethod

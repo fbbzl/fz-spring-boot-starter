@@ -11,6 +11,7 @@ import cn.hutool.db.sql.Order;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.github.fbbzl.starter.core.exception.ExceptionVerb;
 import io.github.fbbzl.starter.core.util.Generics;
+import io.github.fbbzl.starter.core.util.Throws;
 import io.github.fbbzl.starter.dal.BaseDal;
 import io.github.fbbzl.starter.dal.Range;
 import io.github.fbbzl.starter.pojo.bo.BaseBo;
@@ -27,11 +28,11 @@ import jakarta.validation.constraints.Size;
 import lombok.AccessLevel;
 import lombok.Setter;
 import lombok.experimental.FieldDefaults;
-import io.github.fbbzl.starter.core.util.Throws;
 import org.springframework.beans.factory.BeanNameAware;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.lang.Nullable;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.validation.annotation.Validated;
 
 import java.io.Serializable;
@@ -342,6 +343,7 @@ public abstract class BaseCrudService<
         return dal.exists(struct.dtoToEntity(dto));
     }
 
+    @Transactional
     public BO create(
             @NotNull(message = "data can not be null when doing create")
             @Validated(CRUD.C.class)
@@ -350,6 +352,7 @@ public abstract class BaseCrudService<
         return struct.entityToBo(dal.create(struct.dtoToEntity(dto)));
     }
 
+    @Transactional
     public List<BO> create(
             @Size(max = 1024, message = "the number of collection cannot exceed 1024")
             Collection<DTO> dtos)
@@ -360,13 +363,15 @@ public abstract class BaseCrudService<
         return struct.entityToBo(dal.create(entities));
     }
 
+    @Transactional
     public List<BO> create(
             @Size(max = 1024, message = "the number of array cannot exceed 1024")
             DTO[] dtos)
     {
-        return create(List.of(dtos));
+        return self.create(List.of(dtos));
     }
 
+    @Transactional
     public BO update(
             @NotNull(message = "data can not be null when doing update")
             @Validated(CRUD.U.class)
@@ -375,16 +380,7 @@ public abstract class BaseCrudService<
         return struct.entityToBo(dal.update(struct.dtoToEntity(dto)));
     }
 
-    // Convert dynamic update data to the concrete DTO and update only the supplied non-null fields.
-    public BO update(
-            @NotNull(message = "data can not be null when doing update")
-            Map<String, Object> data)
-    {
-        DTO dto = objectMapper.convertValue(data, dtoClass);
-        Throws.ifNull(dto.getId(), "id can not be null when doing update");
-        return struct.entityToBo(dal.update(struct.dtoToEntity(dto)));
-    }
-
+    @Transactional
     public void update(
             @Size(max = 1024, message = "the number of collection cannot exceed 1024")
             Collection<DTO> dtos)
@@ -394,6 +390,17 @@ public abstract class BaseCrudService<
         dal.update(struct.dtoToEntity(dtos));
     }
 
+    @Transactional
+    public BO patch(
+            @NotNull(message = "data can not be null when doing update")
+            Map<String, Object> data)
+    {
+        DTO dto = objectMapper.convertValue(data, dtoClass);
+        Throws.ifNull(dto.getId(), "id can not be null when doing update");
+        return struct.entityToBo(dal.update(struct.dtoToEntity(dto)));
+    }
+
+    @Transactional
     public void delete(
             @NotNull(message = "data can not be null when doing delete")
             ID id)
@@ -401,6 +408,7 @@ public abstract class BaseCrudService<
         dal.delete(id);
     }
 
+    @Transactional
     public void delete(
             @NotNull(message = "data can not be null when doing delete")
             @Size(max = 1024, message = "the number of collection cannot exceed 1024")

@@ -15,12 +15,12 @@ import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.baomidou.mybatisplus.core.toolkit.LambdaUtils;
 import com.baomidou.mybatisplus.core.toolkit.support.ColumnCache;
 import com.baomidou.mybatisplus.extension.handlers.AbstractJsonTypeHandler;
+import io.github.fbbzl.starter.core.util.Throws;
 import io.github.fbbzl.starter.dal.BaseDal;
 import io.github.fbbzl.starter.dal.Range;
 import io.github.fbbzl.starter.pojo.entity.BaseTableEntity;
 import io.github.fbbzl.starter.pojo.validation.group.CRUD;
 import jakarta.validation.constraints.NotNull;
-import io.github.fbbzl.starter.core.util.Throws;
 import org.springframework.lang.Nullable;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.validation.annotation.Validated;
@@ -81,6 +81,7 @@ public interface BaseMybatisPlusMapper<ENTITY extends BaseTableEntity<ID>, ID ex
         this.deleteByIds(IterUtil.toList(ids));
     }
 
+    @Transactional
     @Override
     default ENTITY update(
             @Validated(CRUD.U.class)

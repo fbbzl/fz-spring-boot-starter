@@ -11,6 +11,7 @@ import cn.hutool.db.sql.Order;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.github.fbbzl.starter.core.exception.ExceptionVerb;
 import io.github.fbbzl.starter.core.util.Generics;
+import io.github.fbbzl.starter.core.util.Throws;
 import io.github.fbbzl.starter.dal.BaseDal;
 import io.github.fbbzl.starter.dal.Range;
 import io.github.fbbzl.starter.pojo.bo.BaseBo;
@@ -27,11 +28,11 @@ import jakarta.validation.constraints.Size;
 import lombok.AccessLevel;
 import lombok.Setter;
 import lombok.experimental.FieldDefaults;
-import io.github.fbbzl.starter.core.util.Throws;
 import org.springframework.beans.factory.BeanNameAware;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.lang.Nullable;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.validation.annotation.Validated;
 
 import java.io.Serializable;
@@ -83,13 +84,11 @@ public abstract class BaseCrudService<
     @Lazy
     BaseCrudService<ID, ENTITY, DTO, BO, DAL, STRUCT_MAPPER> self;
 
-    // Expose the mapper for extension points that need explicit object conversion.
     public STRUCT_MAPPER struct()
     {
         return struct;
     }
 
-    // Provide the data assembly namespace for crane4j containers.
     @Override
     public String getNamespace()
     {
@@ -98,14 +97,12 @@ public abstract class BaseCrudService<
         return beanName;
     }
 
-    // Load BO records for crane4j data assembly by ids.
     @Override
     public Map<ID, BO> get(Collection<ID> ids)
     {
         return self.map(newHashSet(ids));
     }
 
-    // Query one business object by primary key.
     @Nullable
     public BO byId(
             @NotNull(message = "id can not be null when doing id-query")
@@ -116,7 +113,6 @@ public abstract class BaseCrudService<
         else                throw ExceptionVerb.RESOURCE_NOT_FOUND.on(entityClass, id).get();
     }
 
-    // Query business objects by a bounded primary-key set.
     public List<BO> byIds(
             @Size(max = 1024, message = "the number of collection cannot exceed 1024")
             Set<ID> ids)
@@ -125,7 +121,6 @@ public abstract class BaseCrudService<
         else return struct.entityToBo(dal.byIds(ids));
     }
 
-    // Query business objects by ids and index them by primary key.
     public Map<ID, BO> map(
             @Size(max = 1024, message = "the number of collection cannot exceed 1024")
             Set<ID> ids)
@@ -134,7 +129,6 @@ public abstract class BaseCrudService<
         else return struct.entityToBo(dal.byIds(ids)).stream().collect(toMap(BaseBo::getId, identity()));
     }
 
-    // Query all matching business objects with the default maximum limit.
     public List<BO> list(
             @Validated(CRUD.R.class)
             DTO dto)
@@ -142,7 +136,6 @@ public abstract class BaseCrudService<
         return self.list(dto, Integer.MAX_VALUE, null, null);
     }
 
-    // Query matching business objects with a caller-specified limit.
     public List<BO> list(
             @Validated(CRUD.R.class)
             DTO dto,
@@ -152,7 +145,6 @@ public abstract class BaseCrudService<
         return self.list(dto, limit, null, null);
     }
 
-    // Query matching business objects with limit and ordering.
     public List<BO> list(
             @Validated(CRUD.R.class)
             DTO dto,
@@ -164,7 +156,6 @@ public abstract class BaseCrudService<
         return self.list(dto, limit, orders, null);
     }
 
-    // Query matching business objects with limit and range filters.
     public List<BO> list(
             @Validated(CRUD.R.class)
             DTO dto,
@@ -176,7 +167,6 @@ public abstract class BaseCrudService<
         return self.list(dto, limit, null, ranges);
     }
 
-    // Query matching business objects with range filters.
     public List<BO> list(
             @Validated(CRUD.R.class)
             DTO dto,
@@ -186,7 +176,6 @@ public abstract class BaseCrudService<
         return self.list(dto, Integer.MAX_VALUE, null, ranges);
     }
 
-    // Query matching business objects with ordering.
     public List<BO> list(
             @Validated(CRUD.R.class)
             DTO dto,
@@ -196,7 +185,6 @@ public abstract class BaseCrudService<
         return self.list(dto, Integer.MAX_VALUE, orders, null);
     }
 
-    // Query matching business objects with full list options.
     public List<BO> list(
             @Validated(CRUD.R.class)
             DTO dto,
@@ -211,7 +199,6 @@ public abstract class BaseCrudService<
         else return struct.entityToBo(dal.list(struct.dtoToEntity(dto), limit, orders, ranges));
     }
 
-    // Query ids for matching business objects.
     public List<ID> ids(
             @Validated(CRUD.R.class)
             DTO dto)
@@ -220,7 +207,6 @@ public abstract class BaseCrudService<
         else return dal.ids(struct.dtoToEntity(dto), Integer.MAX_VALUE);
     }
 
-    // Query ids for matching business objects with a caller-specified limit.
     public List<ID> ids(
             @Validated(CRUD.R.class)
             DTO dto,
@@ -231,7 +217,6 @@ public abstract class BaseCrudService<
         else return dal.ids(struct.dtoToEntity(dto), limit);
     }
 
-    // Query a page of matching business objects.
     public PageResult<BO> page(
             @NotNull(message = "page can not be null when doing page-query")
             Page page,
@@ -242,7 +227,6 @@ public abstract class BaseCrudService<
         else return mappingPage(dal.page(page, struct.dtoToEntity(dto)), struct::entityToBo);
     }
 
-    // Query a tree from matching business objects.
     public List<Tree<ID>> tree(
             @NotNull(message = "root-id can not be null when doing tree-query")
             ID rootId,
@@ -252,7 +236,6 @@ public abstract class BaseCrudService<
         return self.tree(rootId, dto, Integer.MAX_VALUE, null, null);
     }
 
-    // Query a tree with a caller-specified limit.
     public List<Tree<ID>> tree(
             @NotNull(message = "root-id can not be null when doing tree-query")
             ID rootId,
@@ -264,7 +247,6 @@ public abstract class BaseCrudService<
         return self.tree(rootId, dto, limit, null, null);
     }
 
-    // Query a tree with limit and ordering.
     public List<Tree<ID>> tree(
             @NotNull(message = "root-id can not be null when doing tree-query")
             ID rootId,
@@ -278,7 +260,6 @@ public abstract class BaseCrudService<
         return self.tree(rootId, dto, limit, orders, null);
     }
 
-    // Query a tree with limit and range filters.
     public List<Tree<ID>> tree(
             @NotNull(message = "root-id can not be null when doing tree-query")
             ID rootId,
@@ -292,7 +273,6 @@ public abstract class BaseCrudService<
         return self.tree(rootId, dto, limit, null, ranges);
     }
 
-    // Query a tree with range filters.
     public List<Tree<ID>> tree(
             @NotNull(message = "root-id can not be null when doing tree-query")
             ID rootId,
@@ -304,7 +284,6 @@ public abstract class BaseCrudService<
         return self.tree(rootId, dto, Integer.MAX_VALUE, null, ranges);
     }
 
-    // Query a tree with ordering.
     public List<Tree<ID>> tree(
             @NotNull(message = "root-id can not be null when doing tree-query")
             ID rootId,
@@ -316,7 +295,6 @@ public abstract class BaseCrudService<
         return self.tree(rootId, dto, Integer.MAX_VALUE, orders, null);
     }
 
-    // Query a tree with full tree-list options.
     public List<Tree<ID>> tree(
             @NotNull(message = "root-id can not be null when doing tree-query")
             ID rootId,
@@ -347,7 +325,6 @@ public abstract class BaseCrudService<
         return emptyList();
     }
 
-    // Check whether a primary key exists.
     public boolean exists(
             @NotNull(message = "id can not be null when doing id-exist-query")
             @Validated(CRUD.R.class)
@@ -356,7 +333,6 @@ public abstract class BaseCrudService<
         return dal.exists(id);
     }
 
-    // Check whether data matching the DTO exists.
     public boolean exists(
             @NotNull(message = "data can not be null when doing data-exist-query")
             @Validated(CRUD.R.class)
@@ -365,7 +341,7 @@ public abstract class BaseCrudService<
         return dal.exists(struct.dtoToEntity(dto));
     }
 
-    // Create one business object.
+    @Transactional
     public BO create(
             @NotNull(message = "data can not be null when doing create")
             @Validated(CRUD.C.class)
@@ -374,7 +350,7 @@ public abstract class BaseCrudService<
         return struct.entityToBo(dal.create(struct.dtoToEntity(dto)));
     }
 
-    // Create a batch of business objects.
+    @Transactional
     public List<BO> create(
             @Size(max = 1024, message = "the number of collection cannot exceed 1024")
             Collection<DTO> dtos)
@@ -385,6 +361,7 @@ public abstract class BaseCrudService<
         return struct.entityToBo(dal.create(entities));
     }
 
+    @Transactional
     public List<BO> create(
             @Size(max = 1024, message = "the number of array cannot exceed 1024")
             DTO[] dtos)
@@ -395,7 +372,7 @@ public abstract class BaseCrudService<
         return struct.entityToBo(dal.create(Arrays.asList(entities)));
     }
 
-    // Update one business object.
+    @Transactional
     public BO update(
             @NotNull(message = "data can not be null when doing update")
             @Validated(CRUD.U.class)
@@ -404,17 +381,7 @@ public abstract class BaseCrudService<
         return struct.entityToBo(dal.update(struct.dtoToEntity(dto)));
     }
 
-    // Convert dynamic update data to the concrete DTO and update only the supplied non-null fields.
-    public BO update(
-            @NotNull(message = "data can not be null when doing update")
-            Map<String, Object> data)
-    {
-        DTO dto = objectMapper.convertValue(data, dtoClass);
-        Throws.ifNull(dto.getId(), "id can not be null when doing update");
-        return struct.entityToBo(dal.update(struct.dtoToEntity(dto)));
-    }
-
-    // Update a batch of business objects.
+    @Transactional
     public void update(
             @Size(max = 1024, message = "the number of collection cannot exceed 1024")
             Collection<DTO> dtos)
@@ -424,7 +391,17 @@ public abstract class BaseCrudService<
         dal.update(struct.dtoToEntity(dtos));
     }
 
-    // Delete one business object by primary key.
+    @Transactional
+    public BO patch(
+            @NotNull(message = "data can not be null when doing update")
+            Map<String, Object> data)
+    {
+        DTO dto = objectMapper.convertValue(data, dtoClass);
+        Throws.ifNull(dto.getId(), "id can not be null when doing update");
+        return struct.entityToBo(dal.update(struct.dtoToEntity(dto)));
+    }
+
+    @Transactional
     public void delete(
             @NotNull(message = "data can not be null when doing delete")
             ID id)
@@ -432,7 +409,7 @@ public abstract class BaseCrudService<
         dal.delete(id);
     }
 
-    // Delete a batch of business objects by primary key.
+    @Transactional
     public void delete(
             @NotNull(message = "data can not be null when doing delete")
             @Size(max = 1024, message = "the number of collection cannot exceed 1024")
