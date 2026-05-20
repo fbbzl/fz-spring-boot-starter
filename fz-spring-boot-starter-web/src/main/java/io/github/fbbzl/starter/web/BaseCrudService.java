@@ -8,6 +8,7 @@ import cn.hutool.core.lang.tree.TreeUtil;
 import cn.hutool.db.Page;
 import cn.hutool.db.PageResult;
 import cn.hutool.db.sql.Order;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import io.github.fbbzl.starter.core.exception.ExceptionVerb;
 import io.github.fbbzl.starter.core.util.Generics;
 import io.github.fbbzl.starter.dal.BaseDal;
@@ -67,13 +68,15 @@ public abstract class BaseCrudService<
         STRUCT_MAPPER extends BaseCrudStructMapper<ENTITY, DTO, BO>> implements BeanNameAware, Container<ID>
 {
     Class<ENTITY> entityClass = Generics.getGenericSuperType(this.getClass(), BaseCrudService.class, 1);
-    Class<ENTITY> dtoClass    = Generics.getGenericSuperType(this.getClass(), BaseCrudService.class, 2);
+    Class<DTO>    dtoClass    = Generics.getGenericSuperType(this.getClass(), BaseCrudService.class, 2);
     Class<ENTITY> boClass     = Generics.getGenericSuperType(this.getClass(), BaseCrudService.class, 3);
 
     @Autowired
     DAL             dal;
     @Autowired
     STRUCT_MAPPER   struct;
+    @Autowired
+    ObjectMapper     objectMapper;
     @Setter
     String          beanName;
     @Autowired
@@ -369,6 +372,16 @@ public abstract class BaseCrudService<
             @Validated(CRUD.U.class)
             DTO dto)
     {
+        return struct.entityToBo(dal.update(struct.dtoToEntity(dto)));
+    }
+
+    // Convert dynamic update data to the concrete DTO and update only the supplied non-null fields.
+    public BO update(
+            @NotNull(message = "data can not be null when doing update")
+            Map<String, Object> data)
+    {
+        DTO dto = objectMapper.convertValue(data, dtoClass);
+        Throws.ifNull(dto.getId(), "id can not be null when doing update");
         return struct.entityToBo(dal.update(struct.dtoToEntity(dto)));
     }
 

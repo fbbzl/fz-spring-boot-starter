@@ -24,6 +24,7 @@ import org.springframework.web.bind.annotation.*;
 import java.io.Serializable;
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import static cn.hutool.core.util.ObjectUtil.defaultIfNull;
@@ -172,6 +173,17 @@ public abstract class BaseCrudController<
             @Validated(CRUD.U.class)
             @RequestBody
             Q<DTO> req)
+    {
+        return service.update(req.getData());
+    }
+
+    @AuditMethod
+    @Operation(description = "[BASE] Update by map without null fields", summary = "[BASE] Do update by map ignore null field value")
+    @PatchMapping
+    public BO updateByMap(
+            @NotNull
+            @RequestBody
+            Q<Map<String, Object>> req)
     {
         return service.update(req.getData());
     }
