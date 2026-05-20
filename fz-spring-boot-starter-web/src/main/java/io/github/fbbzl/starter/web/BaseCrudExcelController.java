@@ -51,7 +51,7 @@ public abstract class BaseCrudExcelController<
 
     Class<EO> excelClass = Generics.getGenericSuperType(this.getClass(), BaseCrudExcelController.class, 5);
 
-    @Operation(description = "Get an excel template", summary = "The Excel template you need to use to get Excel upload data")
+    @Operation(description = "[BASE] Get an excel template", summary = "[BASE] The Excel template you need to use to get Excel upload data")
     @PostMapping("excel/template")
     public void excelTemplate(
             @NotNull
@@ -64,7 +64,7 @@ public abstract class BaseCrudExcelController<
     }
 
     @AuditMethod(saveParam = false, saveResult = false)
-    @Operation(description = "Excel to import", summary = "Excel data to import data")
+    @Operation(description = "[BASE] Excel to import", summary = "[BASE] Excel data to import data")
     @PostMapping("excel/import")
     public void importExcel(
             @NotNull
@@ -76,7 +76,7 @@ public abstract class BaseCrudExcelController<
     }
 
     @AuditMethod(saveParam = false, saveResult = false)
-    @Operation(description = "Excel export", summary = "Excel excel data")
+    @Operation(description = "[BASE] Excel export", summary = "[BASE] Excel excel data")
     @PostMapping({"excel/export", "excel/export/{limit}"})
     public void exportExcel(
             @Nullable

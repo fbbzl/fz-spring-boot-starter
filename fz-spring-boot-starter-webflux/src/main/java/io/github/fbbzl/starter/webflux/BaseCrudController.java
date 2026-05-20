@@ -51,7 +51,7 @@ public abstract class BaseCrudController<
 
     Class<ENTITY> entityClass = Generics.getGenericSuperType(this.getClass(), BaseCrudController.class, 1);
 
-    @Operation(description = "Based on the primary key query, it does not contain data that has been logically deleted", summary = "Query by primary key")
+    @Operation(description = "[BASE] Based on the primary key query, it does not contain data that has been logically deleted", summary = "[BASE] Query by primary key")
     @GetMapping("{id}")
     public BO byId(
             @NotNull
@@ -62,7 +62,7 @@ public abstract class BaseCrudController<
         return service.byId(id);
     }
 
-    @Operation(description = "Query by primary key set", summary = "Query by primary key set")
+    @Operation(description = "[BASE] Query by primary key set", summary = "[BASE] Query by primary key set")
     @PostMapping("ids")
     public List<BO> byIds(
             @NotNull
@@ -73,7 +73,7 @@ public abstract class BaseCrudController<
         return service.byIds(req.getData());
     }
 
-    @Operation(description = "List query, null fields do not participate in the query", summary = "List Query")
+    @Operation(description = "[BASE] List query, null fields do not participate in the query", summary = "[BASE] List Query")
     @PostMapping({"list", "list/{limit}"})
     public List<BO> list(
             @Nullable
@@ -90,7 +90,7 @@ public abstract class BaseCrudController<
         return service.list(req.getData(), defaultIfNull(limit, this.defaultLimit()), req.getOrders(), req.getRanges());
     }
 
-    @Operation(description = "For paginated query, null fields do not participate in query", summary = "Page query")
+    @Operation(description = "[BASE] For paginated query, null fields do not participate in query", summary = "[BASE] Page query")
     @PostMapping("page")
     public PR<BO> page(
             @NotNull
@@ -102,7 +102,7 @@ public abstract class BaseCrudController<
         return PR.of(service.page(req.getPage(), req.getData()));
     }
 
-    @Operation(description = "For tree query, null fields do not participate in query", summary = "Tree query, If it weren't be a tree type data, there would be no result")
+    @Operation(description = "[BASE] For tree query, null fields do not participate in query", summary = "[BASE] Tree query, If it weren't be a tree type data, there would be no result")
     @PostMapping({"tree/{rootId}", "tree/{rootId}/{limit}"})
     public List<Tree<ID>> tree(
             @NotNull
@@ -123,7 +123,7 @@ public abstract class BaseCrudController<
         return service.tree(rootId, req.getData(), defaultIfNull(limit, this.defaultLimit()), req.getOrders(), req.getRanges());
     }
 
-    @Operation(description = "Specify whether primary key data exists", summary = "Specifies whether primary key data exists")
+    @Operation(description = "[BASE] Specify whether primary key data exists", summary = "[BASE] Specifies whether primary key data exists")
     @GetMapping("exists/{id}")
     public boolean exists(
             @NotNull
@@ -134,7 +134,7 @@ public abstract class BaseCrudController<
         return service.exists(id);
     }
 
-    @Operation(description = "Specify whether the condition data exists, and null fields will not participate in the query", summary = "Specifies whether conditional data exists")
+    @Operation(description = "[BASE] Specify whether the condition data exists, and null fields will not participate in the query", summary = "[BASE] Specifies whether conditional data exists")
     @PostMapping("exists")
     public boolean exists(
             @NotNull
@@ -147,7 +147,7 @@ public abstract class BaseCrudController<
     }
 
     @AuditMethod
-    @Operation(description = "Create data", summary = "Create data")
+    @Operation(description = "[BASE] Create data", summary = "[BASE] Create data")
     @PostMapping
     public BO create(
             @NotNull
@@ -160,7 +160,7 @@ public abstract class BaseCrudController<
     }
 
     @AuditMethod(saveParam = false, saveResult = false)
-    @Operation(description = "Create data batch", summary = "Create data batch")
+    @Operation(description = "[BASE] Create data batch", summary = "[BASE] Create data batch")
     @PostMapping("batch")
     public void createBatch(
             @NotNull
@@ -172,7 +172,7 @@ public abstract class BaseCrudController<
     }
 
     @AuditMethod
-    @Operation(description = "Update without null fields", summary = "Do update ignore null field value")
+    @Operation(description = "[BASE] Update without null fields", summary = "[BASE] Do update ignore null field value")
     @PutMapping
     public BO update(
             @NotNull
@@ -185,7 +185,7 @@ public abstract class BaseCrudController<
     }
 
     @AuditMethod(saveParam = false, saveResult = false)
-    @Operation(description = "Batch updates without null fields", summary = "Do batch update ignore null field value")
+    @Operation(description = "[BASE] Batch updates without null fields", summary = "[BASE] Do batch update ignore null field value")
     @PutMapping("batch")
     public void updateBatch(
             @NotNull
@@ -197,7 +197,7 @@ public abstract class BaseCrudController<
     }
 
     @AuditMethod
-    @Operation(description = "Deleting data is a logical deletion, but this tombstone deletion is equivalent to physical deletion, and the tombstone is only to maximize the value of the data", summary = "Delete data by primary key")
+    @Operation(description = "[BASE] Deleting data is a logical deletion, but this tombstone deletion is equivalent to physical deletion, and the tombstone is only to maximize the value of the data", summary = "[BASE] Delete data by primary key")
     @DeleteMapping("{id}")
     public void delete(
             @NotNull
@@ -209,7 +209,7 @@ public abstract class BaseCrudController<
     }
 
     @AuditMethod
-    @Operation(description = "Deleting data is a logical deletion, but this tombstone deletion is equivalent to physical deletion, and the tombstone is only to maximize the value of the data", summary = "Delete data by primary key set")
+    @Operation(description = "[BASE] Deleting data is a logical deletion, but this tombstone deletion is equivalent to physical deletion, and the tombstone is only to maximize the value of the data", summary = "[BASE] Delete data by primary key set")
     @DeleteMapping("ids")
     public void delete(
             @NotNull
