@@ -7,11 +7,14 @@ import cn.hutool.db.Page;
 import cn.hutool.db.PageResult;
 import cn.hutool.db.sql.Direction;
 import cn.hutool.db.sql.Order;
+import cn.hutool.json.JSONUtil;
+import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.baomidou.mybatisplus.core.toolkit.LambdaUtils;
 import com.baomidou.mybatisplus.core.toolkit.support.ColumnCache;
+import com.baomidou.mybatisplus.extension.handlers.AbstractJsonTypeHandler;
 import io.github.fbbzl.starter.dal.BaseDal;
 import io.github.fbbzl.starter.dal.Range;
 import io.github.fbbzl.starter.pojo.entity.BaseTableEntity;
@@ -287,6 +290,11 @@ public interface BaseMybatisPlusMapper<ENTITY extends BaseTableEntity<ID>, ID ex
                 if (cache == null) continue;
                 String column = cache.getColumn();
 
+                if (isJsonField(field)) {
+                    jsonQuery(wrapper, column, value);
+                    continue;
+                }
+
                 switch (value) {
                     case Enum<?>       enumVal                                      -> wrapper.eq(column,   enumVal.ordinal());
                     case Number        number                                       -> wrapper.eq(column,   number);
@@ -300,6 +308,45 @@ public interface BaseMybatisPlusMapper<ENTITY extends BaseTableEntity<ID>, ID ex
             }
         }
         return wrapper;
+    }
+
+    default boolean isJsonField(Field field)
+    {
+        TableField tableField = field.getAnnotation(TableField.class);
+        return tableField != null
+               && AbstractJsonTypeHandler.class.isAssignableFrom(tableField.typeHandler());
+    }
+
+    default QueryWrapper<ENTITY> jsonQuery(QueryWrapper<ENTITY> wrapper, String column, Object value)
+    {
+        return switch (value) {
+            case Collection<?> col when isEmpty(col) -> wrapper;
+            case Collection<?> col                   -> jsonArrayContainsAny(wrapper, column, col);
+            case Map<?, ?>     map when isEmpty(map) -> wrapper;
+            default                                  -> jsonContains(wrapper, column, value);
+        };
+    }
+
+    default QueryWrapper<ENTITY> jsonArrayContainsAny(QueryWrapper<ENTITY> wrapper, String column, Collection<?> values)
+    {
+        List<Object> jsonValues = new ArrayList<>();
+        for (Object value : values) {
+            if (value != null) jsonValues.add(value);
+        }
+        if (isEmpty(jsonValues)) return wrapper;
+
+        return wrapper.and(jsonWrapper -> {
+            for (int index = 0; index < jsonValues.size(); index++) {
+                Object value = jsonValues.get(index);
+                if (index > 0) jsonWrapper.or();
+                jsonWrapper.apply("JSON_CONTAINS(" + column + ", {0})", JSONUtil.toJsonStr(value));
+            }
+        });
+    }
+
+    default QueryWrapper<ENTITY> jsonContains(QueryWrapper<ENTITY> wrapper, String column, Object value)
+    {
+        return wrapper.apply("JSON_CONTAINS(" + column + ", {0})", JSONUtil.toJsonStr(value));
     }
 
 }

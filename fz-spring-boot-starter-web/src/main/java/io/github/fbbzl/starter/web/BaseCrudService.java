@@ -225,7 +225,7 @@ public abstract class BaseCrudService<
             DTO dto)
     {
         if (hasNull(dto, page)) return emptyPage();
-        else return mappingPage(dal.page(page, struct.dtoToEntity(dto)), struct::entityToBo);
+        else                    return mappingPage(dal.page(page, struct.dtoToEntity(dto)), struct::entityToBo);
     }
 
     public List<Tree<ID>> tree(
