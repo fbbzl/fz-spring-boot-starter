@@ -9,6 +9,11 @@ import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 import java.util.function.*;
 
+/**
+ * @author fengbinbin
+ * @version 1.0
+ * @since 2026/4/22 14:24
+ */
 @Slf4j
 public class Futures<T>
 {

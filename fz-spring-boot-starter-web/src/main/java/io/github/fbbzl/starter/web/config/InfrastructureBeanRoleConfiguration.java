@@ -8,6 +8,9 @@ import org.springframework.context.annotation.Role;
 
 /**
  * Marks early-created framework beans as infrastructure to avoid BeanPostProcessorChecker warnings.
+ * @author fengbinbin
+ * @version 1.0
+ * @since 2026/4/22 14:24
  */
 
 @Configuration(proxyBeanMethods = false)
