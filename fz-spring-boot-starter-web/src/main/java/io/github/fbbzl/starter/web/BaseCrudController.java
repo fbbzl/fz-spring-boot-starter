@@ -180,7 +180,7 @@ public abstract class BaseCrudController<
     @AuditMethod
     @Operation(description = "[BASE] Update by map without null fields", summary = "[BASE] Do update by map ignore null field value")
     @PatchMapping
-    public BO updateByMap(
+    public BO patch(
             @NotNull
             @RequestBody
             Q<Map<String, Object>> req)
