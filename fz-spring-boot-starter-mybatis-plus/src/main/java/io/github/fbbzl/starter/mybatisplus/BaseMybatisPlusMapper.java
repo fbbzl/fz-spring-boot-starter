@@ -271,10 +271,10 @@ public interface BaseMybatisPlusMapper<ENTITY extends BaseTableEntity<ID>, ID ex
 
     default QueryWrapper<ENTITY> autoQuery(ENTITY query, boolean stringLike)
     {
-        QueryWrapper<ENTITY> wrapper = new QueryWrapper<>();
+        QueryWrapper<ENTITY> wrapper = new QueryWrapper<>(query);
         if (query != null) {
             @SuppressWarnings("unchecked")
-            Class<ENTITY> queryClass = (Class<ENTITY>) query.getClass();
+            Class<ENTITY>            queryClass     = (Class<ENTITY>) query.getClass();
             String                   queryClassName = queryClass.getName();
             Map<String, ColumnCache> columnMap      = LambdaUtils.getColumnMap(queryClass);
             Throws.ifEmpty(columnMap, "entity [{}] has none TableField", queryClassName);
