@@ -323,7 +323,7 @@ public abstract class BaseCrudService<
 
                 @SuppressWarnings("unchecked")
                 Treeable<ID> treeNodeBo = (Treeable<ID>) bo;
-                tree.setParentId(treeNodeBo.getParentId());
+                tree.setParentId(treeNodeBo.getNodeParentId());
 
                 tree.putExtra("data", bo);
             });

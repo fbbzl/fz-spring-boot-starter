@@ -15,9 +15,9 @@ public interface Treeable<ID extends Serializable>
 
     String DEFAULT_ANCESTOR_SPLITTER = ",";
 
-    ID getId();
+    ID getNodeId();
 
-    ID getParentId();
+    ID getNodeParentId();
 
     String getAncestors();
 
