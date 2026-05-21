@@ -1,11 +1,13 @@
 package io.github.fbbzl.starter.pojo.validation;
 
+import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.extra.spring.SpringUtil;
 import jakarta.validation.*;
 import lombok.experimental.UtilityClass;
 
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 import java.util.function.UnaryOperator;
 
@@ -70,6 +72,20 @@ public final class Validators
     public static <BEAN> void validateAndThrow(Iterable<BEAN> obs, Class<?>... groups)
     {
         obs.forEach(obj -> validateAndThrow(obj, groups));
+    }
+
+    public static <BEAN> Set<ConstraintViolation<BEAN>> validateNonNullProperty(BEAN obj, Class<?>... groups)
+    {
+        Map<String, Object> beanMap = BeanUtil.beanToMap(obj, false, true);
+        return validateProperty(obj, groups, beanMap.keySet().toArray(String[]::new));
+    }
+
+    public static <BEAN> void validateNonNullPropertyAndThrow(BEAN obj, Class<?>... groups)
+    {
+        Set<ConstraintViolation<BEAN>> violations = validateNonNullProperty(obj, groups);
+        if (!violations.isEmpty()) {
+            throw new IllegalArgumentException(collectErrorMessages(violations));
+        }
     }
 
     public static <BEAN> Set<ConstraintViolation<BEAN>> validateProperty(BEAN obj, String... properties)

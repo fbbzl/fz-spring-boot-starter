@@ -397,6 +397,7 @@ public abstract class BaseCrudService<
     {
         DTO dto = objectMapper.convertValue(data, dtoClass);
         Throws.ifNull(dto.getId(), "id can not be null when doing update");
+        Validators.validateNonNullPropertyAndThrow(dto, CRUD.U.class);
         return struct.entityToBo(dal.update(struct.dtoToEntity(dto)));
     }
 

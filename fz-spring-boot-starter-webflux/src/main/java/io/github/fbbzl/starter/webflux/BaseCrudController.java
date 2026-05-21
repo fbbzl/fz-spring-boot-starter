@@ -1,10 +1,12 @@
 package io.github.fbbzl.starter.webflux;
 
+import cn.hutool.core.lang.Dict;
 import cn.hutool.core.lang.tree.Tree;
 import io.github.fbbzl.starter.audit.frame.annotation.AuditMethod;
 import io.github.fbbzl.starter.core.util.Generics;
 import io.github.fbbzl.starter.pojo.bo.BaseBo;
 import io.github.fbbzl.starter.pojo.dto.BaseDto;
+import io.github.fbbzl.starter.pojo.dto.BaseDto.Fields;
 import io.github.fbbzl.starter.pojo.entity.BaseTableEntity;
 import io.github.fbbzl.starter.pojo.validation.group.CRUD;
 import io.github.fbbzl.starter.webflux.Q.OQ;
@@ -199,14 +201,19 @@ public abstract class BaseCrudController<
 
     @AuditMethod
     @Operation(description = "[BASE] Update by map without null fields", summary = "[BASE] Do update by map ignore null field value")
-    @PatchMapping
+    @PatchMapping("{id}")
     public BO patch(
             @NotNull
-            @Parameter(name = "req", description = "updating map data", required = true)
+            @PathVariable("id")
+            @Parameter(name = "id", description = "The primary key of the record that needs to be update", required = true, example = "1")
+            ID id,
+            @NotNull
             @RequestBody
-            Q<Map<String, Object>> req)
+            Q<Dict> req)
     {
-        return service.patch(req.getData());
+        Map<String, Object> data = req.getData();
+        data.put(Fields.id, id);
+        return service.patch(data);
     }
 
     @AuditMethod
