@@ -1,5 +1,7 @@
 package io.github.fbbzl.starter.web.advice;
 
+import cn.crane4j.core.executor.AsyncBeanOperationExecutor;
+import cn.crane4j.core.support.Grouped;
 import cn.crane4j.core.support.OperateTemplate;
 import io.github.fbbzl.starter.web.R;
 import io.github.fbbzl.starter.web.annotation.IgnoreResponseOperate;
@@ -33,6 +35,7 @@ import org.springframework.web.servlet.mvc.method.annotation.ResponseBodyAdvice;
 public final class WebResponseOperateAdvice extends ApplicationResponseAdvice implements ResponseBodyAdvice<Object>
 {
     OperateTemplate operateTemplate;
+    AsyncBeanOperationExecutor asyncBeanOperationExecutor;
 
     @Override
     public boolean supports(@NonNull MethodParameter returnType, @NonNull Class<? extends HttpMessageConverter<?>> converterType)
@@ -50,8 +53,14 @@ public final class WebResponseOperateAdvice extends ApplicationResponseAdvice im
             @NonNull ServerHttpResponse response)
     {
         if (body instanceof R<?> res && res.getData() != null) {
-            operateTemplate.execute(res.getData());
+            operate(res.getData());
         }
         return body;
+    }
+
+    private void operate(Object data)
+    {
+        Object operateData = data instanceof R.PR<?> page ? page.records() : data;
+        operateTemplate.execute(operateData, asyncBeanOperationExecutor, Grouped.alwaysMatch());
     }
 }

@@ -2,6 +2,8 @@ package io.github.fbbzl.starter.web;
 
 
 import cn.crane4j.core.container.Container;
+import cn.crane4j.core.executor.AsyncBeanOperationExecutor;
+import cn.crane4j.core.support.Grouped;
 import cn.crane4j.core.support.OperateTemplate;
 import cn.hutool.core.lang.tree.Tree;
 import cn.hutool.core.lang.tree.TreeUtil;
@@ -82,6 +84,8 @@ public abstract class BaseCrudService<
     String          beanName;
     @Autowired
     OperateTemplate operateTemplate;
+    @Autowired
+    AsyncBeanOperationExecutor asyncBeanOperationExecutor;
 
     @Autowired
     @Lazy
@@ -311,7 +315,7 @@ public abstract class BaseCrudService<
     {
         if (Treeable.class.isAssignableFrom(boClass)) {
             List<BO> list = this.list(dto, limit, orders, ranges);
-            operateTemplate.execute(list);
+            operateTemplate.execute(list, asyncBeanOperationExecutor, Grouped.alwaysMatch());
             return TreeUtil.build(list, rootId, DEFAULT_CONFIG, (bo, tree) ->
             {
                 tree.setId(bo.getId());

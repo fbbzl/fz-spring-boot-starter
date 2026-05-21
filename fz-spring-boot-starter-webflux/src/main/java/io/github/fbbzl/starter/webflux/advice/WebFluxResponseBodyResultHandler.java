@@ -1,5 +1,7 @@
 package io.github.fbbzl.starter.webflux.advice;
 
+import cn.crane4j.core.executor.AsyncBeanOperationExecutor;
+import cn.crane4j.core.support.Grouped;
 import cn.crane4j.core.support.OperateTemplate;
 import io.github.fbbzl.starter.webflux.R;
 import io.github.fbbzl.starter.webflux.annotation.IgnoreResponseOperate;
@@ -39,6 +41,7 @@ public class WebFluxResponseBodyResultHandler extends ResponseBodyResultHandler
 {
     ApplicationContext applicationContext;
     OperateTemplate    operateTemplate;
+    AsyncBeanOperationExecutor asyncBeanOperationExecutor;
     MethodParameter    responseType;
     MethodParameter    monoResponseType;
 
@@ -47,12 +50,14 @@ public class WebFluxResponseBodyResultHandler extends ResponseBodyResultHandler
             RequestedContentTypeResolver resolver,
             ReactiveAdapterRegistry registry,
             ApplicationContext applicationContext,
-            OperateTemplate operateTemplate)
+            OperateTemplate operateTemplate,
+            AsyncBeanOperationExecutor asyncBeanOperationExecutor)
     {
         super(writers, resolver, registry);
         setOrder(AdviceOrder.WEB_RESPONSE_HANDLER);
         this.applicationContext = applicationContext;
         this.operateTemplate = operateTemplate;
+        this.asyncBeanOperationExecutor = asyncBeanOperationExecutor;
         this.responseType = methodReturnType("response");
         this.monoResponseType = methodReturnType("monoResponse");
     }
@@ -108,7 +113,7 @@ public class WebFluxResponseBodyResultHandler extends ResponseBodyResultHandler
         if (!hasAnnotation(returnType, IgnoreResponseOperate.class)) {
             Object operateBody = body instanceof R<?> response ? response.getData() : body;
             if (operateBody != null) {
-                operateTemplate.execute(operateBody);
+                operate(operateBody);
             }
         }
         return body instanceof R<?> response ? response : R.ok(body);
@@ -120,8 +125,14 @@ public class WebFluxResponseBodyResultHandler extends ResponseBodyResultHandler
             return;
         }
         if (body instanceof R<?> response && response.getData() != null) {
-            operateTemplate.execute(response.getData());
+            operate(response.getData());
         }
+    }
+
+    private void operate(Object data)
+    {
+        Object operateData = data instanceof R.PR<?> page ? page.records() : data;
+        operateTemplate.execute(operateData, asyncBeanOperationExecutor, Grouped.alwaysMatch());
     }
 
     private boolean hasAnnotation(MethodParameter returnType, Class<? extends Annotation> annotationType)

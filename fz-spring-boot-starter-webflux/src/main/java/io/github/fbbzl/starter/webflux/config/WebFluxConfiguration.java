@@ -1,5 +1,6 @@
 package io.github.fbbzl.starter.webflux.config;
 
+import cn.crane4j.core.executor.AsyncBeanOperationExecutor;
 import cn.crane4j.core.parser.handler.strategy.PropertyMappingStrategyManager;
 import cn.crane4j.core.support.AnnotationFinder;
 import cn.crane4j.core.support.Crane4jGlobalConfiguration;
@@ -45,17 +46,19 @@ public class WebFluxConfiguration
     }
 
     @Bean
-    public WebFluxResponseBodyResultHandler fzWebFluxResponseBodyResultHandler(
+    public WebFluxResponseBodyResultHandler webFluxResponseBodyResultHandler(
             ServerCodecConfigurer serverCodecConfigurer,
             RequestedContentTypeResolver contentTypeResolver,
             ReactiveAdapterRegistry reactiveAdapterRegistry,
             ApplicationContext applicationContext,
-            OperateTemplate operateTemplate)
+            OperateTemplate operateTemplate,
+            AsyncBeanOperationExecutor asyncBeanOperationExecutor)
     {
         return new WebFluxResponseBodyResultHandler(serverCodecConfigurer.getWriters(),
                                                     contentTypeResolver,
                                                     reactiveAdapterRegistry,
                                                     applicationContext,
-                                                    operateTemplate);
+                                                    operateTemplate,
+                                                    asyncBeanOperationExecutor);
     }
 }
