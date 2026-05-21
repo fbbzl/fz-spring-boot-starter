@@ -34,7 +34,6 @@ import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.BeanNameAware;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Lazy;
 import org.springframework.lang.Nullable;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.validation.annotation.Validated;
@@ -87,10 +86,6 @@ public abstract class BaseCrudService<
     @Autowired
     AsyncBeanOperationExecutor asyncBeanOperationExecutor;
 
-    @Autowired
-    @Lazy
-    BaseCrudService<ID, ENTITY, DTO, BO, DAL, STRUCT_MAPPER> self;
-
     public STRUCT_MAPPER struct()
     {
         return struct;
@@ -107,7 +102,7 @@ public abstract class BaseCrudService<
     @Override
     public Map<ID, BO> get(Collection<ID> ids)
     {
-        return self.map(newHashSet(ids));
+        return map(newHashSet(ids));
     }
 
     @Nullable
@@ -140,7 +135,7 @@ public abstract class BaseCrudService<
             @Validated(CRUD.R.class)
             DTO dto)
     {
-        return self.list(dto, Integer.MAX_VALUE, null, null);
+        return list(dto, Integer.MAX_VALUE, null, null);
     }
 
     public List<BO> list(
@@ -149,7 +144,7 @@ public abstract class BaseCrudService<
             @Positive(message = "limit must be positive")
             Integer limit)
     {
-        return self.list(dto, limit, null, null);
+        return list(dto, limit, null, null);
     }
 
     public List<BO> list(
@@ -160,7 +155,7 @@ public abstract class BaseCrudService<
             @Size(max = 1024, message = "the number of order cannot exceed 1024")
             Order[] orders)
     {
-        return self.list(dto, limit, orders, null);
+        return list(dto, limit, orders, null);
     }
 
     public List<BO> list(
@@ -171,7 +166,7 @@ public abstract class BaseCrudService<
             @Size(max = 1024, message = "the number of ranges cannot exceed 1024")
             Range[] ranges)
     {
-        return self.list(dto, limit, null, ranges);
+        return list(dto, limit, null, ranges);
     }
 
     public List<BO> list(
@@ -180,7 +175,7 @@ public abstract class BaseCrudService<
             @Size(max = 1024, message = "the number of ranges cannot exceed 1024")
             Range[] ranges)
     {
-        return self.list(dto, Integer.MAX_VALUE, null, ranges);
+        return list(dto, Integer.MAX_VALUE, null, ranges);
     }
 
     public List<BO> list(
@@ -189,7 +184,7 @@ public abstract class BaseCrudService<
             @Size(max = 1024, message = "the number of order cannot exceed 1024")
             Order[] orders)
     {
-        return self.list(dto, Integer.MAX_VALUE, orders, null);
+        return list(dto, Integer.MAX_VALUE, orders, null);
     }
 
     public List<BO> list(
@@ -240,7 +235,7 @@ public abstract class BaseCrudService<
             @Validated(CRUD.R.class)
             DTO dto)
     {
-        return self.tree(rootId, dto, Integer.MAX_VALUE, null, null);
+        return tree(rootId, dto, Integer.MAX_VALUE, null, null);
     }
 
     public List<Tree<ID>> tree(
@@ -251,7 +246,7 @@ public abstract class BaseCrudService<
             @Positive(message = "limit must be positive")
             Integer limit)
     {
-        return self.tree(rootId, dto, limit, null, null);
+        return tree(rootId, dto, limit, null, null);
     }
 
     public List<Tree<ID>> tree(
@@ -264,7 +259,7 @@ public abstract class BaseCrudService<
             @Size(max = 1024, message = "the number of order cannot exceed 1024")
             Order[] orders)
     {
-        return self.tree(rootId, dto, limit, orders, null);
+        return tree(rootId, dto, limit, orders, null);
     }
 
     public List<Tree<ID>> tree(
@@ -277,7 +272,7 @@ public abstract class BaseCrudService<
             @Size(max = 1024, message = "the number of ranges cannot exceed 1024")
             Range[] ranges)
     {
-        return self.tree(rootId, dto, limit, null, ranges);
+        return tree(rootId, dto, limit, null, ranges);
     }
 
     public List<Tree<ID>> tree(
@@ -288,7 +283,7 @@ public abstract class BaseCrudService<
             @Size(max = 1024, message = "the number of ranges cannot exceed 1024")
             Range[] ranges)
     {
-        return self.tree(rootId, dto, Integer.MAX_VALUE, null, ranges);
+        return tree(rootId, dto, Integer.MAX_VALUE, null, ranges);
     }
 
     public List<Tree<ID>> tree(
@@ -299,7 +294,7 @@ public abstract class BaseCrudService<
             @Size(max = 1024, message = "the number of order cannot exceed 1024")
             Order[] orders)
     {
-        return self.tree(rootId, dto, Integer.MAX_VALUE, orders, null);
+        return tree(rootId, dto, Integer.MAX_VALUE, orders, null);
     }
 
     public List<Tree<ID>> tree(

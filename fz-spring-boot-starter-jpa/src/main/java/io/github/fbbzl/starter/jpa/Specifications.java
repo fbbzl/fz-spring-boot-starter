@@ -4,22 +4,29 @@ import cn.hutool.core.util.ArrayUtil;
 import cn.hutool.db.sql.Condition.LikeType;
 import cn.hutool.db.sql.Direction;
 import cn.hutool.db.sql.Order;
+import cn.hutool.json.JSONUtil;
 import io.github.fbbzl.starter.dal.Range;
 import io.github.fbbzl.starter.pojo.entity.BaseTableEntity;
+import jakarta.persistence.Column;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.criteria.*;
 import jakarta.persistence.metamodel.Attribute;
 import jakarta.persistence.metamodel.EntityType;
 import jakarta.persistence.metamodel.SingularAttribute;
 import io.github.fbbzl.starter.core.util.Throws;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.util.ReflectionUtils;
 
 import java.lang.reflect.Field;
 import java.time.LocalDateTime;
+import java.util.Collection;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Locale;
+import java.util.Map;
 import java.util.Set;
 import java.util.stream.Stream;
 
@@ -51,12 +58,31 @@ public class Specifications {
             final ENTITY sqlQueryEntity,
             Order... orders)
     {
-        return byAuto(entityManager, sqlQueryEntity, (Range[]) null, orders);
+        return byAuto(entityManager, sqlQueryEntity, true, (Range[]) null, orders);
     }
 
     public static <ENTITY extends BaseTableEntity> Specification<ENTITY> byAuto(
             final EntityManager entityManager,
             final ENTITY sqlQueryEntity,
+            boolean stringLike,
+            Order... orders)
+    {
+        return byAuto(entityManager, sqlQueryEntity, stringLike, (Range[]) null, orders);
+    }
+
+    public static <ENTITY extends BaseTableEntity> Specification<ENTITY> byAuto(
+            final EntityManager entityManager,
+            final ENTITY sqlQueryEntity,
+            final Range[] ranges,
+            Order... orders)
+    {
+        return byAuto(entityManager, sqlQueryEntity, true, ranges, orders);
+    }
+
+    public static <ENTITY extends BaseTableEntity> Specification<ENTITY> byAuto(
+            final EntityManager entityManager,
+            final ENTITY sqlQueryEntity,
+            boolean stringLike,
             final Range[] ranges,
             Order... orders)
     {
@@ -74,9 +100,16 @@ public class Specifications {
                 Object queryValue = getValue(sqlQueryEntity, field);
                 if (queryValue == null) return;
 
+                if (isJsonField(field)) {
+                    jsonQuery(predicates, root, cb, entityType, field, queryValue);
+                    return;
+                }
+
                 switch (queryValue) {
                     case List<?>       list          -> predicates.add(cb.in(root.get(attribute(entityType, field))).in(list));
-                    case String        string        -> predicates.add(cb.like((Path<String>) root.get(attribute(entityType, field)), buildLikeValue(string, LikeType.Contains, false)));
+                    case String        string when stringLike
+                                                    -> predicates.add(cb.like((Path<String>) root.get(attribute(entityType, field)), buildLikeValue(string, LikeType.Contains, false)));
+                    case String        string        -> predicates.add(cb.equal(root.get(attribute(entityType, field)), string));
                     case Enum<?>       enumVal       -> predicates.add(cb.equal(root.get(attribute(entityType, field)), enumVal.ordinal()));
                     case Number        number        -> predicates.add(cb.equal(root.get(attribute(entityType, field)), number));
                     case LocalDateTime localDateTime -> predicates.add(cb.equal(root.get(attribute(entityType, field)), localDateTime));
@@ -98,6 +131,69 @@ public class Specifications {
     private static Comparable comparable(Object value)
     {
         return value instanceof Comparable<?> comparable ? comparable : null;
+    }
+
+    private static <ENTITY extends BaseTableEntity> boolean isJsonField(Attribute<? super ENTITY, ?> attr)
+    {
+        if (!(attr.getJavaMember() instanceof Field field)) return false;
+
+        JdbcTypeCode jdbcTypeCode = field.getAnnotation(JdbcTypeCode.class);
+        if (jdbcTypeCode != null && jdbcTypeCode.value() == SqlTypes.JSON) return true;
+
+        Column column = field.getAnnotation(Column.class);
+        if (column == null || isBlank(column.columnDefinition())) return false;
+
+        return column.columnDefinition().toLowerCase(Locale.ROOT).contains("json");
+    }
+
+    private static <ENTITY extends BaseTableEntity> void jsonQuery(
+            List<Predicate> predicates,
+            Root<ENTITY> root,
+            CriteriaBuilder cb,
+            EntityType<ENTITY> entityType,
+            Attribute<? super ENTITY, ?> field,
+            Object value)
+    {
+        Predicate predicate = switch (value) {
+            case Collection<?> collection when collection.isEmpty() -> null;
+            case Collection<?> collection                            -> jsonArrayContainsAny(root, cb, entityType, field, collection);
+            case Map<?, ?> map when map.isEmpty()                   -> null;
+            default                                                 -> jsonContains(root, cb, entityType, field, value);
+        };
+
+        if (predicate != null) predicates.add(predicate);
+    }
+
+    private static <ENTITY extends BaseTableEntity> Predicate jsonArrayContainsAny(
+            Root<ENTITY> root,
+            CriteriaBuilder cb,
+            EntityType<ENTITY> entityType,
+            Attribute<? super ENTITY, ?> field,
+            Collection<?> values)
+    {
+        List<Predicate> predicates = new ArrayList<>(values.size());
+        for (Object value : values) {
+            if (value != null) predicates.add(jsonContains(root, cb, entityType, field, value));
+        }
+
+        return predicates.isEmpty() ? null : cb.or(predicates.toArray(EMPTY_PREDICATE));
+    }
+
+    private static <ENTITY extends BaseTableEntity> Predicate jsonContains(
+            Root<ENTITY> root,
+            CriteriaBuilder cb,
+            EntityType<ENTITY> entityType,
+            Attribute<? super ENTITY, ?> field,
+            Object value)
+    {
+        Expression<Integer> containsExpression =
+                cb.function(
+                        "JSON_CONTAINS",
+                        Integer.class,
+                        root.get(attribute(entityType, field)),
+                        cb.literal(JSONUtil.toJsonStr(value)));
+
+        return cb.equal(containsExpression, 1);
     }
 
     private static <ENTITY extends BaseTableEntity> Object getValue(ENTITY sqlQueryObject, Attribute<? super ENTITY, ?> attr)

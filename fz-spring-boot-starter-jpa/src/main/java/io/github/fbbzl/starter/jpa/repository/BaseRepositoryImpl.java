@@ -17,8 +17,6 @@ import jakarta.persistence.LockModeType;
 import jakarta.persistence.criteria.*;
 import io.github.fbbzl.starter.core.util.Throws;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Example;
-import org.springframework.data.domain.ExampleMatcher;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.repository.support.SimpleJpaRepository;
@@ -177,7 +175,9 @@ public class BaseRepositoryImpl<ENTITY extends BaseTableEntity<ID>, ID extends S
     @Override
     public boolean exists(@Nullable ENTITY entity)
     {
-        return this.exists(Example.of(entity, ExampleMatcher.matching().withIgnoreNullValues()));
+        if (entity == null) return false;
+
+        return this.count(Specifications.byAuto(entityManager, entity, false)) > 0;
     }
 
     @Override
@@ -208,9 +208,7 @@ public class BaseRepositoryImpl<ENTITY extends BaseTableEntity<ID>, ID extends S
     {
         if (entity == null) return;
 
-        Example<ENTITY> example = Example.of(entity, ExampleMatcher.matching().withIgnoreNullValues());
-
-        this.findAll(example, Sort.unsorted())
+        this.findAll(Specifications.byAuto(entityManager, entity), Sort.unsorted())
             .forEach(e -> entityManager.lock(e, LockModeType.PESSIMISTIC_WRITE));
     }
 
@@ -258,7 +256,9 @@ public class BaseRepositoryImpl<ENTITY extends BaseTableEntity<ID>, ID extends S
         org.springframework.data.domain.Page<ENTITY> pageResult;
 
         do {
-            pageResult = this.findAll(Example.of(entity, ExampleMatcher.matching().withIgnoreNullValues()), pageRequest);
+            pageResult = entity == null
+                         ? this.findAll(pageRequest)
+                         : this.findAll(Specifications.byAuto(entityManager, entity), pageRequest);
 
             recordsConsumer.accept(pageResult.getContent());
 
