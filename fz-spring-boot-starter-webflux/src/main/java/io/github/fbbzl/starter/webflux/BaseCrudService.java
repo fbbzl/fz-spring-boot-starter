@@ -30,6 +30,7 @@ import jakarta.validation.constraints.Size;
 import lombok.AccessLevel;
 import lombok.Setter;
 import lombok.experimental.FieldDefaults;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.BeanNameAware;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
@@ -58,6 +59,7 @@ import static java.util.stream.Collectors.toMap;
  */
 
 @Validated
+@Slf4j
 @FieldDefaults(level = AccessLevel.PROTECTED)
 public abstract class BaseCrudService<
         ID            extends Serializable,
@@ -326,6 +328,7 @@ public abstract class BaseCrudService<
             });
         }
 
+        log.warn("Tree query ignored because BO type [{}] does not implement [{}]", boClass.getName(), Treeable.class.getName());
         return emptyList();
     }
 
