@@ -6,6 +6,7 @@ import cn.crane4j.core.executor.AsyncBeanOperationExecutor;
 import cn.crane4j.core.support.Grouped;
 import cn.crane4j.core.support.OperateTemplate;
 import cn.hutool.core.lang.tree.Tree;
+import cn.hutool.core.lang.tree.TreeNodeConfig;
 import cn.hutool.core.lang.tree.TreeUtil;
 import cn.hutool.db.Page;
 import cn.hutool.db.PageResult;
@@ -318,7 +319,7 @@ public abstract class BaseCrudService<
         if (Treeable.class.isAssignableFrom(boClass)) {
             List<BO> list = this.list(dto, limit, orders, ranges);
             operateTemplate.execute(list, asyncBeanOperationExecutor, Grouped.alwaysMatch());
-            return TreeUtil.build(list, rootId, DEFAULT_CONFIG, (bo, tree) ->
+            return TreeUtil.build(list, rootId, treeNodeConfig(), (bo, tree) ->
             {
                 tree.setId(bo.getId());
 
@@ -332,6 +333,11 @@ public abstract class BaseCrudService<
 
         log.warn("Tree query ignored because BO type [{}] does not implement [{}]", boClass.getName(), Treeable.class.getName());
         return emptyList();
+    }
+
+    protected TreeNodeConfig treeNodeConfig()
+    {
+        return DEFAULT_CONFIG;
     }
 
     public boolean exists(
