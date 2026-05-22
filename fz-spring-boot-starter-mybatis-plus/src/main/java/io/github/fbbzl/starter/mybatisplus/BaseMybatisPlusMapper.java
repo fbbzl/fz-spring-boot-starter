@@ -74,11 +74,11 @@ public interface BaseMybatisPlusMapper<ENTITY extends BaseTableEntity<ID>, ID ex
 
     @Transactional
     @Override
-    default void delete(@Nullable Set<ID> ids)
+    default void delete(@Nullable Iterable<ID> ids)
     {
         if (isEmpty(ids)) return;
 
-        this.deleteByIds(IterUtil.toList(ids));
+        this.deleteByIds(newHashSet(ids));
     }
 
     @Transactional

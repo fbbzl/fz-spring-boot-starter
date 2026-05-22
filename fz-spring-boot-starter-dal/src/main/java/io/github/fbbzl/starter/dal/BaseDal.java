@@ -28,7 +28,7 @@ public interface BaseDal<ENTITY extends BaseTableEntity<ID>, ID extends Serializ
 
     void delete(@Nullable ID id);
 
-    void delete(@Nullable Set<ID> ids);
+    void delete(@Nullable Iterable<ID> ids);
 
     ENTITY update(@Nullable ENTITY entity);
 

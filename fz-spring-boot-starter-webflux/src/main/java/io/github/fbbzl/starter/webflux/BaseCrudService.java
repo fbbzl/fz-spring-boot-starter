@@ -19,6 +19,7 @@ import io.github.fbbzl.starter.dal.BaseDal;
 import io.github.fbbzl.starter.dal.Range;
 import io.github.fbbzl.starter.pojo.bo.BaseBo;
 import io.github.fbbzl.starter.pojo.dto.BaseDto;
+import io.github.fbbzl.starter.pojo.dto.Prepare;
 import io.github.fbbzl.starter.pojo.entity.BaseTableEntity;
 import io.github.fbbzl.starter.pojo.mapstruct.BaseCrudStructMapper;
 import io.github.fbbzl.starter.pojo.tree.Treeable;
@@ -39,7 +40,10 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.validation.annotation.Validated;
 
 import java.io.Serializable;
-import java.util.*;
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.function.Function;
 
 import static cn.hutool.core.collection.CollUtil.isEmpty;
@@ -86,8 +90,7 @@ public abstract class BaseCrudService<
     @Autowired
     AsyncBeanOperationExecutor asyncBeanOperationExecutor;
 
-    public STRUCT_MAPPER struct()
-    {
+    public STRUCT_MAPPER struct() {
         return struct;
     }
 
@@ -132,14 +135,12 @@ public abstract class BaseCrudService<
     }
 
     public List<BO> list(
-            @Validated(CRUD.R.class)
             DTO dto)
     {
         return list(dto, Integer.MAX_VALUE, null, null);
     }
 
     public List<BO> list(
-            @Validated(CRUD.R.class)
             DTO dto,
             @Positive(message = "limit must be positive")
             Integer limit)
@@ -148,7 +149,6 @@ public abstract class BaseCrudService<
     }
 
     public List<BO> list(
-            @Validated(CRUD.R.class)
             DTO dto,
             @Positive(message = "limit must be positive")
             Integer limit,
@@ -159,7 +159,6 @@ public abstract class BaseCrudService<
     }
 
     public List<BO> list(
-            @Validated(CRUD.R.class)
             DTO dto,
             @Positive(message = "limit must be positive")
             Integer limit,
@@ -170,7 +169,6 @@ public abstract class BaseCrudService<
     }
 
     public List<BO> list(
-            @Validated(CRUD.R.class)
             DTO dto,
             @Size(max = 1024, message = "the number of ranges cannot exceed 1024")
             Range[] ranges)
@@ -179,7 +177,6 @@ public abstract class BaseCrudService<
     }
 
     public List<BO> list(
-            @Validated(CRUD.R.class)
             DTO dto,
             @Size(max = 1024, message = "the number of order cannot exceed 1024")
             Order[] orders)
@@ -188,7 +185,6 @@ public abstract class BaseCrudService<
     }
 
     public List<BO> list(
-            @Validated(CRUD.R.class)
             DTO dto,
             @Positive(message = "limit must be positive")
             Integer limit,
@@ -198,41 +194,45 @@ public abstract class BaseCrudService<
             Range[] ranges)
     {
         if (dto == null) return emptyList();
-        else return struct.entityToBo(dal.list(struct.dtoToEntity(dto), limit, orders, ranges));
+        dto.prepareQuery();
+        Validators.validateAndThrow(dto, CRUD.R.class);
+        return struct.entityToBo(dal.list(struct.dtoToEntity(dto), limit, orders, ranges));
     }
 
     public List<ID> ids(
-            @Validated(CRUD.R.class)
             DTO dto)
     {
         if (dto == null) return emptyList();
-        else return dal.ids(struct.dtoToEntity(dto), Integer.MAX_VALUE);
+        dto.prepareQuery();
+        Validators.validateAndThrow(dto, CRUD.R.class);
+        return dal.ids(struct.dtoToEntity(dto), Integer.MAX_VALUE);
     }
 
     public List<ID> ids(
-            @Validated(CRUD.R.class)
             DTO dto,
             @Positive(message = "limit must be positive")
             Integer limit)
     {
         if (dto == null) return emptyList();
-        else return dal.ids(struct.dtoToEntity(dto), limit);
+        dto.prepareQuery();
+        Validators.validateAndThrow(dto, CRUD.R.class);
+        return dal.ids(struct.dtoToEntity(dto), limit);
     }
 
     public PageResult<BO> page(
             @NotNull(message = "page can not be null when doing page-query")
             Page page,
-            @Validated(R.class)
             DTO dto)
     {
         if (hasNull(dto, page)) return emptyPage();
-        else return mappingPage(dal.page(page, struct.dtoToEntity(dto)), struct::entityToBo);
+        dto.prepareQuery();
+        Validators.validateAndThrow(dto, R.class);
+        return mappingPage(dal.page(page, struct.dtoToEntity(dto)), struct::entityToBo);
     }
 
     public List<Tree<ID>> tree(
             @NotNull(message = "root-id can not be null when doing tree-query")
             ID rootId,
-            @Validated(CRUD.R.class)
             DTO dto)
     {
         return tree(rootId, dto, Integer.MAX_VALUE, null, null);
@@ -241,7 +241,6 @@ public abstract class BaseCrudService<
     public List<Tree<ID>> tree(
             @NotNull(message = "root-id can not be null when doing tree-query")
             ID rootId,
-            @Validated(CRUD.R.class)
             DTO dto,
             @Positive(message = "limit must be positive")
             Integer limit)
@@ -252,7 +251,6 @@ public abstract class BaseCrudService<
     public List<Tree<ID>> tree(
             @NotNull(message = "root-id can not be null when doing tree-query")
             ID rootId,
-            @Validated(CRUD.R.class)
             DTO dto,
             @Positive(message = "limit must be positive")
             Integer limit,
@@ -265,7 +263,6 @@ public abstract class BaseCrudService<
     public List<Tree<ID>> tree(
             @NotNull(message = "root-id can not be null when doing tree-query")
             ID rootId,
-            @Validated(CRUD.R.class)
             DTO dto,
             @Positive(message = "limit must be positive")
             Integer limit,
@@ -278,7 +275,6 @@ public abstract class BaseCrudService<
     public List<Tree<ID>> tree(
             @NotNull(message = "root-id can not be null when doing tree-query")
             ID rootId,
-            @Validated(CRUD.R.class)
             DTO dto,
             @Size(max = 1024, message = "the number of ranges cannot exceed 1024")
             Range[] ranges)
@@ -289,7 +285,6 @@ public abstract class BaseCrudService<
     public List<Tree<ID>> tree(
             @NotNull(message = "root-id can not be null when doing tree-query")
             ID rootId,
-            @Validated(CRUD.R.class)
             DTO dto,
             @Size(max = 1024, message = "the number of order cannot exceed 1024")
             Order[] orders)
@@ -300,7 +295,6 @@ public abstract class BaseCrudService<
     public List<Tree<ID>> tree(
             @NotNull(message = "root-id can not be null when doing tree-query")
             ID rootId,
-            @Validated(CRUD.R.class)
             DTO dto,
             @Positive(message = "limit must be positive")
             Integer limit,
@@ -328,11 +322,6 @@ public abstract class BaseCrudService<
         return emptyList();
     }
 
-    protected TreeNodeConfig treeNodeConfig()
-    {
-        return DEFAULT_CONFIG;
-    }
-
     public boolean exists(
             @NotNull(message = "id can not be null when doing id-exist-query")
             @Validated(CRUD.R.class)
@@ -343,18 +332,20 @@ public abstract class BaseCrudService<
 
     public boolean exists(
             @NotNull(message = "data can not be null when doing data-exist-query")
-            @Validated(CRUD.R.class)
             DTO dto)
     {
+        dto.prepareQuery();
+        Validators.validateAndThrow(dto, CRUD.R.class);
         return dal.exists(struct.dtoToEntity(dto));
     }
 
     @Transactional
     public BO create(
             @NotNull(message = "data can not be null when doing create")
-            @Validated(CRUD.C.class)
             DTO dto)
     {
+        dto.prepareCreate();
+        Validators.validateAndThrow(dto, CRUD.C.class);
         return struct.entityToBo(dal.create(struct.dtoToEntity(dto)));
     }
 
@@ -364,28 +355,19 @@ public abstract class BaseCrudService<
             Collection<DTO> dtos)
     {
         if (isEmpty(dtos)) return emptyList();
+        dtos.forEach(Prepare::prepareCreate);
         Validators.validateAndThrow(dtos, CRUD.C.class);
         List<ENTITY> entities = struct.dtoToEntity(dtos);
         return struct.entityToBo(dal.create(entities));
     }
 
     @Transactional
-    public List<BO> create(
-            @Size(max = 1024, message = "the number of array cannot exceed 1024")
-            DTO[] dtos)
-    {
-        if (dtos == null || dtos.length == 0) return emptyList();
-        Validators.validateAndThrow(dtos, CRUD.C.class);
-        ENTITY[] entities = struct.dtoToEntity(dtos);
-        return struct.entityToBo(dal.create(Arrays.asList(entities)));
-    }
-
-    @Transactional
     public BO update(
             @NotNull(message = "data can not be null when doing update")
-            @Validated(CRUD.U.class)
             DTO dto)
     {
+        dto.prepareUpdate();
+        Validators.validateAndThrow(dto, CRUD.U.class);
         return struct.entityToBo(dal.update(struct.dtoToEntity(dto)));
     }
 
@@ -395,6 +377,7 @@ public abstract class BaseCrudService<
             Collection<DTO> dtos)
     {
         if (isEmpty(dtos)) return;
+        dtos.forEach(Prepare::prepareUpdate);
         Validators.validateAndThrow(dtos, CRUD.U.class);
         dal.update(struct.dtoToEntity(dtos));
     }
@@ -413,6 +396,20 @@ public abstract class BaseCrudService<
     @Transactional
     public void delete(
             @NotNull(message = "data can not be null when doing delete")
+            DTO dto)
+    {
+        dto.prepareDelete();
+        Validators.validateAndThrow(dto, CRUD.D.class);
+        Throws.ifNull(dto.getId(), "id can not be null when doing delete");
+        List<ID> ids = ids(dto);
+        if (isEmpty(ids)) return;
+
+        dal.delete(ids);
+    }
+
+    @Transactional
+    public void delete(
+            @NotNull(message = "data can not be null when doing delete")
             ID id)
     {
         dal.delete(id);
@@ -425,6 +422,11 @@ public abstract class BaseCrudService<
             Set<ID> ids)
     {
         dal.delete(ids);
+    }
+
+    protected TreeNodeConfig treeNodeConfig()
+    {
+        return DEFAULT_CONFIG;
     }
 
     static <SOURCE, TARGET> PageResult<TARGET> mappingPage(

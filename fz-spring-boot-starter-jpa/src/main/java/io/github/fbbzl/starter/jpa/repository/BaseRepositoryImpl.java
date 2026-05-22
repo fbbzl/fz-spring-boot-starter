@@ -24,15 +24,11 @@ import org.springframework.lang.Nullable;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 import java.util.function.Consumer;
 import java.util.stream.Stream;
 
-import static cn.hutool.core.collection.CollUtil.isEmpty;
-import static cn.hutool.core.collection.CollUtil.isNotEmpty;
+import static cn.hutool.core.collection.CollUtil.*;
 import static java.util.Collections.emptyList;
 
 /**
@@ -81,7 +77,7 @@ public class BaseRepositoryImpl<ENTITY extends BaseTableEntity<ID>, ID extends S
 
     @Transactional
     @Override
-    public void delete(@Nullable Set<ID> ids)
+    public void delete(@Nullable Iterable<ID> ids)
     {
         if (isEmpty(ids)) return;
 

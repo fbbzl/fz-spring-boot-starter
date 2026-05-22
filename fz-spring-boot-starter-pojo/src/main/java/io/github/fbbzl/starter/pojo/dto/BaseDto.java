@@ -21,7 +21,7 @@ import static cn.hutool.core.date.DatePattern.NORM_DATETIME_PATTERN;
 @Data
 @FieldNameConstants
 @FieldDefaults(level = AccessLevel.PROTECTED)
-public abstract class BaseDto<ID>
+public abstract class BaseDto<ID> implements Prepare
 {
 
     @NotNull(groups = CRUD.U.class, message = "id can not be null when doing update")
