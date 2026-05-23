@@ -116,7 +116,7 @@ public class BaseRepositoryImpl<ENTITY extends BaseTableEntity<ID>, ID extends S
     }
 
     @Override
-    public List<ENTITY> byIds(@Nullable Set<ID> ids)
+    public List<ENTITY> byIds(@Nullable Collection<ID> ids)
     {
         if (isEmpty(ids)) return emptyList();
         else              return this.findAllById(ids);

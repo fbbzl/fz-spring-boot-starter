@@ -107,7 +107,7 @@ public interface BaseMybatisPlusMapper<ENTITY extends BaseTableEntity<ID>, ID ex
     }
 
     @Override
-    default List<ENTITY> byIds(@Nullable Set<ID> ids)
+    default List<ENTITY> byIds(@Nullable Collection<ID> ids)
     {
         return this.selectByIds(ids);
     }

@@ -8,9 +8,9 @@ import org.springframework.lang.NonNull;
 import org.springframework.lang.Nullable;
 
 import java.io.Serializable;
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
-import java.util.Set;
 import java.util.function.Consumer;
 
 /**
@@ -37,7 +37,7 @@ public interface BaseDal<ENTITY extends BaseTableEntity<ID>, ID extends Serializ
     @Nullable
     ENTITY byId(@Nullable ID id);
 
-    List<ENTITY> byIds(@Nullable Set<ID> ids);
+    List<ENTITY> byIds(@Nullable Collection<ID> ids);
 
     Optional<ENTITY> one(@Nullable ENTITY entity);
 

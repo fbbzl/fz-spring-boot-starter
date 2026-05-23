@@ -105,7 +105,7 @@ public abstract class BaseCrudService<
     @Override
     public Map<ID, BO> get(Collection<ID> ids)
     {
-        return map(newHashSet(ids));
+        return map(ids);
     }
 
     @Nullable
@@ -128,10 +128,10 @@ public abstract class BaseCrudService<
 
     public Map<ID, BO> map(
             @Size(max = 1024, message = "the number of collection cannot exceed 1024")
-            Set<ID> ids)
+            Collection<ID> ids)
     {
         if (isEmpty(ids)) return emptyMap();
-        else return struct.entityToBo(dal.byIds(ids)).stream().collect(toMap(BaseBo::getId, identity()));
+        else return struct.entityToBo(dal.byIds(newHashSet(ids))).stream().collect(toMap(BaseBo::getId, identity()));
     }
 
     public List<BO> list(
