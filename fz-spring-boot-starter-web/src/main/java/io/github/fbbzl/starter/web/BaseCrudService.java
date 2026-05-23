@@ -120,7 +120,7 @@ public abstract class BaseCrudService<
 
     public List<BO> byIds(
             @Size(max = 1024, message = "the number of collection cannot exceed 1024")
-            Set<ID> ids)
+            Collection<ID> ids)
     {
         if (isEmpty(ids)) return emptyList();
         else return struct.entityToBo(dal.byIds(ids));
@@ -419,7 +419,7 @@ public abstract class BaseCrudService<
     public void delete(
             @NotNull(message = "data can not be null when doing delete")
             @Size(max = 1024, message = "the number of collection cannot exceed 1024")
-            Set<ID> ids)
+            Collection<ID> ids)
     {
         dal.delete(ids);
     }
