@@ -16,10 +16,12 @@ import lombok.experimental.FieldDefaults;
 import io.github.fbbzl.starter.core.util.Throws;
 import org.springframework.lang.Nullable;
 
+import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.time.Instant;
 
 import static cn.hutool.core.text.CharSequenceUtil.EMPTY;
+import static cn.hutool.core.text.CharSequenceUtil.isBlank;
 import static cn.hutool.core.util.ObjectUtil.hasNull;
 import static cn.hutool.jwt.RegisteredPayload.*;
 
@@ -50,28 +52,31 @@ public class JwtFactory
 
     public JWTSigner getSigner(JwtProperties props)
     {
-        return JWTSignerUtil.hs256(props.getSecret().getBytes());
+        return JWTSignerUtil.hs256(props.getSecret().getBytes(StandardCharsets.UTF_8));
     }
 
     public static JWT create(@NotNull Object bean)
     {
-        return create(UUID.randomUUID().toString(), bean, self.signer);
+        JwtFactory factory = self();
+        return create(UUID.randomUUID().toString(), bean, factory.signer);
     }
 
     public static JWT create(String subject, @NotNull Object bean)
     {
-        return create(subject, bean, self.signer);
+        JwtFactory factory = self();
+        return create(subject, bean, factory.signer);
     }
 
     public static JWT create(String subject, @NotNull Object bean, JWTSigner signer)
     {
-        Instant  now     = Instant.now();
-        Duration expires = self.props.getExpires();
+        JwtFactory factory = self();
+        Instant    now     = Instant.now();
+        Duration   expires = factory.props.getExpires();
         return JWT.create()
-                  .setPayload(ISSUED_AT, now.toEpochMilli())
-                  .setPayload(EXPIRES_AT, now.plus(expires).toEpochMilli())
                   .addPayloads(BeanUtil.beanToMap(bean))
-                  .setIssuer(self.props.getIssuer())
+                  .setPayload(ISSUED_AT, now.getEpochSecond())
+                  .setPayload(EXPIRES_AT, now.plus(expires).getEpochSecond())
+                  .setIssuer(factory.props.getIssuer())
                   .setSubject(subject)
                   .setJWTId(UUID.randomUUID().toString())
                   .setSigner(signer);
@@ -80,15 +85,41 @@ public class JwtFactory
     @Nullable
     public static JWT jwt(HttpServletRequest request)
     {
-        String token = request.getHeader(self.props.getHeader());
-        Throws.ifBlank(token, "token can not be null or blank");
+        return jwt(request, true);
+    }
 
-        token = token.substring(self.props.getPrefix().length()).trim();
+    @Nullable
+    public static JWT jwt(HttpServletRequest request, boolean checkExpired)
+    {
+        JwtFactory factory = self();
+        String     token   = token(request);
+        if (isBlank(token)) return null;
 
-        JWT jwt = JWTUtil.parseToken(token);
-        jwt.setSigner(self.signer);
+        try {
+            JWT jwt = JWTUtil.parseToken(token);
+            jwt.setSigner(factory.signer);
 
-        return jwt.verify() && !isExpired(jwt) ? jwt : null;
+            return jwt.verify() && (!checkExpired || !isExpired(jwt)) ? jwt : null;
+        } catch (RuntimeException ignored) {
+            return null;
+        }
+    }
+
+    @Nullable
+    private static String token(HttpServletRequest request)
+    {
+        if (request == null) return null;
+
+        JwtFactory factory = self();
+        String     token   = request.getHeader(factory.props.getHeader());
+        if (isBlank(token)) return null;
+
+        String prefix = factory.props.getPrefix();
+        if (isBlank(prefix)) return token.trim();
+        if (!token.regionMatches(true, 0, prefix, 0, prefix.length())) return null;
+
+        token = token.substring(prefix.length()).trim();
+        return isBlank(token) ? null : token;
     }
 
     @Nullable
@@ -116,7 +147,8 @@ public class JwtFactory
     public static boolean isExpired(JWT jwt)
     {
         Object exp = payload(jwt, EXPIRES_AT);
-        return exp == null || Instant.now().toEpochMilli() > Convert.toLong(exp);
+        Long   sec = Convert.toLong(exp);
+        return sec == null || Instant.now().getEpochSecond() > sec;
     }
 
     @Nullable
@@ -146,6 +178,12 @@ public class JwtFactory
         if (payloads == null) return null;
 
         return BeanUtil.toBean(payloads, beanType);
+    }
+
+    private static JwtFactory self()
+    {
+        Throws.ifNull(self, "jwt factory is not initialized");
+        return self;
     }
 
 }

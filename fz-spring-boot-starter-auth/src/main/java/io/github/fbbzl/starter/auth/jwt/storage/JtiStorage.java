@@ -42,7 +42,7 @@ public abstract class JtiStorage
 
     public final void delete(HttpServletRequest request)
     {
-        String jti = jti(request);
+        String jti = jti(jwt(request, false));
         if (isBlank(jti)) return;
 
         delete(jti);
