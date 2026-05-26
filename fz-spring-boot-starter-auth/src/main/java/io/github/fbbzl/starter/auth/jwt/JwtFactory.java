@@ -93,15 +93,16 @@ public class JwtFactory
         JwtFactory factory = self();
         String     token   = token(request);
         if (isBlank(token)) return null;
-        log.info("token: {}", token);
+
         try {
-            JWT jwt = JWTUtil.parseToken(token);
+            JWT       jwt    = JWTUtil.parseToken(token);
             JWTSigner signer = factory.getSigner(factory.props);
             jwt.setSigner(signer);
 
             return verify(jwt, signer) && (!checkExpired || !isExpired(jwt)) ? jwt : null;
-        } catch (RuntimeException error) {
-            log.error("jwt parse error",  error);
+        }
+        catch (RuntimeException error) {
+            log.error("jwt parse error", error);
             return null;
         }
     }
