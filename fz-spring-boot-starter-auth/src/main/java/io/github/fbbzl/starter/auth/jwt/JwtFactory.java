@@ -14,6 +14,7 @@ import jakarta.validation.constraints.NotNull;
 import lombok.AccessLevel;
 import lombok.experimental.FieldDefaults;
 import io.github.fbbzl.starter.core.util.Throws;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.lang.Nullable;
 
 import java.nio.charset.StandardCharsets;
@@ -31,13 +32,12 @@ import static cn.hutool.jwt.RegisteredPayload.*;
  * @since 2026/5/1 22:21
  */
 
-
+@Slf4j
 @FieldDefaults(level = AccessLevel.PROTECTED)
 public class JwtFactory
 {
 
     JwtProperties props;
-    JWTSigner     signer;
     static JwtFactory self;
 
     {
@@ -46,8 +46,7 @@ public class JwtFactory
 
     public JwtFactory(JwtProperties props)
     {
-        this.props  = props;
-        this.signer = getSigner(props);
+        this.props = props;
     }
 
     public JWTSigner getSigner(JwtProperties props)
@@ -58,13 +57,13 @@ public class JwtFactory
     public static JWT create(@NotNull Object bean)
     {
         JwtFactory factory = self();
-        return create(UUID.randomUUID().toString(), bean, factory.signer);
+        return create(UUID.randomUUID().toString(), bean, factory.getSigner(factory.props));
     }
 
     public static JWT create(String subject, @NotNull Object bean)
     {
         JwtFactory factory = self();
-        return create(subject, bean, factory.signer);
+        return create(subject, bean, factory.getSigner(factory.props));
     }
 
     public static JWT create(String subject, @NotNull Object bean, JWTSigner signer)
@@ -94,13 +93,15 @@ public class JwtFactory
         JwtFactory factory = self();
         String     token   = token(request);
         if (isBlank(token)) return null;
-
+        log.info("token: {}", token);
         try {
             JWT jwt = JWTUtil.parseToken(token);
-            jwt.setSigner(factory.signer);
+            JWTSigner signer = factory.getSigner(factory.props);
+            jwt.setSigner(signer);
 
-            return jwt.verify() && (!checkExpired || !isExpired(jwt)) ? jwt : null;
-        } catch (RuntimeException ignored) {
+            return verify(jwt, signer) && (!checkExpired || !isExpired(jwt)) ? jwt : null;
+        } catch (RuntimeException error) {
+            log.error("jwt parse error",  error);
             return null;
         }
     }
@@ -149,6 +150,16 @@ public class JwtFactory
         Object exp = payload(jwt, EXPIRES_AT);
         Long   sec = Convert.toLong(exp);
         return sec == null || Instant.now().getEpochSecond() > sec;
+    }
+
+    private static boolean verify(JWT jwt, JWTSigner signer)
+    {
+        try {
+            return jwt.verify(signer);
+        } catch (RuntimeException error) {
+            log.debug("jwt verify failed", error);
+            return false;
+        }
     }
 
     @Nullable
