@@ -538,11 +538,11 @@ public class QOperationCustomizer implements GlobalOperationCustomizer, GlobalOp
         }
 
         Object example = buildExample(schema, new HashSet<>());
-        if (ObjectUtil.isNotNull(example)) {
-            mediaType.setExample(example);
-            mediaType.addExamples("default", new Example().value(example));
-            applySchemaExample(schema, example);
-        }
+        if (ObjectUtil.isNull(example)) example = new LinkedHashMap<>();
+
+        mediaType.setExample(example);
+        mediaType.addExamples("default", new Example().value(example));
+        applySchemaExample(schema, example);
     }
 
     private boolean isJsonContentType(String contentType)
@@ -683,6 +683,6 @@ public class QOperationCustomizer implements GlobalOperationCustomizer, GlobalOp
         if (TYPE_ARRAY.equals(type)) {
             return List.of();
         }
-        return null;
+        return new LinkedHashMap<>();
     }
 }

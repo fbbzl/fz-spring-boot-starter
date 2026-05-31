@@ -1,6 +1,6 @@
 package io.github.fbbzl.starter.webflux.config;
 
-import io.github.fbbzl.starter.webflux.customizer.ROperationCustomizer;
+import io.github.fbbzl.starter.webflux.customizer.QOperationCustomizer;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnWebApplication;
 import org.springframework.context.annotation.Bean;
@@ -15,8 +15,8 @@ import org.springframework.context.annotation.Bean;
 public class OpenApiConfiguration
 {
     @Bean
-    public ROperationCustomizer roperationCustomizer()
+    public QOperationCustomizer qOperationCustomizer()
     {
-        return new ROperationCustomizer();
+        return new QOperationCustomizer();
     }
 }

@@ -35,7 +35,7 @@ import java.util.*;
  * @version 1.0
  * @since 2026/5/14 23:30
  */
-public class ROperationCustomizer implements GlobalOperationCustomizer, GlobalOpenApiCustomizer
+public class QOperationCustomizer implements GlobalOperationCustomizer, GlobalOpenApiCustomizer
 {
     private static final String APPLICATION_JSON     = org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
     private static final String MULTIPART_FORM_DATA = org.springframework.http.MediaType.MULTIPART_FORM_DATA_VALUE;
@@ -516,11 +516,11 @@ public class ROperationCustomizer implements GlobalOperationCustomizer, GlobalOp
         }
 
         Object example = buildExample(schema, new HashSet<>());
-        if (ObjectUtil.isNotNull(example)) {
-            mediaType.setExample(example);
-            mediaType.addExamples("default", new Example().value(example));
-            applySchemaExample(schema, example);
-        }
+        if (ObjectUtil.isNull(example)) example = new LinkedHashMap<>();
+
+        mediaType.setExample(example);
+        mediaType.addExamples("default", new Example().value(example));
+        applySchemaExample(schema, example);
     }
 
     private boolean isJsonContentType(String contentType)
@@ -661,6 +661,6 @@ public class ROperationCustomizer implements GlobalOperationCustomizer, GlobalOp
         if (TYPE_ARRAY.equals(type)) {
             return List.of();
         }
-        return null;
+        return new LinkedHashMap<>();
     }
 }

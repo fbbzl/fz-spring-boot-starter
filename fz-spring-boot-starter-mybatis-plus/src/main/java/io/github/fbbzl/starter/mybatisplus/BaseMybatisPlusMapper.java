@@ -13,6 +13,7 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.baomidou.mybatisplus.core.toolkit.LambdaUtils;
+import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.core.toolkit.support.ColumnCache;
 import com.baomidou.mybatisplus.extension.handlers.AbstractJsonTypeHandler;
 import io.github.fbbzl.starter.core.util.Throws;
@@ -284,41 +285,42 @@ public interface BaseMybatisPlusMapper<ENTITY extends BaseTableEntity<ID>, ID ex
 
     default QueryWrapper<ENTITY> autoQuery(ENTITY query, boolean stringLike)
     {
-        QueryWrapper<ENTITY> wrapper = new QueryWrapper<>(query);
-        if (query != null) {
-            @SuppressWarnings("unchecked")
-            Class<ENTITY>            queryClass     = (Class<ENTITY>) query.getClass();
-            String                   queryClassName = queryClass.getName();
-            Map<String, ColumnCache> columnMap      = LambdaUtils.getColumnMap(queryClass);
-            Throws.ifEmpty(columnMap, "entity [{}] has none TableField", queryClassName);
+        if (query == null) return Wrappers.query();
 
-            Field[] fields = ReflectUtil.getFields(query.getClass());
-            Throws.ifEmpty(fields, "fields of [{}] has none TableField", queryClassName);
+        @SuppressWarnings("unchecked")
+        Class<ENTITY>            queryClass     = (Class<ENTITY>) query.getClass();
+        QueryWrapper<ENTITY>     wrapper        = new QueryWrapper<>(queryClass);
+        String                   queryClassName = queryClass.getName();
+        Map<String, ColumnCache> columnMap      = LambdaUtils.getColumnMap(queryClass);
+        Throws.ifEmpty(columnMap, "entity [{}] has none TableField", queryClassName);
 
-            for (Field field : fields) {
-                String fieldName = field.getName();
-                Object value     = ReflectUtil.getFieldValue(query, field);
-                if (value == null) continue;
+        Field[] fields = ReflectUtil.getFields(query.getClass());
+        Throws.ifEmpty(fields, "fields of [{}] has none TableField", queryClassName);
 
-                ColumnCache cache = columnMap.get(LambdaUtils.formatKey(fieldName));
-                if (cache == null) continue;
-                String column = cache.getColumn();
+        for (Field field : fields) {
+            String fieldName = field.getName();
+            Object value     = ReflectUtil.getFieldValue(query, field);
+            if (value == null) continue;
 
-                if (isJsonField(field)) {
-                    jsonQuery(wrapper, column, value);
-                    continue;
-                }
+            ColumnCache cache = columnMap.get(LambdaUtils.formatKey(fieldName));
+            if (cache == null) continue;
+            String column = cache.getColumn();
 
-                switch (value) {
-                    case Enum<?>       enumVal                                      -> wrapper.eq(column,   enumVal.ordinal());
-                    case Number        number                                       -> wrapper.eq(column,   number);
-                    case LocalDateTime localDateTime                                -> wrapper.eq(column,   localDateTime);
-                    case Date          date                                         -> wrapper.eq(column,   date);
-                    case Collection<?> col    when isNotEmpty(col)                  -> wrapper.in(column,   newHashSet(col));
-                    case String        string when stringLike && isNotBlank(string) -> wrapper.like(column, string);
-                    case String        string when isNotBlank(string)               -> wrapper.eq(column,   string);
-                    default                                                         -> wrapper.eq(column,   value);
-                }
+            if (isJsonField(field)) {
+                jsonQuery(wrapper, column, value);
+                continue;
+            }
+            if (value instanceof String string && isBlank(string)) continue;
+
+            switch (value) {
+                case Enum<?>       enumVal                                       -> wrapper.eq(column,   enumVal.ordinal());
+                case Number        number                                        -> wrapper.eq(column,   number);
+                case LocalDateTime localDateTime                                 -> wrapper.eq(column,   localDateTime);
+                case Date          date                                          -> wrapper.eq(column,   date);
+                case Collection<?> col    when isNotEmpty(col)                   -> wrapper.in(column,   newHashSet(col));
+                case String        string when stringLike  && isNotBlank(string) -> wrapper.like(column, string);
+                case String        string when !stringLike && isNotBlank(string) -> wrapper.eq(column,   string);
+                default                                                          -> wrapper.eq(column,   value);
             }
         }
         return wrapper;

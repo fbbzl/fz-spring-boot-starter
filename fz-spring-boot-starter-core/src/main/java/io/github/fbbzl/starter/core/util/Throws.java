@@ -12,7 +12,8 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.function.Supplier;
 
-import static cn.hutool.core.text.CharSequenceUtil.format;
+import static cn.hutool.core.text.CharSequenceUtil.*;
+import static cn.hutool.core.text.CharSequenceUtil.isBlank;
 
 /**
  * Exception tool class All static methods are composed of an expression and an exceptionMessage. When the expression
@@ -55,14 +56,22 @@ public final class Throws
         if (expression) throw Objects.requireNonNull(exception.get(), "exception can not be null");
     }
 
-    public static String message(String code, Object... args) {
-        if (code == null) return format(null, args);
+    public static String message(String template, Object... args) {
+        if (template == null) return format(null, args);
 
-        MessageSource messageSource = messageSource();
-        if (messageSource == null) return format(code, args);
+        if (isWrap(template, '{', '}')) {
+            String i18nCode = unWrap(template, '{', '}');
+            if (isBlank(i18nCode)) return format(template, args);
 
-        String message = messageSource.getMessage(code, args, null, LocaleContextHolder.getLocale());
-        return message == null ? format(code, args) : message;
+            MessageSource messageSource = messageSource();
+            if (messageSource == null) return format(template, args);
+
+            String i18nMessage = messageSource.getMessage(i18nCode, args, null, LocaleContextHolder.getLocale());
+
+            return isBlank(i18nMessage) ? format(template, args) : i18nMessage;
+        }
+
+        return format(template, args);
     }
 
     @Nullable

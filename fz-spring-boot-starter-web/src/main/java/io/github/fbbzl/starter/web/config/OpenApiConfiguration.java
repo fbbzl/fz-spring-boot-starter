@@ -17,7 +17,7 @@ public class OpenApiConfiguration
 {
     @Bean
     @ConditionalOnMissingBean
-    public QOperationCustomizer roperationCustomizer()
+    public QOperationCustomizer qOperationCustomizer()
     {
         return new QOperationCustomizer();
     }
