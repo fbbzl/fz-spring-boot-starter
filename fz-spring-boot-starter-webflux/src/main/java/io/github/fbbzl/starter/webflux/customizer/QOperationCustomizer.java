@@ -19,6 +19,7 @@ import io.swagger.v3.oas.models.media.Content;
 import io.swagger.v3.oas.models.media.MediaType;
 import io.swagger.v3.oas.models.media.Schema;
 import io.swagger.v3.oas.models.parameters.RequestBody;
+import io.swagger.v3.oas.models.responses.ApiResponse;
 import org.springdoc.core.customizers.GlobalOpenApiCustomizer;
 import org.springdoc.core.customizers.GlobalOperationCustomizer;
 import org.springframework.core.GenericTypeResolver;
@@ -41,6 +42,9 @@ public class QOperationCustomizer implements GlobalOperationCustomizer, GlobalOp
     private static final String APPLICATION_JSON     = org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
     private static final String MULTIPART_FORM_DATA = org.springframework.http.MediaType.MULTIPART_FORM_DATA_VALUE;
     private static final String FILES_PROPERTY      = "files";
+    private static final String WILDCARD_MEDIA_TYPE = "*/*";
+    private static final String HTTP_BAD_REQUEST    = "400";
+    private static final String HTTP_SERVER_ERROR   = "500";
     private static final String REF_SEPARATOR       = "/";
     private static final String TYPE_ARRAY          = "array";
     private static final String TYPE_BOOLEAN        = "boolean";
@@ -172,8 +176,14 @@ public class QOperationCustomizer implements GlobalOperationCustomizer, GlobalOp
         if (MapUtil.isEmpty(operation.getResponses())) {
             return;
         }
-        operation.getResponses().values().forEach(apiResponse -> {
-            if (ObjectUtil.isNull(apiResponse) || MapUtil.isEmpty(apiResponse.getContent())) {
+        operation.getResponses().forEach((statusCode, apiResponse) -> {
+            if (ObjectUtil.isNull(apiResponse)) {
+                return;
+            }
+            if (isErrorResponseStatus(statusCode)) {
+                applyErrorResponseExample(apiResponse, statusCode);
+            }
+            if (MapUtil.isEmpty(apiResponse.getContent())) {
                 return;
             }
             apiResponse.getContent().forEach((contentType, mediaType) -> {
@@ -183,6 +193,39 @@ public class QOperationCustomizer implements GlobalOperationCustomizer, GlobalOp
                 applyExample(mediaType, mediaType.getSchema(), contentType);
             });
         });
+    }
+
+    private boolean isErrorResponseStatus(String statusCode)
+    {
+        return HTTP_BAD_REQUEST.equals(statusCode) || HTTP_SERVER_ERROR.equals(statusCode);
+    }
+
+    private void applyErrorResponseExample(ApiResponse apiResponse, String statusCode)
+    {
+        Content content = apiResponse.getContent();
+        if (MapUtil.isEmpty(content)) {
+            content = new Content();
+            apiResponse.setContent(content);
+        }
+
+        MediaType mediaType = content.get(APPLICATION_JSON);
+        if (ObjectUtil.isNull(mediaType)) {
+            mediaType = content.get(WILDCARD_MEDIA_TYPE);
+        }
+        if (ObjectUtil.isNull(mediaType)) {
+            mediaType = new MediaType();
+        }
+
+        content.remove(WILDCARD_MEDIA_TYPE);
+        content.addMediaType(APPLICATION_JSON, mediaType);
+        mediaType.setSchema(errorResponseSchema());
+
+        Object example = errorResponseExample(statusCode);
+        Map<String, Example> examples = new LinkedHashMap<>();
+        examples.put("default", new Example().value(example));
+        mediaType.setExample(example);
+        mediaType.setExamples(examples);
+        applySchemaExample(mediaType.getSchema(), example);
     }
 
     private MethodParameter findRequestBodyParameter(HandlerMethod handlerMethod)
@@ -574,17 +617,15 @@ public class QOperationCustomizer implements GlobalOperationCustomizer, GlobalOp
         }
 
         Schema<?> actualSchema = dereference(schema);
-        if (!isNullExample(actualSchema.getExample())) {
-            return actualSchema.getExample();
+        Object explicitExample = exampleValue(actualSchema.getExample());
+        if (!isNullExample(explicitExample)) {
+            return explicitExample;
         }
         if (ObjectUtil.isNotNull(actualSchema.getExamples()) && !actualSchema.getExamples().isEmpty()) {
-            Object example = actualSchema.getExamples().get(0);
+            Object example = exampleValue(actualSchema.getExamples().get(0));
             if (!isNullExample(example)) {
                 return example;
             }
-        }
-        if (!isNullExample(actualSchema.getDefault())) {
-            return actualSchema.getDefault();
         }
         if (ObjectUtil.isNotNull(actualSchema.getEnum()) && !actualSchema.getEnum().isEmpty()) {
             return actualSchema.getEnum().get(0);
@@ -597,7 +638,7 @@ public class QOperationCustomizer implements GlobalOperationCustomizer, GlobalOp
 
         if (actualSchema instanceof ArraySchema arraySchema) {
             Object itemExample = buildExample(arraySchema.getItems(), visitedSchemas);
-            return ObjectUtil.isNull(itemExample) ? List.of() : List.of(itemExample);
+            return isNullExample(itemExample) ? List.of() : List.of(itemExample);
         }
 
         if (MapUtil.isNotEmpty(actualSchema.getProperties())) {
@@ -616,6 +657,10 @@ public class QOperationCustomizer implements GlobalOperationCustomizer, GlobalOp
             return example;
         }
 
+        Object defaultValue = defaultValueExample(actualSchema);
+        if (!isNullExample(defaultValue)) {
+            return defaultValue;
+        }
         return defaultExample(actualSchema);
     }
 
@@ -685,15 +730,82 @@ public class QOperationCustomizer implements GlobalOperationCustomizer, GlobalOp
         return new LinkedHashMap<>();
     }
 
+    private Schema<?> errorResponseSchema()
+    {
+        Schema<?> schema = new Schema<>().type(TYPE_OBJECT).description("generic response");
+        schema.addProperty("code", new Schema<>().type(TYPE_STRING).description("responce code"));
+        schema.addProperty("success", new Schema<>().type(TYPE_BOOLEAN).description("if is success, true:success, false:fail"));
+        schema.addProperty("message", new Schema<>().type(TYPE_STRING).description("response message"));
+        schema.addProperty("data", new Schema<>().nullable(true).description("response data"));
+        return schema;
+    }
+
+    private Map<String, Object> errorResponseExample(String statusCode)
+    {
+        Map<String, Object> example = new LinkedHashMap<>();
+        example.put("code", statusCode);
+        example.put("success", Boolean.FALSE);
+        example.put("message", HTTP_BAD_REQUEST.equals(statusCode) ? "Bad Request" : "Internal Server Error");
+        example.put("data", null);
+        return example;
+    }
+
     private boolean isNullExample(Object value)
     {
-        if (ObjectUtil.isNull(value)) {
+        Object actualValue = exampleValue(value);
+        if (ObjectUtil.isNull(actualValue)) {
             return true;
         }
-        if (value instanceof JsonNode jsonNode) {
+        if (actualValue instanceof JsonNode jsonNode) {
             return jsonNode.isNull() || jsonNode.isMissingNode();
         }
         return false;
+    }
+
+    @Nullable
+    private Object exampleValue(Object value)
+    {
+        if (value instanceof Example example) {
+            return example.getValue();
+        }
+        return value;
+    }
+
+    @Nullable
+    private Object defaultValueExample(Schema<?> schema)
+    {
+        if (ObjectUtil.isNull(schema)) {
+            return null;
+        }
+
+        Object defaultValue = exampleValue(schema.getDefault());
+        if (isNullExample(defaultValue)) {
+            return null;
+        }
+
+        String type = resolveSchemaType(schema);
+        if (defaultValue instanceof String defaultText && defaultText.isEmpty() && !TYPE_STRING.equals(type)) {
+            return null;
+        }
+        if (TYPE_STRING.equals(type)) {
+            return defaultValue;
+        }
+        if (TYPE_INTEGER.equals(type)) {
+            return defaultValue instanceof Number ? defaultValue : null;
+        }
+        if (TYPE_NUMBER.equals(type)) {
+            return defaultValue instanceof Number ? defaultValue : null;
+        }
+        if (TYPE_BOOLEAN.equals(type)) {
+            return defaultValue instanceof Boolean ? defaultValue : null;
+        }
+        if (TYPE_ARRAY.equals(type)) {
+            return defaultValue instanceof Collection<?> || defaultValue.getClass().isArray() ? defaultValue : null;
+        }
+        if (TYPE_OBJECT.equals(type)) {
+            return defaultValue instanceof Map<?, ?> ? defaultValue : null;
+        }
+        return defaultValue;
     }
 
     @Nullable
