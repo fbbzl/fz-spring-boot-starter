@@ -226,10 +226,8 @@ public interface BaseMybatisPlusMapper<ENTITY extends BaseTableEntity<ID>, ID ex
         for (Range range : ranges) {
             if (range == null || isBlank(range.getField())) continue;
 
-            ColumnCache cache = columnMap.get(LambdaUtils.formatKey(range.getField()));
-            if (cache == null) continue;
-
-            String  column  = cache.getColumn();
+            String  column  = column(columnMap, range.getField());
+            if (isBlank(column)) continue;
             Object  start   = range.getStart();
             Object  end     = range.getEnd();
             boolean isClose = Boolean.TRUE.equals(range.getClose());
@@ -253,15 +251,30 @@ public interface BaseMybatisPlusMapper<ENTITY extends BaseTableEntity<ID>, ID ex
         for (Order order : orders) {
             if (order == null || isBlank(order.getField())) continue;
 
-            ColumnCache cache = columnMap.get(LambdaUtils.formatKey(order.getField()));
-            if (cache != null) {
-                if (order.getDirection() == Direction.ASC)
-                    wrapper.orderByAsc(cache.getColumn());
-                else
-                    wrapper.orderByDesc(cache.getColumn());
-            }
+            String column = column(columnMap, order.getField());
+            if (isBlank(column)) continue;
+
+            if (order.getDirection() == Direction.ASC)
+                wrapper.orderByAsc(column);
+            else
+                wrapper.orderByDesc(column);
         }
         return wrapper;
+    }
+
+    default String column(Map<String, ColumnCache> columnMap, String field)
+    {
+        if (isBlank(field) || isEmpty(columnMap)) return null;
+
+        ColumnCache cache = columnMap.get(LambdaUtils.formatKey(field));
+        if (cache != null) return cache.getColumn();
+
+        return columnMap.values()
+                        .stream()
+                        .map(ColumnCache::getColumn)
+                        .filter(field::equalsIgnoreCase)
+                        .findFirst()
+                        .orElse(null);
     }
 
     default QueryWrapper<ENTITY> autoQuery(ENTITY query)

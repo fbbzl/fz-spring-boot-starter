@@ -96,6 +96,13 @@ public class HP<T> implements IPage<T>
         if (columnMap == null) return field;
 
         ColumnCache cache = columnMap.get(LambdaUtils.formatKey(field));
-        return cache == null ? field : cache.getColumn();
+        if (cache != null) return cache.getColumn();
+
+        return columnMap.values()
+                        .stream()
+                        .map(ColumnCache::getColumn)
+                        .filter(field::equalsIgnoreCase)
+                        .findFirst()
+                        .orElse(field);
     }
 }
