@@ -4,6 +4,7 @@ import cn.hutool.core.map.MapUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import cn.hutool.core.util.TypeUtil;
+import com.fasterxml.jackson.databind.JsonNode;
 import io.github.fbbzl.starter.web.BaseCrudController;
 import io.github.fbbzl.starter.web.Q;
 import io.swagger.v3.core.converter.AnnotatedType;
@@ -126,7 +127,22 @@ public class QOperationCustomizer implements GlobalOperationCustomizer, GlobalOp
             }
             applySchemaExample(existingSchema, referencedSchema.getExample());
         });
+        applyComponentExamples(componentSchemas);
         applyOpenApiExamples(openApi);
+    }
+
+    private void applyComponentExamples(Map<String, Schema> componentSchemas)
+    {
+        if (MapUtil.isEmpty(componentSchemas)) {
+            return;
+        }
+
+        componentSchemas.values().forEach(schema -> {
+            Object example = buildExample(schema, new HashSet<>());
+            if (!isNullExample(example)) {
+                applySchemaExample(schema, example);
+            }
+        });
     }
 
     private void applyOpenApiExamples(OpenAPI openApi)
@@ -538,10 +554,12 @@ public class QOperationCustomizer implements GlobalOperationCustomizer, GlobalOp
         }
 
         Object example = buildExample(schema, new HashSet<>());
-        if (ObjectUtil.isNull(example)) example = new LinkedHashMap<>();
+        if (isNullExample(example)) example = new LinkedHashMap<>();
 
+        Map<String, Example> examples = new LinkedHashMap<>();
+        examples.put("default", new Example().value(example));
         mediaType.setExample(example);
-        mediaType.addExamples("default", new Example().value(example));
+        mediaType.setExamples(examples);
         applySchemaExample(schema, example);
     }
 
@@ -552,15 +570,15 @@ public class QOperationCustomizer implements GlobalOperationCustomizer, GlobalOp
 
     private void applySchemaExample(Schema<?> schema, Object example)
     {
-        if (ObjectUtil.isNull(schema) || ObjectUtil.isNull(example)) {
+        if (ObjectUtil.isNull(schema) || isNullExample(example)) {
             return;
         }
-        if (ObjectUtil.isNull(schema.getExample())) {
+        if (isNullExample(schema.getExample())) {
             schema.setExample(example);
         }
 
         Schema<?> actualSchema = dereference(schema);
-        if (ObjectUtil.isNotNull(actualSchema) && ObjectUtil.isNull(actualSchema.getExample())) {
+        if (ObjectUtil.isNotNull(actualSchema) && isNullExample(actualSchema.getExample())) {
             actualSchema.setExample(example);
         }
     }
@@ -578,13 +596,16 @@ public class QOperationCustomizer implements GlobalOperationCustomizer, GlobalOp
         }
 
         Schema<?> actualSchema = dereference(schema);
-        if (ObjectUtil.isNotNull(actualSchema.getExample())) {
+        if (!isNullExample(actualSchema.getExample())) {
             return actualSchema.getExample();
         }
         if (ObjectUtil.isNotNull(actualSchema.getExamples()) && !actualSchema.getExamples().isEmpty()) {
-            return actualSchema.getExamples().get(0);
+            Object example = actualSchema.getExamples().get(0);
+            if (!isNullExample(example)) {
+                return example;
+            }
         }
-        if (ObjectUtil.isNotNull(actualSchema.getDefault())) {
+        if (!isNullExample(actualSchema.getDefault())) {
             return actualSchema.getDefault();
         }
         if (ObjectUtil.isNotNull(actualSchema.getEnum()) && !actualSchema.getEnum().isEmpty()) {
@@ -610,7 +631,7 @@ public class QOperationCustomizer implements GlobalOperationCustomizer, GlobalOp
                 }
 
                 Object propertyExample = buildExample(propertySchema, new HashSet<>(visitedSchemas));
-                if (ObjectUtil.isNotNull(propertyExample)) {
+                if (!isNullExample(propertyExample)) {
                     example.put(name, propertyExample);
                 }
             });
@@ -633,7 +654,7 @@ public class QOperationCustomizer implements GlobalOperationCustomizer, GlobalOp
                 Object composedExample = buildExample(composedSchema, new HashSet<>(visitedSchemas));
                 if (composedExample instanceof Map<?, ?> composedMap) {
                     composedMap.forEach((key, value) -> {
-                        if (key instanceof String fieldName && ObjectUtil.isNotNull(value)) {
+                        if (key instanceof String fieldName && !isNullExample(value)) {
                             example.put(fieldName, value);
                         }
                     });
@@ -658,7 +679,7 @@ public class QOperationCustomizer implements GlobalOperationCustomizer, GlobalOp
             return null;
         }
 
-        String type = schema.getType();
+        String type = resolveSchemaType(schema);
         if (TYPE_STRING.equals(type)) {
             if (FORMAT_DATE.equals(schema.getFormat())) {
                 return "2026-01-01";
@@ -684,5 +705,42 @@ public class QOperationCustomizer implements GlobalOperationCustomizer, GlobalOp
             return List.of();
         }
         return new LinkedHashMap<>();
+    }
+
+    private boolean isNullExample(Object value)
+    {
+        if (ObjectUtil.isNull(value)) {
+            return true;
+        }
+        if (value instanceof JsonNode jsonNode) {
+            return jsonNode.isNull() || jsonNode.isMissingNode();
+        }
+        return false;
+    }
+
+    @Nullable
+    private String resolveSchemaType(Schema<?> schema)
+    {
+        if (ObjectUtil.isNull(schema)) {
+            return null;
+        }
+
+        String type = schema.getType();
+        if (StrUtil.isNotBlank(type)) {
+            return type;
+        }
+
+        Set<String> types = schema.getTypes();
+        if (ObjectUtil.isNull(types) || types.isEmpty()) {
+            return null;
+        }
+
+        if (types.contains(TYPE_STRING)) return TYPE_STRING;
+        if (types.contains(TYPE_INTEGER)) return TYPE_INTEGER;
+        if (types.contains(TYPE_NUMBER)) return TYPE_NUMBER;
+        if (types.contains(TYPE_BOOLEAN)) return TYPE_BOOLEAN;
+        if (types.contains(TYPE_ARRAY)) return TYPE_ARRAY;
+        if (types.contains(TYPE_OBJECT)) return TYPE_OBJECT;
+        return types.iterator().next();
     }
 }
