@@ -7,13 +7,18 @@ import cn.hutool.db.sql.Direction;
 import cn.hutool.db.sql.Order;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.core.metadata.OrderItem;
+import com.baomidou.mybatisplus.core.toolkit.LambdaUtils;
+import com.baomidou.mybatisplus.core.toolkit.support.ColumnCache;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.experimental.Accessors;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Stream;
+
+import static cn.hutool.core.text.CharSequenceUtil.isBlank;
 
 /**
  * Hutool page adapter for MyBatis-Plus pagination.
@@ -37,15 +42,25 @@ public class HP<T> implements IPage<T>
 
     public HP(Page page)
     {
+        this(page, null);
+    }
+
+    public HP(Page page, Class<?> entityClass)
+    {
         this.page    = page;
         this.size    = page.getPageSize();
         this.current = page.getPageNumber() + 1L;
-        this.orders  = toOrderItems(page.getOrders());
+        this.orders  = toOrderItems(entityClass, page.getOrders());
     }
 
     public static <T> HP<T> of(Page page)
     {
         return new HP<>(page);
+    }
+
+    public static <T> HP<T> of(Page page, Class<?> entityClass)
+    {
+        return new HP<>(page, entityClass);
     }
 
     @Override
@@ -61,14 +76,26 @@ public class HP<T> implements IPage<T>
         return pageResult;
     }
 
-    static List<OrderItem> toOrderItems(Order... orders)
+    static List<OrderItem> toOrderItems(Class<?> entityClass, Order... orders)
     {
         if (ArrayUtil.isEmpty(orders)) return Collections.emptyList();
 
         return Stream.of(orders)
+                     .filter(order -> order != null && !isBlank(order.getField()))
                      .map(order -> order.getDirection() == Direction.ASC
-                                   ? OrderItem.asc(order.getField())
-                                   : OrderItem.desc(order.getField()))
+                                   ? OrderItem.asc(orderField(entityClass, order.getField()))
+                                   : OrderItem.desc(orderField(entityClass, order.getField())))
                      .toList();
+    }
+
+    static String orderField(Class<?> entityClass, String field)
+    {
+        if (entityClass == null || isBlank(field)) return field;
+
+        Map<String, ColumnCache> columnMap = LambdaUtils.getColumnMap(entityClass);
+        if (columnMap == null) return field;
+
+        ColumnCache cache = columnMap.get(LambdaUtils.formatKey(field));
+        return cache == null ? field : cache.getColumn();
     }
 }

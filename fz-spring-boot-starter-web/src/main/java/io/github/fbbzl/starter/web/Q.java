@@ -163,7 +163,7 @@ public class Q<DATA>
     @ToString
     @Schema(description = "generic paging request objects")
     @FieldDefaults(level = PRIVATE)
-    public static class PQ<DATA> extends RQ<DATA>
+    public static class PQ<DATA> extends Q<DATA>
     {
 
         @NotNull(message = "{PQ.page.page}")
@@ -172,15 +172,9 @@ public class Q<DATA>
 
         public static <DATA> PQ<DATA> of(DATA data, Page page)
         {
-            return of(data, page, (BaseRange) null);
-        }
-
-        public static <DATA> PQ<DATA> of(DATA data, Page page, BaseRange... ranges)
-        {
             PQ<DATA> pq = new PQ<>();
             pq.setData(data);
             pq.setPage(page);
-            pq.setRanges(ranges);
             return pq;
         }
     }
