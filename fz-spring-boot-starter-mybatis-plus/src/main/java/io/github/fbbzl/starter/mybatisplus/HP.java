@@ -16,6 +16,7 @@ import lombok.experimental.Accessors;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.stream.Stream;
 
 import static cn.hutool.core.text.CharSequenceUtil.isBlank;
@@ -40,22 +41,13 @@ public class HP<T> implements IPage<T>
     long                  current;
     final List<OrderItem> orders;
 
-    public HP(Page page)
-    {
-        this(page, null);
-    }
-
     public HP(Page page, Class<?> entityClass)
     {
+        Objects.requireNonNull(entityClass, "entityClass must not be null");
         this.page    = page;
         this.size    = page.getPageSize();
         this.current = page.getPageNumber() + 1L;
         this.orders  = toOrderItems(entityClass, page.getOrders());
-    }
-
-    public static <T> HP<T> of(Page page)
-    {
-        return new HP<>(page);
     }
 
     public static <T> HP<T> of(Page page, Class<?> entityClass)
