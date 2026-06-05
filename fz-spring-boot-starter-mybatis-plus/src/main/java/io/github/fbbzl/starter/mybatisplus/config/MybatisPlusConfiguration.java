@@ -34,7 +34,7 @@ public class MybatisPlusConfiguration
             @Override
             public Long getCurrentUserIdentifier()
             {
-                return 0L;
+                throw new UnsupportedOperationException("getCurrentUserIdentifier must be implemented");
             }
         };
     }

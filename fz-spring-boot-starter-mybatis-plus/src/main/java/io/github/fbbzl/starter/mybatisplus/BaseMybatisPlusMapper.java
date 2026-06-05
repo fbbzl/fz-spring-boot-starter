@@ -1,4 +1,4 @@
-package io.github.fbbzl.starter.mybatisplus;
+﻿package io.github.fbbzl.starter.mybatisplus;
 
 import cn.hutool.core.collection.IterUtil;
 import cn.hutool.core.util.ArrayUtil;
@@ -23,7 +23,6 @@ import io.github.fbbzl.starter.pojo.entity.BaseTableEntity;
 import io.github.fbbzl.starter.pojo.validation.group.CRUD;
 import jakarta.validation.constraints.NotNull;
 import org.springframework.lang.Nullable;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.validation.annotation.Validated;
 
 import java.io.Serializable;
@@ -57,7 +56,6 @@ public interface BaseMybatisPlusMapper<ENTITY extends BaseTableEntity<ID>, ID ex
         return entity;
     }
 
-    @Transactional
     @Override
     default List<ENTITY> create(@Nullable Iterable<ENTITY> entities)
     {
@@ -73,7 +71,6 @@ public interface BaseMybatisPlusMapper<ENTITY extends BaseTableEntity<ID>, ID ex
         this.deleteById(id);
     }
 
-    @Transactional
     @Override
     default void delete(@Nullable Iterable<ID> ids)
     {
@@ -82,7 +79,6 @@ public interface BaseMybatisPlusMapper<ENTITY extends BaseTableEntity<ID>, ID ex
         this.deleteByIds(newHashSet(ids));
     }
 
-    @Transactional
     @Override
     default ENTITY update(
             @Validated(CRUD.U.class)
@@ -93,7 +89,6 @@ public interface BaseMybatisPlusMapper<ENTITY extends BaseTableEntity<ID>, ID ex
         return entity;
     }
 
-    @Transactional
     @Override
     default void update(@Nullable Iterable<ENTITY> entities)
     {
@@ -161,7 +156,6 @@ public interface BaseMybatisPlusMapper<ENTITY extends BaseTableEntity<ID>, ID ex
         return this.selectCount(new QueryWrapper<ENTITY>().eq(BaseMybatisPlusEntity.Fields.id, id)) > 0;
     }
 
-    @Transactional
     @Override
     default void selectForUpdate(@Nullable List<ID> ids)
     {
@@ -170,7 +164,6 @@ public interface BaseMybatisPlusMapper<ENTITY extends BaseTableEntity<ID>, ID ex
         this.selectList(new UpdateWrapper<ENTITY>().in(BaseMybatisPlusEntity.Fields.id, ids).last(FOR_UPDATE));
     }
 
-    @Transactional
     @Override
     default void selectForUpdate(@Nullable ENTITY entity)
     {

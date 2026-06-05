@@ -43,13 +43,11 @@ import java.io.Serializable;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.function.Function;
 
 import static cn.hutool.core.collection.CollUtil.isEmpty;
 import static cn.hutool.core.collection.CollUtil.newHashSet;
 import static cn.hutool.core.lang.tree.TreeNodeConfig.DEFAULT_CONFIG;
-import static cn.hutool.core.util.ObjectUtil.hasNull;
 import static java.util.Collections.emptyList;
 import static java.util.Collections.emptyMap;
 import static java.util.function.UnaryOperator.identity;
@@ -224,7 +222,7 @@ public abstract class BaseCrudService<
             Page page,
             DTO dto)
     {
-        if (hasNull(dto, page)) return emptyPage();
+        if (dto == null) return emptyPage();
         dto.prepareQuery();
         Validators.validateAndThrow(dto, R.class);
         return mappingPage(dal.page(page, struct.dtoToEntity(dto)), struct::entityToBo);

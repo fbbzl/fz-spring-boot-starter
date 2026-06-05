@@ -19,14 +19,15 @@ public class Generics
         ResolvableType currentType = ResolvableType.forClass(currentClass);
 
         while (true) {
-            currentType.getSuperType();
             ResolvableType superType = currentType.getSuperType();
+            Class<?> rawClass = superType.getRawClass();
 
-            if (superType.getRawClass() == superClass) {
+            if (rawClass == null || rawClass == superClass) {
+                if (rawClass == null) return null;
+
                 ResolvableType entityType = superType.getGeneric(genericIndex);
 
                 return (Class<C>) entityType.resolve();
-                // break if found rootSuperClass is super class
             }
 
             currentType = superType;

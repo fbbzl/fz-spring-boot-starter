@@ -27,7 +27,13 @@ public final class Validators
 
     static {
         VALIDATOR_FACTORY = Validation.buildDefaultValidatorFactory();
-        VALIDATOR         = SpringUtil.getBean(Validator.class);
+        Validator validator;
+        try {
+            validator = SpringUtil.getBean(Validator.class);
+        } catch (RuntimeException e) {
+            validator = VALIDATOR_FACTORY.getValidator();
+        }
+        VALIDATOR = validator;
     }
 
     public static <BEAN> Set<ConstraintViolation<BEAN>> validate(BEAN obj)

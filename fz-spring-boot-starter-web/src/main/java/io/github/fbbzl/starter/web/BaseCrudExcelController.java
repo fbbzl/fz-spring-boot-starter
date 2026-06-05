@@ -23,6 +23,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.Serializable;
 import java.util.List;
 
@@ -71,8 +72,10 @@ public abstract class BaseCrudExcelController<
             @Validated(CRUD.C.class)
             FQ req) throws IOException
     {
-        List<EO> readData = ExcelDto.doRead(req.getSingleFile().getInputStream(), excelClass);
-        service.importExcel(readData);
+        try (InputStream in = req.getSingleFile().getInputStream()) {
+            List<EO> readData = ExcelDto.doRead(in, excelClass);
+            service.importExcel(readData);
+        }
     }
 
     @AuditMethod(saveParam = false, saveResult = false)

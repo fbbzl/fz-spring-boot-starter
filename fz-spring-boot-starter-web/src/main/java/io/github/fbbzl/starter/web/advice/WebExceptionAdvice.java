@@ -1,4 +1,4 @@
-package io.github.fbbzl.starter.web.advice;
+﻿package io.github.fbbzl.starter.web.advice;
 
 
 import io.github.fbbzl.starter.core.exception.BizException;
@@ -160,7 +160,7 @@ public class WebExceptionAdvice
     public Object handleRuntimeException(RuntimeException exception)
     {
         log.error("runtime exception occurred: ", exception);
-        return R.fail(defaultIfBlank(getRootCauseMessage(exception), "unknown system error..."));
+        return R.fail("internal server error");
     }
 
     /**
@@ -171,7 +171,7 @@ public class WebExceptionAdvice
     public Object handleException(Exception exception)
     {
         log.error("exception occurred: ", exception);
-        return R.fail(defaultIfBlank(getRootCauseMessage(exception), "unknown system error..."));
+        return R.fail("internal server error");
     }
 
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)

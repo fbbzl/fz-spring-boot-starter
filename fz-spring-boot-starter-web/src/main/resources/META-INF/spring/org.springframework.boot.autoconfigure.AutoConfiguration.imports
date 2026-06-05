@@ -1,4 +1,5 @@
 io.github.fbbzl.starter.web.config.JacksonConfiguration
 io.github.fbbzl.starter.web.config.OpenApiConfiguration
+io.github.fbbzl.starter.web.config.ValidationMessageConfiguration
 io.github.fbbzl.starter.web.config.WebMvcConfiguration
 io.github.fbbzl.starter.web.config.InfrastructureBeanRoleConfiguration

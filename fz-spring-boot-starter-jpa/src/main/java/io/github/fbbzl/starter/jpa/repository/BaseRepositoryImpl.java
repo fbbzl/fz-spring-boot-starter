@@ -93,7 +93,7 @@ public class BaseRepositoryImpl<ENTITY extends BaseTableEntity<ID>, ID extends S
 
         this.findById(entity.getId()).ifPresent(byId -> {
             BeanUtil.copyProperties(entity, byId, CopyOptions.create().setIgnoreNullValue(true).setIgnoreError(true));
-            this.saveAndFlush(entity);
+            this.saveAndFlush(byId);
         });
 
         return entity;
@@ -111,7 +111,7 @@ public class BaseRepositoryImpl<ENTITY extends BaseTableEntity<ID>, ID extends S
     @Override
     public ENTITY byId(@Nullable ID id)
     {
-        if (id != null) return this.findById(id).get();
+        if (id != null) return this.findById(id).orElse(null);
         else return null;
     }
 
