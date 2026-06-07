@@ -1,7 +1,7 @@
 package io.github.fbbzl.starter.generator.genarators.entity;
 
 import freemarker.template.Template;
-import io.github.fbbzl.starter.generator.config.properties.GeneratorConfigProperties.DalPlatform;
+import io.github.fbbzl.starter.generator.config.properties.GeneratorModuleConfig.DalPlatform;
 import io.github.fbbzl.starter.generator.frame.BaseGenerator;
 import lombok.extern.slf4j.Slf4j;
 
@@ -26,9 +26,9 @@ public class EntityGenerator extends BaseGenerator
     }
 
     @Override
-    public Template getTemplate() throws Exception
+    public Template getTemplate(Map<String, Object> ftlContext) throws Exception
     {
-        DalPlatform platformType = genCfg.getPlatformType();
+        DalPlatform platformType = (DalPlatform) ftlContext.get("platformType");
 
         if (platformType == DalPlatform.JPA)
             return configuration.getTemplate("jpa_entity.ftl");

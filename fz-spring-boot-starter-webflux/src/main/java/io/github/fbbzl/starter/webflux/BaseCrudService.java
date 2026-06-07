@@ -345,18 +345,6 @@ public abstract class BaseCrudService<
         return dal.count(struct.dtoToEntity(dto));
     }
 
-    public Map<String, String> validate(
-            @NotNull(message = "data can not be null when doing validate")
-            DTO dto)
-    {
-        dto.prepareCreate();
-        Set<ConstraintViolation<DTO>> violations = Validators.validate(dto, CRUD.C.class);
-        return violations.stream().collect(toMap(
-                v -> v.getPropertyPath().toString(),
-                ConstraintViolation::getMessage
-        ));
-    }
-
     public List<Map<String, Object>> diff(
             @NotNull(message = "id can not be null when doing diff")
             ID id,

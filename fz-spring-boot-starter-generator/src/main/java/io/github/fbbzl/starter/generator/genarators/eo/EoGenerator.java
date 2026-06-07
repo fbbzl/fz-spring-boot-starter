@@ -20,7 +20,7 @@ public class EoGenerator extends BaseGenerator
     @Override
     public Path getFilePath(Map<String, Object> ftlContext) throws Exception
     {
-        if (!genCfg.isExcel()) return null;
+        if (!(boolean) ftlContext.get("excel")) return null;
 
         String eoPackage  = ftlContext.get("moduleName") + ".service.eo";
         String eoFileName = ftlContext.get("className") + "Eo.java";
@@ -29,7 +29,7 @@ public class EoGenerator extends BaseGenerator
     }
 
     @Override
-    public Template getTemplate() throws Exception
+    public Template getTemplate(Map<String, Object> ftlContext) throws Exception
     {
         return configuration.getTemplate("eo.ftl");
     }

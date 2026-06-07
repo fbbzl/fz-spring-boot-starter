@@ -173,7 +173,7 @@ public interface BaseMybatisPlusMapper<ENTITY extends BaseTableEntity<ID>, ID ex
     {
         if (ArrayUtil.isEmpty(ids)) return;
 
-        this.selectList(new UpdateWrapper<ENTITY>().in(BaseMybatisPlusEntity.Fields.id, ids).last(FOR_UPDATE));
+        this.selectList(new QueryWrapper<ENTITY>().in(BaseMybatisPlusEntity.Fields.id, ids).last(FOR_UPDATE));
     }
 
     @Override

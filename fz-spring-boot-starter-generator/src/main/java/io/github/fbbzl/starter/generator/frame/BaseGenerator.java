@@ -2,14 +2,12 @@ package io.github.fbbzl.starter.generator.frame;
 
 import freemarker.template.Configuration;
 import freemarker.template.Template;
-import io.github.fbbzl.starter.generator.config.properties.GeneratorConfigProperties;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.BeanNameAware;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 
 import java.nio.file.Path;
 import java.util.Map;
@@ -30,13 +28,9 @@ public abstract class BaseGenerator implements BeanNameAware
 
     @Autowired
     Configuration             configuration;
-    @Value("${code.generator.author:fz}")
-    String                    author;
     @Getter
     volatile
     String                    generatorBeanName;
-    @Autowired
-    GeneratorConfigProperties genCfg;
 
     @Override
     public void setBeanName(@NonNull String name)
@@ -46,7 +40,7 @@ public abstract class BaseGenerator implements BeanNameAware
 
     public abstract Path getFilePath(Map<String, Object> ftlContext) throws Exception;
 
-    public abstract Template getTemplate() throws Exception;
+    public abstract Template getTemplate(Map<String, Object> ftlContext) throws Exception;
 
     /**
      * generate the java file path

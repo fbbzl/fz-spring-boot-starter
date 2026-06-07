@@ -1,7 +1,7 @@
 package io.github.fbbzl.starter.generator.genarators.dal;
 
 import freemarker.template.Template;
-import io.github.fbbzl.starter.generator.config.properties.GeneratorConfigProperties.DalPlatform;
+import io.github.fbbzl.starter.generator.config.properties.GeneratorModuleConfig.DalPlatform;
 import io.github.fbbzl.starter.generator.frame.BaseGenerator;
 import lombok.extern.slf4j.Slf4j;
 
@@ -22,22 +22,22 @@ public class DalGenerator extends BaseGenerator
         String dalPackage  = ftlContext.get("moduleName") + ".dal";
         Object dalFileName = ftlContext.get("className");
 
-        DalPlatform platformType = genCfg.getPlatformType();
+        DalPlatform platformType = (DalPlatform) ftlContext.get("platformType");
 
         return platformType == DalPlatform.JPA ?
                javaFilePath(dalPackage, dalFileName + "Repository.java")
-                                               :
+                                                :
                javaFilePath(dalPackage, dalFileName + "Mapper.java");
     }
 
     @Override
-    public Template getTemplate() throws Exception
+    public Template getTemplate(Map<String, Object> ftlContext) throws Exception
     {
-        DalPlatform platformType = genCfg.getPlatformType();
+        DalPlatform platformType = (DalPlatform) ftlContext.get("platformType");
 
         return platformType == DalPlatform.JPA ?
                configuration.getTemplate("jpa_repository.ftl")
-                                               :
+                                                :
                configuration.getTemplate("mybatisplus_mapper.ftl");
 
     }

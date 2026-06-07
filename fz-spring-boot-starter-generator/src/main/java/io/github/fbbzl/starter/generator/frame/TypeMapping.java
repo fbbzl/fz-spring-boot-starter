@@ -2,6 +2,8 @@ package io.github.fbbzl.starter.generator.frame;
 
 import java.util.Map;
 
+import static java.util.Map.entry;
+
 /**
  * map db type and java type for generating code
  *
@@ -17,31 +19,44 @@ public interface TypeMapping
      */
     Map<String, String> typeMapping();
 
+    /**
+     * key is java simple type name, value is fully qualified import path
+     */
+    Map<String, String> typeImportMapping();
+
     class DefaultTypeMapping implements TypeMapping
     {
         @Override
         public Map<String, String> typeMapping()
         {
             return Map.ofEntries(
-                    Map.entry("bigint", "Long"),
-                    Map.entry("int", "Integer"),
-                    Map.entry("integer", "Integer"),
-                    Map.entry("varchar", "String"),
-                    Map.entry("char", "String"),
-                    Map.entry("text", "String"),
-                    Map.entry("longtext", "String"),
-                    Map.entry("datetime", "LocalDateTime"),
-                    Map.entry("timestamp", "LocalDateTime"),
-                    Map.entry("date", "LocalDate"),
-                    Map.entry("decimal", "BigDecimal"),
-                    Map.entry("numeric", "BigDecimal"),
-                    Map.entry("tinyint", "Boolean"),
-                    Map.entry("float", "Float"),
-                    Map.entry("double", "Double"),
-                    Map.entry("real", "Double"),
-                    Map.entry("json", "String"),
-                    Map.entry("boolean", "Boolean"));
+                     entry("bigint", "Long"),
+                     entry("int", "Integer"),
+                     entry("integer", "Integer"),
+                     entry("varchar", "String"),
+                     entry("char", "String"),
+                     entry("text", "String"),
+                     entry("longtext", "String"),
+                     entry("datetime", "LocalDateTime"),
+                     entry("timestamp", "LocalDateTime"),
+                     entry("date", "LocalDate"),
+                     entry("decimal", "BigDecimal"),
+                     entry("numeric", "BigDecimal"),
+                     entry("tinyint", "Boolean"),
+                     entry("float", "Float"),
+                     entry("double", "Double"),
+                     entry("real", "Double"),
+                     entry("json", "String"),
+                     entry("boolean", "Boolean"));
+        }
+
+        @Override
+        public Map<String, String> typeImportMapping()
+        {
+            return Map.of(
+                    "LocalDateTime", "java.time.LocalDateTime",
+                    "LocalDate", "java.time.LocalDate",
+                    "BigDecimal", "java.math.BigDecimal");
         }
     }
-
 }
