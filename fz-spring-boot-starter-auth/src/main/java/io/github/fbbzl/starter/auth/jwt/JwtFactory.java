@@ -38,7 +38,7 @@ public class JwtFactory
 {
 
     JwtProperties props;
-    static JwtFactory self;
+    static volatile JwtFactory self;
 
     {
         self = this;

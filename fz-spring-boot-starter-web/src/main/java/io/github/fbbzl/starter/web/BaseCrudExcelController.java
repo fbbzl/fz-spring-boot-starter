@@ -2,6 +2,7 @@ package io.github.fbbzl.starter.web;
 
 import io.github.fbbzl.starter.audit.frame.annotation.AuditMethod;
 import io.github.fbbzl.starter.core.util.Generics;
+import io.github.fbbzl.starter.core.util.Throws;
 import io.github.fbbzl.starter.excel.BaseEo;
 import io.github.fbbzl.starter.excel.ExcelDto;
 import io.github.fbbzl.starter.pojo.bo.BaseBo;
@@ -21,6 +22,7 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -72,7 +74,10 @@ public abstract class BaseCrudExcelController<
             @Validated(CRUD.C.class)
             FQ req) throws IOException
     {
-        try (InputStream in = req.getSingleFile().getInputStream()) {
+        MultipartFile file = req.getSingleFile();
+        Throws.ifNull(file, "upload file is required");
+
+        try (InputStream in = file.getInputStream()) {
             List<EO> readData = ExcelDto.doRead(in, excelClass);
             service.importExcel(readData);
         }

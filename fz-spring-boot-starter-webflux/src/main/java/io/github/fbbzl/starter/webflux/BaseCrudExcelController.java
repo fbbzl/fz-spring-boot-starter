@@ -4,6 +4,7 @@ import com.alibaba.excel.EasyExcelFactory;
 import com.alibaba.excel.write.style.column.LongestMatchColumnWidthStyleStrategy;
 import io.github.fbbzl.starter.audit.frame.annotation.AuditMethod;
 import io.github.fbbzl.starter.core.util.Generics;
+import io.github.fbbzl.starter.core.util.Throws;
 import io.github.fbbzl.starter.excel.BaseEo;
 import io.github.fbbzl.starter.excel.ExcelDto;
 import io.github.fbbzl.starter.pojo.bo.BaseBo;
@@ -84,7 +85,10 @@ public abstract class BaseCrudExcelController<
             @Parameter(description = "excel import object", required = true)
             @ModelAttribute FQ req)
     {
-        return readFile(req.getSingleFile())
+        FilePart file = req.getSingleFile();
+        Throws.ifNull(file, "upload file is required");
+
+        return readFile(file)
                 .publishOn(Schedulers.boundedElastic())
                 .map(bytes -> ExcelDto.doRead(new ByteArrayInputStream(bytes), excelClass))
                 .doOnNext(service::importExcel)

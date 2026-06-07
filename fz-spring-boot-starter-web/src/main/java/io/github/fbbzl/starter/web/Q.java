@@ -1,4 +1,4 @@
-﻿package io.github.fbbzl.starter.web;
+package io.github.fbbzl.starter.web;
 
 
 import cn.hutool.core.util.ArrayUtil;

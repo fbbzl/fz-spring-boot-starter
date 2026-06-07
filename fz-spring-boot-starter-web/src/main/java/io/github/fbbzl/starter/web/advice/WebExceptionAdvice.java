@@ -1,4 +1,4 @@
-﻿package io.github.fbbzl.starter.web.advice;
+package io.github.fbbzl.starter.web.advice;
 
 
 import io.github.fbbzl.starter.core.exception.BizException;

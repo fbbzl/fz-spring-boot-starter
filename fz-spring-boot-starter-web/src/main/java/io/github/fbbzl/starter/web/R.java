@@ -37,10 +37,6 @@ public class R<DATA>
             DEFAULT_SUCCESS_MESSAGE = "ok",
             DEFAULT_FAIL_MESSAGE    = "fail";
 
-    private static final R<?>
-            DEFAULT_R_SUCCESS = ok(DEFAULT_SUCCESS_MESSAGE, null),
-            DEFAULT_R_FAIL    = fail(DEFAULT_FAIL_MESSAGE);
-
     /**
      * response code
      */
@@ -68,7 +64,7 @@ public class R<DATA>
 
     public static <DATA> R<DATA> ok()
     {
-        return (R<DATA>) DEFAULT_R_SUCCESS;
+        return ok(DEFAULT_SUCCESS_MESSAGE, null);
     }
 
     public static <DATA> R<DATA> ok(DATA data)
@@ -88,7 +84,7 @@ public class R<DATA>
 
     public static <DATA> R<DATA> fail()
     {
-        return (R<DATA>) DEFAULT_R_FAIL;
+        return fail(DEFAULT_FAIL_MESSAGE);
     }
 
     public static <DATA> R<DATA> fail(String message)

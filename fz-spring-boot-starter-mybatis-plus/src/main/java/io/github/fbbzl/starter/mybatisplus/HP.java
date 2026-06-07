@@ -12,6 +12,7 @@ import com.baomidou.mybatisplus.core.toolkit.support.ColumnCache;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.experimental.Accessors;
+import org.springframework.lang.Nullable;
 
 import java.util.Collections;
 import java.util.List;
@@ -41,13 +42,14 @@ public class HP<T> implements IPage<T>
     long                  current;
     final List<OrderItem> orders;
 
-    public HP(Page page, Class<?> entityClass)
+    public HP(Page page, @Nullable Class<?> entityClass)
     {
-        Objects.requireNonNull(entityClass, "entityClass must not be null");
         this.page    = page;
         this.size    = page.getPageSize();
         this.current = page.getPageNumber() + 1L;
-        this.orders  = toOrderItems(entityClass, page.getOrders());
+        this.orders  = entityClass != null
+                       ? toOrderItems(entityClass, page.getOrders())
+                       : Collections.emptyList();
     }
 
     public static <T> HP<T> of(Page page, Class<?> entityClass)
@@ -74,18 +76,22 @@ public class HP<T> implements IPage<T>
 
         return Stream.of(orders)
                      .filter(order -> order != null && !isBlank(order.getField()))
-                     .map(order -> order.getDirection() == Direction.ASC
-                                   ? OrderItem.asc(orderField(entityClass, order.getField()))
-                                   : OrderItem.desc(orderField(entityClass, order.getField())))
+                     .map(order -> {
+                         String col = orderField(entityClass, order.getField());
+                         if (col == null) return null;
+                         return order.getDirection() == Direction.ASC
+                                ? OrderItem.asc(col) : OrderItem.desc(col);
+                     })
+                     .filter(Objects::nonNull)
                      .toList();
     }
 
     static String orderField(Class<?> entityClass, String field)
     {
-        if (entityClass == null || isBlank(field)) return field;
+        if (entityClass == null || isBlank(field)) return null;
 
         Map<String, ColumnCache> columnMap = LambdaUtils.getColumnMap(entityClass);
-        if (columnMap == null) return field;
+        if (columnMap == null) return null;
 
         ColumnCache cache = columnMap.get(LambdaUtils.formatKey(field));
         if (cache != null) return cache.getColumn();
@@ -95,6 +101,6 @@ public class HP<T> implements IPage<T>
                         .map(ColumnCache::getColumn)
                         .filter(field::equalsIgnoreCase)
                         .findFirst()
-                        .orElse(field);
+                        .orElse(null);
     }
 }

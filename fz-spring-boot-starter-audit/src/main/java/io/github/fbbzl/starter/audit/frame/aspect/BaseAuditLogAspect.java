@@ -71,7 +71,8 @@ public abstract class BaseAuditLogAspect<ID extends Serializable, AUDIT_LOG exte
             AUDIT_LOG auditLog = this.buildAuditLog(audit);
             auditLog.setModule(this.getModule(joinPoint));
             auditLog.setMethod(joinPoint.getSignature().getName());
-            auditLog.setTimeCost(System.currentTimeMillis() - METHOD_COST_TIME.get());
+            Long startTime = METHOD_COST_TIME.get();
+            auditLog.setTimeCost(startTime != null ? System.currentTimeMillis() - startTime : -1L);
 
             if (audit.saveParam() && ArrayUtil.isNotEmpty(joinPoint.getArgs())) {
                 auditLog.setParam(JSONUtil.toJsonStr(joinPoint.getArgs()));

@@ -1,4 +1,4 @@
-﻿package io.github.fbbzl.starter.mybatisplus;
+package io.github.fbbzl.starter.mybatisplus;
 
 import cn.hutool.core.collection.IterUtil;
 import cn.hutool.core.util.ArrayUtil;
@@ -30,6 +30,7 @@ import java.lang.reflect.Field;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.function.Consumer;
+import java.util.regex.Pattern;
 
 import static cn.hutool.core.collection.CollUtil.*;
 import static cn.hutool.core.text.CharSequenceUtil.isBlank;
@@ -48,6 +49,8 @@ public interface BaseMybatisPlusMapper<ENTITY extends BaseTableEntity<ID>, ID ex
         extends BaseMapper<ENTITY>,
                 BaseDal<ENTITY, ID>
 {
+
+    Pattern SAFE_COLUMN_NAME = Pattern.compile("^[a-zA-Z_][a-zA-Z0-9_]{0,63}$");
 
     @Override
     default ENTITY create(@Nullable ENTITY entity)
@@ -176,6 +179,7 @@ public interface BaseMybatisPlusMapper<ENTITY extends BaseTableEntity<ID>, ID ex
     default void increment(String columnName, int delta, @Nullable List<ID> ids)
     {
         if (ArrayUtil.isEmpty(ids)) return;
+        Throws.ifFalse(SAFE_COLUMN_NAME.matcher(columnName).matches(), "illegal column name: {}", columnName);
 
         this.update(new UpdateWrapper<ENTITY>()
                             .setSql(columnName + " = " + columnName + " + " + delta)
@@ -186,6 +190,7 @@ public interface BaseMybatisPlusMapper<ENTITY extends BaseTableEntity<ID>, ID ex
     default void decrement(String columnName, int delta, @Nullable List<ID> ids)
     {
         if (ArrayUtil.isEmpty(ids)) return;
+        Throws.ifFalse(SAFE_COLUMN_NAME.matcher(columnName).matches(), "illegal column name: {}", columnName);
 
         this.update(new UpdateWrapper<ENTITY>()
                             .setSql(columnName + " = " + columnName + " - " + delta)

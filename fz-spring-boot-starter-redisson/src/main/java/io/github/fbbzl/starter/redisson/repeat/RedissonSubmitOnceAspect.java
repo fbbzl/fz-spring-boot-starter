@@ -5,6 +5,8 @@ import io.github.fbbzl.starter.core.exception.BizException;
 import io.github.fbbzl.starter.core.exception.ExceptionVerb;
 import io.github.fbbzl.starter.core.util.Throws;
 import jakarta.servlet.http.HttpServletRequest;
+import org.springframework.web.context.request.RequestContextHolder;
+import org.springframework.web.context.request.ServletRequestAttributes;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
@@ -15,7 +17,7 @@ import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.reflect.MethodSignature;
 import org.redisson.api.RBucket;
 import org.redisson.api.RedissonClient;
-import org.springframework.beans.factory.annotation.Autowired;
+
 import org.springframework.context.expression.MethodBasedEvaluationContext;
 import org.springframework.core.DefaultParameterNameDiscoverer;
 import org.springframework.core.ParameterNameDiscoverer;
@@ -47,8 +49,6 @@ public class RedissonSubmitOnceAspect
     static final ExpressionParser        EXPRESSION_PARSER         = new SpelExpressionParser();
     static final ParameterNameDiscoverer PARAMETER_NAME_DISCOVERER = new DefaultParameterNameDiscoverer();
 
-    @Autowired
-    HttpServletRequest request;
     final RedissonClient redissonClient;
 
     @Around("@annotation(submitOnce)")
@@ -56,13 +56,20 @@ public class RedissonSubmitOnceAspect
     {
         Throws.ifTrue(submitOnce.windowMillis() <= 0, "submit once window millis must be positive");
 
+        ServletRequestAttributes attributes = (ServletRequestAttributes) RequestContextHolder.getRequestAttributes();
+        HttpServletRequest       request    = attributes != null ? attributes.getRequest() : null;
+        if (request == null) {
+            log.warn("SubmitOnce aspect invoked without web request context, bypassing limit");
+            return point.proceed();
+        }
+
         String expression = submitOnce.expression();
         String identity =
-                toStr(defaultIfNull(evaluateExpression(point, expression),
+                toStr(defaultIfNull(evaluateExpression(request, point, expression),
                                     () -> findIdentity(point.getArgs(), expression)), EMPTY);
         Throws.ifBlank(identity, "identity can not be blank, expression: {}", expression);
 
-        String          key      = buildSubmitOnceKey(submitOnce, identity);
+        String          key      = buildSubmitOnceKey(request, submitOnce, identity);
         RBucket<String> bucket   = redissonClient.getBucket(key);
         boolean         acquired = bucket.setIfAbsent("1", Duration.ofMillis(submitOnce.windowMillis()));
 
@@ -74,7 +81,7 @@ public class RedissonSubmitOnceAspect
         throw new BizException(ExceptionVerb.DATA_CONFLICT, submitOnce.message());
     }
 
-    private Object evaluateExpression(ProceedingJoinPoint point, String expression)
+    private Object evaluateExpression(HttpServletRequest request, ProceedingJoinPoint point, String expression)
     {
         if (isBlank(expression)) return null;
 
@@ -91,12 +98,13 @@ public class RedissonSubmitOnceAspect
 
             return EXPRESSION_PARSER.parseExpression(expression).getValue(context);
         }
-        catch (EvaluationException | ParseException ignored) {
+        catch (EvaluationException | ParseException e) {
+            log.warn("SpEL expression evaluation failed, expression: {}. Error: {}", expression, e.getMessage());
             return null;
         }
     }
 
-    private String buildSubmitOnceKey(SubmitOnce submitOnce, String identity)
+    private String buildSubmitOnceKey(HttpServletRequest request, SubmitOnce submitOnce, String identity)
     {
         return format("{}{}:{}:{}",
                       blankToDefault(submitOnce.keyPrefix(), "submit_once:"),

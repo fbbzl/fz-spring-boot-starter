@@ -4,6 +4,8 @@ import cn.hutool.extra.servlet.JakartaServletUtil;
 import io.github.fbbzl.starter.redisson.annotation.RateLimit;
 import jakarta.servlet.UnavailableException;
 import jakarta.servlet.http.HttpServletRequest;
+import org.springframework.web.context.request.RequestContextHolder;
+import org.springframework.web.context.request.ServletRequestAttributes;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
@@ -14,7 +16,7 @@ import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.reflect.MethodSignature;
 import org.redisson.api.RRateLimiter;
 import org.redisson.api.RedissonClient;
-import org.springframework.beans.factory.annotation.Autowired;
+
 
 import java.lang.reflect.Method;
 import java.time.Duration;
@@ -33,13 +35,17 @@ import static java.time.temporal.ChronoUnit.MILLIS;
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class RedissonRateLimitAspect
 {
-    @Autowired
-    HttpServletRequest request;
     final RedissonClient redissonClient;
 
     @Around("@annotation(rateLimit)")
     public Object around(ProceedingJoinPoint point, RateLimit rateLimit) throws Throwable
     {
+        ServletRequestAttributes attributes = (ServletRequestAttributes) RequestContextHolder.getRequestAttributes();
+        HttpServletRequest       request    = attributes != null ? attributes.getRequest() : null;
+        if (request == null) {
+            log.warn("RateLimit aspect invoked without web request context, bypassing limit");
+            return point.proceed();
+        }
         String       key         = buildRateLimitKey(request, point, rateLimit);
         RRateLimiter rateLimiter = redissonClient.getRateLimiter(key);
 

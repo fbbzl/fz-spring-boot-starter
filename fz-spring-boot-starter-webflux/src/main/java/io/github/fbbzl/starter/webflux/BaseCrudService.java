@@ -73,7 +73,7 @@ public abstract class BaseCrudService<
 {
     Class<ENTITY> entityClass = Generics.getGenericSuperType(this.getClass(), BaseCrudService.class, 1);
     Class<DTO>    dtoClass    = Generics.getGenericSuperType(this.getClass(), BaseCrudService.class, 2);
-    Class<ENTITY> boClass     = Generics.getGenericSuperType(this.getClass(), BaseCrudService.class, 3);
+    Class<BO>     boClass     = Generics.getGenericSuperType(this.getClass(), BaseCrudService.class, 3);
 
     @Autowired
     DAL             dal;

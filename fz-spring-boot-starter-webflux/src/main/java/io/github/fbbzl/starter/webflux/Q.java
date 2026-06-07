@@ -1,4 +1,4 @@
-﻿package io.github.fbbzl.starter.webflux;
+package io.github.fbbzl.starter.webflux;
 
 
 import cn.hutool.core.util.ArrayUtil;

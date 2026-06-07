@@ -44,25 +44,12 @@ public class JacksonConfiguration
                                           .featuresToDisable(
                                                   SerializationFeature.WRITE_DATES_AS_TIMESTAMPS,
                                                   SerializationFeature.WRITE_DATE_TIMESTAMPS_AS_NANOSECONDS)
-                                          .featuresToEnable(
-                                                  SerializationFeature.CLOSE_CLOSEABLE)
                                           // Deserialization
                                           .featuresToDisable(
                                                   DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES,
                                                   DeserializationFeature.FAIL_ON_NULL_FOR_PRIMITIVES)
-                                          .featuresToEnable(
-                                                  DeserializationFeature.ACCEPT_EMPTY_STRING_AS_NULL_OBJECT,
-                                                  DeserializationFeature.READ_UNKNOWN_ENUM_VALUES_AS_NULL)
                                           // Mapper
-                                          .featuresToEnable(
-                                                  MapperFeature.ACCEPT_CASE_INSENSITIVE_ENUMS,
-                                                  MapperFeature.ACCEPT_CASE_INSENSITIVE_PROPERTIES,
-                                                  MapperFeature.ALLOW_COERCION_OF_SCALARS)
                                           // Parser
-                                          .featuresToEnable(
-                                                  JsonParser.Feature.ALLOW_SINGLE_QUOTES,
-                                                  JsonParser.Feature.ALLOW_UNQUOTED_FIELD_NAMES,
-                                                  JsonParser.Feature.ALLOW_YAML_COMMENTS)
                                           .serializationInclusion(JsonInclude.Include.NON_NULL)
                                           .modulesToInstall(new JavaTimeModule())
                                           .serializerByType(
