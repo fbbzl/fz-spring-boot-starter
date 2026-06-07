@@ -40,11 +40,10 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.validation.annotation.Validated;
 
 import java.io.Serializable;
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.function.Function;
 
+import jakarta.validation.ConstraintViolation;
 import static cn.hutool.core.collection.CollUtil.isEmpty;
 import static cn.hutool.core.collection.CollUtil.newHashSet;
 import static cn.hutool.core.lang.tree.TreeNodeConfig.DEFAULT_CONFIG;
@@ -337,6 +336,54 @@ public abstract class BaseCrudService<
         return dal.exists(struct.dtoToEntity(dto));
     }
 
+    public long count(
+            @NotNull(message = "data can not be null when doing count")
+            DTO dto)
+    {
+        dto.prepareQuery();
+        Validators.validateAndThrow(dto, CRUD.R.class);
+        return dal.count(struct.dtoToEntity(dto));
+    }
+
+    public Map<String, String> validate(
+            @NotNull(message = "data can not be null when doing validate")
+            DTO dto)
+    {
+        dto.prepareCreate();
+        Set<ConstraintViolation<DTO>> violations = Validators.validate(dto, CRUD.C.class);
+        return violations.stream().collect(toMap(
+                v -> v.getPropertyPath().toString(),
+                ConstraintViolation::getMessage
+        ));
+    }
+
+    public List<Map<String, Object>> diff(
+            @NotNull(message = "id can not be null when doing diff")
+            ID id,
+            @NotNull(message = "data can not be null when doing diff")
+            DTO dto)
+    {
+        BO          current    = byId(id);
+        DTO         currentDto = struct.boToDto(current);
+        Map<String, Object> currentMap = objectMapper.convertValue(currentDto, Map.class);
+        Map<String, Object> newMap     = objectMapper.convertValue(dto, Map.class);
+
+        List<Map<String, Object>> diffs = new ArrayList<>();
+        for (Map.Entry<String, Object> entry : newMap.entrySet()) {
+            String field  = entry.getKey();
+            Object oldVal = currentMap.get(field);
+            Object newVal = entry.getValue();
+            if (!Objects.equals(oldVal, newVal)) {
+                Map<String, Object> diff = new HashMap<>();
+                diff.put("field",    field);
+                diff.put("oldValue", oldVal);
+                diff.put("newValue", newVal);
+                diffs.add(diff);
+            }
+        }
+        return diffs;
+    }
+
     @Transactional
     public BO create(
             @NotNull(message = "data can not be null when doing create")
@@ -389,6 +436,15 @@ public abstract class BaseCrudService<
         Throws.ifNull(dto.getId(), "id can not be null when doing update");
         Validators.validateNonNullPropertyAndThrow(dto, CRUD.U.class);
         return struct.entityToBo(dal.update(struct.dtoToEntity(dto)));
+    }
+
+    @Transactional
+    public void patch(
+            @Size(max = 1024, message = "the number of collection cannot exceed 1024")
+            Collection<Map<String, Object>> dataList)
+    {
+        if (isEmpty(dataList)) return;
+        dataList.forEach(this::patch);
     }
 
     @Transactional

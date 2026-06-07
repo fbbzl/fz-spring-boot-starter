@@ -64,6 +64,8 @@ public interface BaseDal<ENTITY extends BaseTableEntity<ID>, ID extends Serializ
 
     void doBatchConsume(@Nullable ENTITY entity, int batchSize, Consumer<List<ENTITY>> recordsConsumer);
 
+    long count(@Nullable ENTITY entity);
+
     default @NonNull PageResult<ENTITY> toPageResult(int pageNumber, int pageSize, long total, List<ENTITY> content)
     {
         PageResult<ENTITY> pageResult =
