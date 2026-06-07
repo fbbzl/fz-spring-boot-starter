@@ -1,0 +1,103 @@
+package io.github.fbbzl.starter.web;
+
+import io.github.fbbzl.starter.audit.frame.annotation.AuditMethod;
+import io.github.fbbzl.starter.core.util.Generics;
+import io.github.fbbzl.starter.core.util.Throws;
+import io.github.fbbzl.starter.excel.BaseEo;
+import io.github.fbbzl.starter.excel.ExcelDto;
+import io.github.fbbzl.starter.pojo.bo.BaseBo;
+import io.github.fbbzl.starter.pojo.dto.BaseDto;
+import io.github.fbbzl.starter.pojo.entity.BaseTableEntity;
+import io.github.fbbzl.starter.pojo.validation.group.CRUD;
+import io.github.fbbzl.starter.web.Q.FQ;
+import io.github.fbbzl.starter.web.Q.OQ;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import jakarta.servlet.http.HttpServletResponse;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Positive;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.lang.Nullable;
+import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.multipart.MultipartFile;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.Serializable;
+import java.util.List;
+
+import static cn.hutool.core.util.ObjectUtil.defaultIfNull;
+import static java.util.Collections.emptyList;
+
+/**
+ * CRUD controller base with Excel template, import, and export endpoints.
+ *
+ * @author fengbinbin
+ * @version 1.0
+ * @since 2026/5/18
+ */
+public abstract class BaseCrudExcelController<
+        ID      extends Serializable,
+        ENTITY  extends BaseTableEntity<ID>,
+        SERVICE extends BaseCrudExcelService<ID, ENTITY, DTO, BO, EO, ?, ?>,
+        DTO     extends BaseDto<ID>,
+        BO      extends BaseBo<ID>,
+        EO      extends BaseEo>
+        extends BaseCrudController<ID, ENTITY, SERVICE, DTO, BO>
+{
+
+    @Autowired
+    HttpServletResponse response;
+
+    Class<EO> excelClass = Generics.getGenericSuperType(this.getClass(), BaseCrudExcelController.class, 5);
+
+    @Operation(description = "[BASE] Get an excel template", summary = "[BASE] The Excel template you need to use to get Excel upload data")
+    @PostMapping("excel/template")
+    public void excelTemplate(
+            @NotNull
+            @Validated(CRUD.R.class)
+            @RequestBody Q<ExcelDto<DTO>> req) throws IOException
+    {
+        ExcelDto<DTO> excelDto = req.getData();
+        ExcelDto.setResponseHeader(response, excelDto);
+        ExcelDto.doExport(response, emptyList(), excelClass, excelDto);
+    }
+
+    @AuditMethod(saveParam = false, saveResult = false)
+    @Operation(description = "[BASE] Excel to import", summary = "[BASE] Excel data to import data")
+    @PostMapping("excel/import")
+    public void importExcel(
+            @NotNull
+            @Validated(CRUD.C.class)
+            FQ req) throws IOException
+    {
+        MultipartFile file = req.getSingleFile();
+        Throws.ifNull(file, "upload file is required");
+
+        try (InputStream in = file.getInputStream()) {
+            List<EO> readData = ExcelDto.doRead(in, excelClass);
+            service.importExcel(readData);
+        }
+    }
+
+    @AuditMethod(saveParam = false, saveResult = false)
+    @Operation(description = "[BASE] Excel export", summary = "[BASE] Excel excel data")
+    @PostMapping({"excel/export", "excel/export/{limit}"})
+    public void exportExcel(
+            @Nullable
+            @Positive(message = "limit must be positive")
+            @Parameter(name = "limit", description = "export data limit")
+            @PathVariable(value = "limit", required = false)
+            Integer limit,
+            @NotNull
+            @Validated(CRUD.R.class)
+            @RequestBody OQ<ExcelDto<DTO>> req) throws IOException
+    {
+        ExcelDto<DTO> excelDto = req.getData();
+        ExcelDto.setResponseHeader(response, excelDto);
+        ExcelDto.doExport(response, service.exportExcel(excelDto.param(), defaultIfNull(limit, this.defaultLimit()), req.getOrders()), excelClass, excelDto);
+    }
+}

@@ -10,7 +10,6 @@
     </parent>
 
     <artifactId>fz-spring-boot-starter-core</artifactId>
-
     <name>${project.artifactId}</name>
 
     <dependencies>
@@ -23,12 +22,6 @@
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot</artifactId>
         </dependency>
-
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-autoconfigure</artifactId>
-        </dependency>
-
     </dependencies>
 
 </project>

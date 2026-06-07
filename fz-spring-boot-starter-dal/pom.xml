@@ -10,19 +10,27 @@
     </parent>
 
     <artifactId>fz-spring-boot-starter-dal</artifactId>
-
     <name>${project.artifactId}</name>
 
     <dependencies>
         <dependency>
             <groupId>io.github.fbbzl</groupId>
             <artifactId>fz-spring-boot-starter-pojo</artifactId>
-            <version>${revision}</version>
         </dependency>
 
         <dependency>
             <groupId>org.springframework</groupId>
             <artifactId>spring-tx</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>cn.zhxu</groupId>
+            <artifactId>bean-searcher-boot-starter</artifactId>
         </dependency>
 
     </dependencies>

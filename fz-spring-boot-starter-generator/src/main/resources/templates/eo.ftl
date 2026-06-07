@@ -1,0 +1,36 @@
+package ${moduleName}.service.eo;
+
+import com.alibaba.excel.annotation.ExcelProperty;
+import io.github.fbbzl.starter.excel.BaseEo;
+import lombok.Data;
+import lombok.EqualsAndHashCode;
+import lombok.experimental.FieldDefaults;
+import lombok.experimental.FieldNameConstants;
+
+import static lombok.AccessLevel.PRIVATE;
+
+/**
+ * ${className} eo
+ *
+ * @author ${author}
+ * @version 1.0
+ * @since ${date}
+ */
+
+@Data
+@FieldNameConstants
+@EqualsAndHashCode(callSuper = false)
+@FieldDefaults(level = PRIVATE)
+public class ${className}Eo extends BaseEo {
+<#-- 遍历字段生成实体属性 -->
+<#list fields as field>
+    <#-- 排除父类字段 id, createTime, createBy, updateTime, updateBy, deleted 字段 -->
+    <#if !["id", "createTime", "createBy", "updateTime", "updateBy", "deleted"]?seq_contains(field.name)>
+
+    @ExcelProperty("${field.comment}")
+    ${field.javaType} ${field.name};
+    </#if>
+</#list>
+
+
+}

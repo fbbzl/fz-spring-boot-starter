@@ -1,0 +1,4 @@
+io.github.fbbzl.starter.webflux.config.JacksonConfiguration
+io.github.fbbzl.starter.webflux.config.OpenApiConfiguration
+io.github.fbbzl.starter.webflux.config.ValidationMessageConfiguration
+io.github.fbbzl.starter.webflux.config.WebFluxConfiguration
