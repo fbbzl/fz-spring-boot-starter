@@ -12,7 +12,6 @@ import com.baomidou.mybatisplus.core.toolkit.support.ColumnCache;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.experimental.Accessors;
-import org.springframework.lang.Nullable;
 
 import java.util.Collections;
 import java.util.List;
@@ -42,14 +41,13 @@ public class HP<T> implements IPage<T>
     long                  current;
     final List<OrderItem> orders;
 
-    public HP(Page page, @Nullable Class<?> entityClass)
+    public HP(Page page, Class<?> entityClass)
     {
+        Objects.requireNonNull(entityClass, "entityClass must not be null");
         this.page    = page;
         this.size    = page.getPageSize();
         this.current = page.getPageNumber() + 1L;
-        this.orders  = entityClass != null
-                       ? toOrderItems(entityClass, page.getOrders())
-                       : Collections.emptyList();
+        this.orders  = toOrderItems(entityClass, page.getOrders());
     }
 
     public static <T> HP<T> of(Page page, Class<?> entityClass)

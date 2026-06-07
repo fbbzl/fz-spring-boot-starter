@@ -22,6 +22,7 @@ import io.github.fbbzl.starter.dal.Range;
 import io.github.fbbzl.starter.pojo.entity.BaseTableEntity;
 import io.github.fbbzl.starter.pojo.validation.group.CRUD;
 import jakarta.validation.constraints.NotNull;
+import org.springframework.core.ResolvableType;
 import org.springframework.lang.Nullable;
 import org.springframework.validation.annotation.Validated;
 
@@ -144,7 +145,15 @@ public interface BaseMybatisPlusMapper<ENTITY extends BaseTableEntity<ID>, ID ex
     default PageResult<ENTITY> page(@Nullable Page page, @Nullable ENTITY entity)
     {
         Throws.ifNull(page, "page can not be null");
-        return this.selectPage(HP.of(page, entity == null ? null : entity.getClass()), autoQuery(entity)).toPageResult();
+        Class<?> entityClass = entity != null ? entity.getClass()
+                : ResolvableType.forClass(BaseMybatisPlusMapper.class, this.getClass()).getGeneric(0).resolve();
+        return this.selectPage(HP.of(page, entityClass), autoQuery(entity)).toPageResult();
+    }
+
+    @Override
+    default long count(@Nullable ENTITY entity)
+    {
+        return this.selectCount(autoQuery(entity, false));
     }
 
     @Override

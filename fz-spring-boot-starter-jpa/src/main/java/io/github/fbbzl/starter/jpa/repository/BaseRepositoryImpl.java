@@ -169,6 +169,13 @@ public class BaseRepositoryImpl<ENTITY extends BaseTableEntity<ID>, ID extends S
     }
 
     @Override
+    public long count(@Nullable ENTITY entity)
+    {
+        if (entity == null) return 0L;
+        return this.count(Specifications.byAuto(entityManager, entity, false));
+    }
+
+    @Override
     public boolean exists(@Nullable ENTITY entity)
     {
         if (entity == null) return false;

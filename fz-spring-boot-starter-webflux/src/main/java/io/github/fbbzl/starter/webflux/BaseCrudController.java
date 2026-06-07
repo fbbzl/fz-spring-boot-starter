@@ -149,6 +149,51 @@ public abstract class BaseCrudController<
         return service.exists(req.getData());
     }
 
+    @Operation(description = "[BASE] Count by condition, null fields do not participate in the query", summary = "[BASE] Count by condition")
+    @PostMapping("count")
+    public long count(
+            @NotNull
+            @Validated(CRUD.R.class)
+            @Parameter(description = "count request data", required = true)
+            @RequestBody
+            Q<DTO> req)
+    {
+        return service.count(req.getData());
+    }
+
+    @Operation(description = "[BASE] Query IDs by condition, null fields do not participate", summary = "[BASE] Query IDs by condition")
+    @PostMapping({"ids/query", "ids/query/{limit}"})
+    public List<ID> ids(
+            @Nullable
+            @Positive(message = "limit must be positive")
+            @Parameter(description = "ids query limit")
+            @PathVariable(value = "limit", required = false)
+            Integer limit,
+            @NotNull
+            @Validated(CRUD.R.class)
+            @Parameter(description = "query request data", required = true)
+            @RequestBody
+            Q<DTO> req)
+    {
+        if (limit != null) return service.ids(req.getData(), limit);
+        else               return service.ids(req.getData());
+    }
+
+    @Operation(description = "[BASE] Compare current data with incoming data, return field differences", summary = "[BASE] Diff by primary key")
+    @PostMapping("diff/{id}")
+    public List<Map<String, Object>> diff(
+            @NotNull
+            @PathVariable("id")
+            @Parameter(name = "id", description = "the primary key of the record to diff", required = true, example = "1")
+            ID id,
+            @NotNull
+            @Parameter(description = "diff request data", required = true)
+            @RequestBody
+            Q<DTO> req)
+    {
+        return service.diff(id, req.getData());
+    }
+
     @AuditMethod
     @Operation(description = "[BASE] Create data", summary = "[BASE] Create data")
     @PostMapping
@@ -214,6 +259,18 @@ public abstract class BaseCrudController<
         Map<String, Object> data = req.getData();
         data.put(Fields.id, id);
         return service.patch(data);
+    }
+
+    @AuditMethod(saveParam = false, saveResult = false)
+    @Operation(description = "[BASE] Batch patch update without null fields", summary = "[BASE] Do batch patch update ignore null field value")
+    @PatchMapping("batch")
+    public void patch(
+            @NotNull
+            @Parameter(description = "batch patch data", required = true)
+            @RequestBody
+            Q<Collection<Map<String, Object>>> req)
+    {
+        service.patch(req.getData());
     }
 
     @AuditMethod
