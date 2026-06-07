@@ -179,17 +179,6 @@ public abstract class BaseCrudController<
         else               return service.ids(req.getData());
     }
 
-    @Operation(description = "[BASE] Validate data without persisting, returns field error mapping", summary = "[BASE] Validate data")
-    @PostMapping("validate")
-    public Map<String, String> validate(
-            @NotNull
-            @Parameter(description = "validate request data", required = true)
-            @RequestBody
-            Q<DTO> req)
-    {
-        return service.validate(req.getData());
-    }
-
     @Operation(description = "[BASE] Compare current data with incoming data, return field differences", summary = "[BASE] Diff by primary key")
     @PostMapping("diff/{id}")
     public List<Map<String, Object>> diff(
