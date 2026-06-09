@@ -29,14 +29,7 @@ public class MybatisPlusConfiguration
     @ConditionalOnMissingBean(BaseMetaObjectHandler.class)
     public BaseMetaObjectHandler<Long> defaultNoLogin()
     {
-        return new BaseMetaObjectHandler<>()
-        {
-            @Override
-            public Long getCurrentUserIdentifier()
-            {
-                throw new UnsupportedOperationException("getCurrentUserIdentifier must be implemented");
-            }
-        };
+        return new BaseMetaObjectHandler<>(){};
     }
 
     @Bean
@@ -50,7 +43,7 @@ public class MybatisPlusConfiguration
 
             PaginationInnerInterceptor paginationInnerInterceptor = new PaginationInnerInterceptor(dbType);
             paginationInnerInterceptor.setOverflow(true);
-            paginationInnerInterceptor.setMaxLimit(1000L);
+            paginationInnerInterceptor.setMaxLimit(5000L);
 
             interceptor.addInnerInterceptor(new OptimisticLockerInnerInterceptor());
             interceptor.addInnerInterceptor(new BlockAttackInnerInterceptor());

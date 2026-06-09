@@ -110,7 +110,7 @@ public class Specifications {
                     case String        string when stringLike
                                                     -> predicates.add(cb.like((Path<String>) root.get(attribute(entityType, field)), buildLikeValue(string, LikeType.Contains, false)));
                     case String        string        -> predicates.add(cb.equal(root.get(attribute(entityType, field)), string));
-                    case Enum<?>       enumVal       -> predicates.add(cb.equal(root.get(attribute(entityType, field)), enumVal.ordinal()));
+                    case Enum<?>       enumVal       -> predicates.add(cb.equal(root.get(attribute(entityType, field)), enumVal));
                     case Number        number        -> predicates.add(cb.equal(root.get(attribute(entityType, field)), number));
                     case LocalDateTime localDateTime -> predicates.add(cb.equal(root.get(attribute(entityType, field)), localDateTime));
                     case Date          date          -> predicates.add(cb.equal(root.get(attribute(entityType, field)), date));

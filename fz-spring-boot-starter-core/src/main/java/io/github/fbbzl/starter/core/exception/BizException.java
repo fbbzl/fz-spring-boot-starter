@@ -1,5 +1,6 @@
 package io.github.fbbzl.starter.core.exception;
 
+import cn.hutool.core.util.ObjectUtil;
 import lombok.Getter;
 
 import static cn.hutool.core.text.CharSequenceUtil.format;
@@ -23,7 +24,7 @@ public class BizException extends RuntimeException
 
     public BizException(ExceptionVerb verb, Object message, Throwable cause)
     {
-        super(message.toString(), cause);
+        super(ObjectUtil.toString(message), cause);
         this.verb = verb;
     }
 

@@ -54,7 +54,7 @@ public interface BaseMybatisPlusMapper<ENTITY extends BaseTableEntity<ID>, ID ex
     Pattern SAFE_COLUMN_NAME = Pattern.compile("^[a-zA-Z_][a-zA-Z0-9_]{0,63}$");
 
     @Override
-    default ENTITY create(@Nullable ENTITY entity)
+    default ENTITY create(@NotNull ENTITY entity)
     {
         this.insert(entity);
         return entity;
@@ -96,6 +96,8 @@ public interface BaseMybatisPlusMapper<ENTITY extends BaseTableEntity<ID>, ID ex
     @Override
     default void update(@Nullable Iterable<ENTITY> entities)
     {
+        if(isEmpty(entities)) return;
+
         this.updateById(IterUtil.toList(entities), DEFAULT_BATCH_SIZE);
     }
 
@@ -320,7 +322,7 @@ public interface BaseMybatisPlusMapper<ENTITY extends BaseTableEntity<ID>, ID ex
             if (value instanceof String string && isBlank(string)) continue;
 
             switch (value) {
-                case Enum<?>       enumVal                                       -> wrapper.eq(column,   enumVal.ordinal());
+                case Enum<?>       enumVal                                       -> wrapper.eq(column,   enumVal);
                 case Number        number                                        -> wrapper.eq(column,   number);
                 case LocalDateTime localDateTime                                 -> wrapper.eq(column,   localDateTime);
                 case Date          date                                          -> wrapper.eq(column,   date);

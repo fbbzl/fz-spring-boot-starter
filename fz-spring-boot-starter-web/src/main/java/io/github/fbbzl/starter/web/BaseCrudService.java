@@ -355,6 +355,7 @@ public abstract class BaseCrudService<
         DTO         currentDto = struct.boToDto(current);
         Map<String, Object> currentMap = objectMapper.convertValue(currentDto, Map.class);
         Map<String, Object> newMap     = objectMapper.convertValue(dto, Map.class);
+        if (currentMap == null || newMap == null) return List.of();
 
         List<Map<String, Object>> diffs = new ArrayList<>();
         for (Map.Entry<String, Object> entry : newMap.entrySet()) {

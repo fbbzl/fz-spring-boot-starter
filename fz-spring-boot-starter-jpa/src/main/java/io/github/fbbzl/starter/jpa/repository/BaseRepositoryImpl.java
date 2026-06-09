@@ -10,12 +10,14 @@ import cn.hutool.db.sql.Direction;
 import cn.hutool.db.sql.Order;
 import io.github.fbbzl.starter.core.util.Throws;
 import io.github.fbbzl.starter.dal.Range;
+import io.github.fbbzl.starter.dal.annotation.ReadOnly;
 import io.github.fbbzl.starter.jpa.BaseJpaEntity;
 import io.github.fbbzl.starter.jpa.Specifications;
 import io.github.fbbzl.starter.pojo.entity.BaseTableEntity;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.LockModeType;
 import jakarta.persistence.criteria.*;
+import jakarta.validation.constraints.NotNull;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
@@ -59,7 +61,7 @@ public class BaseRepositoryImpl<ENTITY extends BaseTableEntity<ID>, ID extends S
 
     @Transactional
     @Override
-    public ENTITY create(@Nullable ENTITY entity)
+    public ENTITY create(@NotNull ENTITY entity)
     {
         return super.saveAndFlush(entity);
     }
@@ -142,6 +144,7 @@ public class BaseRepositoryImpl<ENTITY extends BaseTableEntity<ID>, ID extends S
         return findAll(Specifications.byAuto(entityManager, entity, ranges), pageRequest).getContent();
     }
 
+    @ReadOnly
     @Override
     @SuppressWarnings("unchecked")
     public List<ID> ids(@Nullable ENTITY entity, @Nullable Integer limit)

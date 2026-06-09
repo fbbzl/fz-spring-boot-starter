@@ -96,22 +96,18 @@ public final class Validators
 
     public static <BEAN> Set<ConstraintViolation<BEAN>> validateProperty(BEAN obj, String... properties)
     {
-        ValidatorContext            context    = VALIDATOR_FACTORY.usingContext();
-        Validator                   validator  = context.getValidator();
-        Set<ConstraintViolation<BEAN>> violations = new HashSet<>(4);
+        Set<ConstraintViolation<BEAN>> violations = HashSet.newHashSet(4);
         for (String property : properties) {
-            violations.addAll(validator.validateProperty(obj, property));
+            violations.addAll(VALIDATOR.validateProperty(obj, property));
         }
         return violations;
     }
 
     public static <BEAN> Set<ConstraintViolation<BEAN>> validateProperty(BEAN obj, Class<?>[] groups, String... properties)
     {
-        ValidatorContext            context    = VALIDATOR_FACTORY.usingContext();
-        Validator                   validator  = context.getValidator();
-        Set<ConstraintViolation<BEAN>> violations = new HashSet<>(4);
+        Set<ConstraintViolation<BEAN>> violations = HashSet.newHashSet(4);
         for (String property : properties) {
-            violations.addAll(validator.validateProperty(obj, property, groups));
+            violations.addAll(VALIDATOR.validateProperty(obj, property, groups));
         }
         return violations;
     }

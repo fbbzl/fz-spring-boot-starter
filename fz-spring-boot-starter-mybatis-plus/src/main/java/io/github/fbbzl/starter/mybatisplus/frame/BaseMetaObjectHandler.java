@@ -19,7 +19,10 @@ public abstract class BaseMetaObjectHandler<ID extends Serializable> implements 
 
     Class<ID> idType = Generics.getGenericSuperType(this.getClass(), BaseMetaObjectHandler.class, 0);
 
-    protected abstract ID getCurrentUserIdentifier();
+    protected ID getCurrentUserIdentifier()
+    {
+        throw new UnsupportedOperationException("getCurrentUserIdentifier must be implemented");
+    }
 
     @Override
     public void insertFill(MetaObject metaObject)
