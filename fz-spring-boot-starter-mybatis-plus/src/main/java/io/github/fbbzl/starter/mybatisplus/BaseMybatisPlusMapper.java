@@ -54,8 +54,10 @@ public interface BaseMybatisPlusMapper<ENTITY extends BaseTableEntity<ID>, ID ex
     Pattern SAFE_COLUMN_NAME = Pattern.compile("^[a-zA-Z_][a-zA-Z0-9_]{0,63}$");
 
     @Override
-    default ENTITY create(@NotNull ENTITY entity)
+    default ENTITY create(@Nullable ENTITY entity)
     {
+        if (entity == null) return null;
+
         this.insert(entity);
         return entity;
     }

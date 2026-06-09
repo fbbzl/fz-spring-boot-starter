@@ -17,7 +17,6 @@ import io.github.fbbzl.starter.pojo.entity.BaseTableEntity;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.LockModeType;
 import jakarta.persistence.criteria.*;
-import jakarta.validation.constraints.NotNull;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
@@ -61,8 +60,9 @@ public class BaseRepositoryImpl<ENTITY extends BaseTableEntity<ID>, ID extends S
 
     @Transactional
     @Override
-    public ENTITY create(@NotNull ENTITY entity)
+    public ENTITY create(@Nullable ENTITY entity)
     {
+        if (entity == null) return null;
         return super.saveAndFlush(entity);
     }
 
@@ -97,9 +97,9 @@ public class BaseRepositoryImpl<ENTITY extends BaseTableEntity<ID>, ID extends S
         Throws.ifNull(entity, "entity can not be null when doing update");
         Throws.ifNull(entity.getId(), "id can not be null when doing update");
 
-        this.findById(entity.getId()).ifPresent(byId -> {
+        super.findById(entity.getId()).ifPresent(byId -> {
             BeanUtil.copyProperties(entity, byId, CopyOptions.create().setIgnoreNullValue(true).setIgnoreError(true));
-            this.saveAndFlush(byId);
+            super.saveAndFlush(byId);
         });
 
         return entity;
@@ -117,7 +117,7 @@ public class BaseRepositoryImpl<ENTITY extends BaseTableEntity<ID>, ID extends S
     @Override
     public ENTITY byId(@Nullable ID id)
     {
-        if (id != null) return this.findById(id).orElse(null);
+        if (id != null) return super.findById(id).orElse(null);
         else return null;
     }
 
@@ -125,7 +125,7 @@ public class BaseRepositoryImpl<ENTITY extends BaseTableEntity<ID>, ID extends S
     public List<ENTITY> byIds(@Nullable Collection<ID> ids)
     {
         if (isEmpty(ids)) return emptyList();
-        else              return this.findAllById(ids);
+        else              return super.findAllById(ids);
     }
 
     @Override
@@ -179,7 +179,7 @@ public class BaseRepositoryImpl<ENTITY extends BaseTableEntity<ID>, ID extends S
     public long count(@Nullable ENTITY entity)
     {
         if (entity == null) return 0L;
-        return this.count(Specifications.byAuto(entityManager, entity, false));
+        return super.count(Specifications.byAuto(entityManager, entity, false));
     }
 
     @Override
@@ -187,7 +187,7 @@ public class BaseRepositoryImpl<ENTITY extends BaseTableEntity<ID>, ID extends S
     {
         if (entity == null) return false;
 
-        return this.count(Specifications.byAuto(entityManager, entity, false)) > 0;
+        return super.count(Specifications.byAuto(entityManager, entity, false)) > 0;
     }
 
     @Override
@@ -278,8 +278,8 @@ public class BaseRepositoryImpl<ENTITY extends BaseTableEntity<ID>, ID extends S
 
         do {
             pageResult = entity == null
-                         ? this.findAll(pageRequest)
-                         : this.findAll(Specifications.byAuto(entityManager, entity), pageRequest);
+                         ? super.findAll(pageRequest)
+                         : super.findAll(Specifications.byAuto(entityManager, entity), pageRequest);
 
             recordsConsumer.accept(pageResult.getContent());
 

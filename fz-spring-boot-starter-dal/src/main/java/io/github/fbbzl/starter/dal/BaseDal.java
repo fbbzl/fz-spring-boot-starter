@@ -4,7 +4,6 @@ import cn.hutool.db.Page;
 import cn.hutool.db.PageResult;
 import cn.hutool.db.sql.Order;
 import io.github.fbbzl.starter.pojo.entity.BaseTableEntity;
-import jakarta.validation.constraints.NotNull;
 import org.springframework.lang.NonNull;
 import org.springframework.lang.Nullable;
 
@@ -23,7 +22,7 @@ import java.util.function.Consumer;
 public interface BaseDal<ENTITY extends BaseTableEntity<ID>, ID extends Serializable>
 {
 
-    ENTITY create(@NotNull ENTITY entity);
+    ENTITY create(@Nullable ENTITY entity);
 
     List<ENTITY> create(@Nullable Iterable<ENTITY> entities);
 
