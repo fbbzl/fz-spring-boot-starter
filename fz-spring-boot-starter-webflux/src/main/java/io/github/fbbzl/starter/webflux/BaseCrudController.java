@@ -161,6 +161,23 @@ public abstract class BaseCrudController<
         return service.count(req.getData());
     }
 
+    @Operation(description = "[BASE] Query IDs by condition, null fields do not participate", summary = "[BASE] Query IDs by condition")
+    @PostMapping({"ids/query", "ids/query/{limit}"})
+    public List<ID> ids(
+            @Nullable
+            @Positive(message = "limit must be positive")
+            @Parameter(description = "ids query limit")
+            @PathVariable(value = "limit", required = false)
+            Integer limit,
+            @NotNull
+            @Validated(CRUD.R.class)
+            @Parameter(description = "query request data", required = true)
+            @RequestBody
+            Q<DTO> req)
+    {
+        if (limit != null) return service.ids(req.getData(), limit);
+        else               return service.ids(req.getData());
+    }
     @Operation(description = "[BASE] Compare current data with incoming data, return field differences", summary = "[BASE] Diff by primary key")
     @PostMapping("diff/{id}")
     public List<Map<String, Object>> diff(
