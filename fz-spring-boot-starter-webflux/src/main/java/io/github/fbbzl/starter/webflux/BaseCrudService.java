@@ -355,6 +355,7 @@ public abstract class BaseCrudService<
         DTO         currentDto = struct.boToDto(current);
         Map<String, Object> currentMap = objectMapper.convertValue(currentDto, Map.class);
         Map<String, Object> newMap     = objectMapper.convertValue(dto, Map.class);
+        if (currentMap == null || newMap == null) return List.of();
 
         List<Map<String, Object>> diffs = new ArrayList<>();
         for (Map.Entry<String, Object> entry : newMap.entrySet()) {
@@ -424,15 +425,6 @@ public abstract class BaseCrudService<
         Throws.ifNull(dto.getId(), "id can not be null when doing update");
         Validators.validateNonNullPropertyAndThrow(dto, CRUD.U.class);
         return struct.entityToBo(dal.update(struct.dtoToEntity(dto)));
-    }
-
-    @Transactional
-    public void patch(
-            @Size(max = 1024, message = "the number of collection cannot exceed 1024")
-            Collection<Map<String, Object>> dataList)
-    {
-        if (isEmpty(dataList)) return;
-        dataList.forEach(this::patch);
     }
 
     @Transactional

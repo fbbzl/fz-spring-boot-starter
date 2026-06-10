@@ -428,15 +428,6 @@ public abstract class BaseCrudService<
     }
 
     @Transactional
-    public void patch(
-            @Size(max = 1024, message = "the number of collection cannot exceed 1024")
-            Collection<Map<String, Object>> dataList)
-    {
-        if (isEmpty(dataList)) return;
-        dataList.forEach(this::patch);
-    }
-
-    @Transactional
     public void delete(
             @NotNull(message = "data can not be null when doing delete")
             DTO dto)

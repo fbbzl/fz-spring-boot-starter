@@ -265,19 +265,6 @@ public abstract class BaseCrudController<
         return service.patch(data);
     }
 
-    @AuditMethod(saveParam = false, saveResult = false)
-    @Operation(description = "[BASE] Batch patch update without null fields", summary = "[BASE] Do batch patch update ignore null field value")
-    @PatchMapping("batch")
-    public void patch(
-            @NotNull
-            @Validated(CRUD.U.class)
-            @Parameter(description = "batch patch data", required = true)
-            @RequestBody
-            Q<Collection<Map<String, Object>>> req)
-    {
-        service.patch(req.getData());
-    }
-
     @AuditMethod
     @Operation(description = "[BASE] Deleting data is a logical deletion, but this tombstone deletion is equivalent to physical deletion, and the tombstone is only to maximize the value of the data", summary = "[BASE] Delete data by primary key")
     @DeleteMapping("{id}")

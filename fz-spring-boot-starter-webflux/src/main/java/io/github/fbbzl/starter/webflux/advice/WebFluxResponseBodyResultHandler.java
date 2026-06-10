@@ -117,16 +117,6 @@ public class WebFluxResponseBodyResultHandler extends ResponseBodyResultHandler
         return body instanceof R<?> response ? response : R.ok(body);
     }
 
-    private void operate(@Nullable Object body, MethodParameter returnType)
-    {
-        if (body == null || hasAnnotation(returnType, IgnoreResponseOperate.class)) {
-            return;
-        }
-        if (body instanceof R<?> response && response.getData() != null) {
-            operate(response.getData());
-        }
-    }
-
     private void operate(Object data)
     {
         Object operateData = data instanceof R.PR<?> page ? page.records() : data;

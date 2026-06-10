@@ -40,7 +40,7 @@ public class R<DATA>
     /**
      * response code
      */
-    @Schema(description = "responce code")
+    @Schema(description = "response code")
     String code;
 
     /**

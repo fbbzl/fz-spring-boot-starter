@@ -5,6 +5,7 @@ import io.github.fbbzl.starter.redisson.annotation.RateLimit;
 import jakarta.servlet.UnavailableException;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.web.context.request.RequestContextHolder;
+import org.springframework.web.context.request.RequestAttributes;
 import org.springframework.web.context.request.ServletRequestAttributes;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
@@ -40,7 +41,8 @@ public class RedissonRateLimitAspect
     @Around("@annotation(rateLimit)")
     public Object around(ProceedingJoinPoint point, RateLimit rateLimit) throws Throwable
     {
-        ServletRequestAttributes attributes = (ServletRequestAttributes) RequestContextHolder.getRequestAttributes();
+        RequestAttributes requestAttributes = RequestContextHolder.getRequestAttributes();
+        ServletRequestAttributes attributes = requestAttributes instanceof ServletRequestAttributes sra ? sra : null;
         HttpServletRequest       request    = attributes != null ? attributes.getRequest() : null;
         if (request == null) {
             log.warn("RateLimit aspect invoked without web request context, bypassing limit");

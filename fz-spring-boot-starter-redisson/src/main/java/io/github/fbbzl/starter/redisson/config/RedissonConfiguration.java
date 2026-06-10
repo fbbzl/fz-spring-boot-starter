@@ -84,6 +84,7 @@ public class RedissonConfiguration
 
     private String buildAddress(RedisProperties redisProperties)
     {
-        return format("redis://{}:{}", redisProperties.getHost(), redisProperties.getPort());
+        String scheme = redisProperties.getSsl() != null && redisProperties.getSsl().isEnabled() ? "rediss://" : "redis://";
+        return format("{}:{}:{}", scheme, redisProperties.getHost(), redisProperties.getPort());
     }
 }

@@ -90,7 +90,7 @@ public abstract class BaseAuditLogAspect<ID extends Serializable, AUDIT_LOG exte
             save(auditLog);
         }
         catch (Exception exp) {
-            log.error("error occur: {}", exp.getMessage());
+            log.error("error occur", exp);
         }
         finally {
             METHOD_COST_TIME.remove();
@@ -115,7 +115,11 @@ public abstract class BaseAuditLogAspect<ID extends Serializable, AUDIT_LOG exte
             return;
         }
 
-        Futures.runAsync(() -> auditDal.create(audit));
+        Futures.runAsync(() -> auditDal.create(audit))
+                .exceptionally(ex -> {
+                    log.error("audit log save failed", ex);
+                    return null;
+                });
     }
 
 }
