@@ -193,6 +193,8 @@ public class BaseRepositoryImpl<ENTITY extends BaseTableEntity<ID>, ID extends S
     @Override
     public boolean exists(@Nullable ID id)
     {
+        if (id == null) return false;
+
         return super.existsById(id);
     }
 
@@ -235,6 +237,8 @@ public class BaseRepositoryImpl<ENTITY extends BaseTableEntity<ID>, ID extends S
     @Override
     public void increment(String fieldName, int delta, @Nullable List<ID> ids)
     {
+        if (ArrayUtil.isEmpty(ids)) return;
+
         CriteriaBuilder        cb     = entityManager.getCriteriaBuilder();
         CriteriaUpdate<ENTITY> update = cb.createCriteriaUpdate(entityClass);
         Root<ENTITY>           root   = update.from(entityClass);
@@ -254,6 +258,8 @@ public class BaseRepositoryImpl<ENTITY extends BaseTableEntity<ID>, ID extends S
     @Override
     public void decrement(String fieldName, int delta, @Nullable List<ID> ids)
     {
+        if (ArrayUtil.isEmpty(ids)) return;
+
         CriteriaBuilder        cb     = entityManager.getCriteriaBuilder();
         CriteriaUpdate<ENTITY> update = cb.createCriteriaUpdate(entityClass);
         Root<ENTITY>           root   = update.from(entityClass);

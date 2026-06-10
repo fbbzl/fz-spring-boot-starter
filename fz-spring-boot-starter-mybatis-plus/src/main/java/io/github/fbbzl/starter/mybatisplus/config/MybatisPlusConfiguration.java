@@ -6,7 +6,6 @@ import com.baomidou.mybatisplus.extension.plugins.inner.BlockAttackInnerIntercep
 import com.baomidou.mybatisplus.extension.plugins.inner.OptimisticLockerInnerInterceptor;
 import com.baomidou.mybatisplus.extension.plugins.inner.PaginationInnerInterceptor;
 import com.baomidou.mybatisplus.extension.toolkit.JdbcUtils;
-import io.github.fbbzl.starter.mybatisplus.frame.BaseMetaObjectHandler;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.context.annotation.Bean;
@@ -24,13 +23,6 @@ import java.sql.SQLException;
 @AutoConfiguration
 public class MybatisPlusConfiguration
 {
-
-    @Bean
-    @ConditionalOnMissingBean(BaseMetaObjectHandler.class)
-    public BaseMetaObjectHandler<Long> defaultNoLogin()
-    {
-        return new BaseMetaObjectHandler<>(){};
-    }
 
     @Bean
     @ConditionalOnMissingBean

@@ -74,6 +74,8 @@ public interface BaseMybatisPlusMapper<ENTITY extends BaseTableEntity<ID>, ID ex
     @Override
     default void delete(@Nullable ID id)
     {
+        if (id == null) return;
+
         this.deleteById(id);
     }
 
@@ -107,12 +109,16 @@ public interface BaseMybatisPlusMapper<ENTITY extends BaseTableEntity<ID>, ID ex
     @Override
     default ENTITY byId(@Nullable ID id)
     {
+        if (id == null) return null;
+
         return this.selectById(id);
     }
 
     @Override
     default List<ENTITY> byIds(@Nullable Collection<ID> ids)
     {
+        if (isEmpty(ids)) return emptyList();
+
         return this.selectByIds(ids);
     }
 

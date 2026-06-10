@@ -198,7 +198,9 @@ public class Specifications {
 
     private static <ENTITY extends BaseTableEntity> Object getValue(ENTITY sqlQueryObject, Attribute<? super ENTITY, ?> attr)
     {
-        return ReflectionUtils.getField((Field) attr.getJavaMember(), sqlQueryObject);
+        Field field = (Field) attr.getJavaMember();
+        ReflectionUtils.makeAccessible(field);
+        return ReflectionUtils.getField(field, sqlQueryObject);
     }
 
     private static <ENTITY, E> SingularAttribute<? super ENTITY, E> attribute(EntityType<ENTITY> entityType, Attribute<?, E> attr)

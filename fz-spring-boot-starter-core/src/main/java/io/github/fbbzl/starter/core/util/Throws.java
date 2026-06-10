@@ -325,30 +325,30 @@ public final class Throws
     }
 
     public static void ifContains(CharSequence origin, CharSequence target, MessageSupplier message) {
-        throwIf(origin == null || target == null || origin.toString().contains(target), message);
+        throwIf(origin != null && target != null && origin.toString().contains(target), message);
     }
 
     public static void ifContains(CharSequence origin, CharSequence target,
                                   ExceptionSupplier<? extends RuntimeException> exception) {
-        throwIf(origin == null || target == null || origin.toString().contains(target), exception);
+        throwIf(origin != null && target != null && origin.toString().contains(target), exception);
     }
 
     public static void ifContains(CharSequence origin, CharSequence target, String message, Object... params) {
-        if (origin == null || target == null || origin.toString().contains(target))
+        if (origin != null && target != null && origin.toString().contains(target))
             throw new IllegalArgumentException(Throws.message(message, params));
     }
 
     public static void ifNotContains(CharSequence origin, CharSequence target, MessageSupplier message) {
-        throwIf(origin == null || target == null || !origin.toString().contains(target), message);
+        throwIf(origin != null && target != null && !origin.toString().contains(target), message);
     }
 
     public static void ifNotContains(CharSequence origin, CharSequence target,
                                      ExceptionSupplier<? extends RuntimeException> exception) {
-        throwIf(origin == null || target == null || !origin.toString().contains(target), exception);
+        throwIf(origin != null && target != null && !origin.toString().contains(target), exception);
     }
 
     public static void ifNotContains(CharSequence origin, CharSequence target, String message, Object... params) {
-        if (origin == null || target == null || !origin.toString().contains(target))
+        if (origin != null && target != null && !origin.toString().contains(target))
             throw new IllegalArgumentException(Throws.message(message, params));
     }
 

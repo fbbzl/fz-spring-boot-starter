@@ -69,6 +69,7 @@ public abstract class BaseCrudController<
     @PostMapping("ids")
     public List<BO> byIds(
             @NotNull
+            @Validated(CRUD.R.class)
             @Parameter(description = "request contains ids", required = true, example = "1,2,3")
             @RequestBody
             Q<Set<ID>> req)
@@ -186,6 +187,7 @@ public abstract class BaseCrudController<
             @Parameter(name = "id", description = "the primary key of the record to diff", required = true, example = "1")
             ID id,
             @NotNull
+            @Validated(CRUD.R.class)
             @Parameter(description = "diff request data", required = true)
             @RequestBody
             Q<DTO> req)
@@ -211,6 +213,7 @@ public abstract class BaseCrudController<
     @PostMapping("batch")
     public void createBatch(
             @NotNull
+            @Validated(CRUD.C.class)
             @Parameter(description = "creating batch data", required = true)
             @RequestBody
             Q<Collection<DTO>> req)
@@ -236,6 +239,7 @@ public abstract class BaseCrudController<
     @PutMapping("batch")
     public void updateBatch(
             @NotNull
+            @Validated(CRUD.U.class)
             @Parameter(name = "req", description = "batch updating data", required = true)
             @RequestBody
             Q<Collection<DTO>> req)
@@ -252,6 +256,7 @@ public abstract class BaseCrudController<
             @Parameter(name = "id", description = "The primary key of the record that needs to be update", required = true, example = "1")
             ID id,
             @NotNull
+            @Validated(CRUD.U.class)
             @RequestBody
             Q<Dict> req)
     {
@@ -265,6 +270,7 @@ public abstract class BaseCrudController<
     @PatchMapping("batch")
     public void patch(
             @NotNull
+            @Validated(CRUD.U.class)
             @Parameter(description = "batch patch data", required = true)
             @RequestBody
             Q<Collection<Map<String, Object>>> req)
@@ -289,6 +295,7 @@ public abstract class BaseCrudController<
     @DeleteMapping("ids")
     public void delete(
             @NotNull
+            @Validated(CRUD.D.class)
             @Parameter(description = "request ids", required = true, example = "1,2,3")
             @RequestBody
             Q<Set<ID>> req)

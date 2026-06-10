@@ -40,7 +40,15 @@ public class Q<DATA>
      */
     @Schema(description = "request data")
     @Valid
-    @NotNull(groups = CRUD.R.class, message = "{Q.data}")
+    @NotNull(
+            groups = {
+                    Default.class,
+                    CRUD.C.class,
+                    CRUD.R.class,
+                    CRUD.U.class,
+                    CRUD.D.class
+            },
+            message = "{Q.data}")
     DATA data;
 
     /**
