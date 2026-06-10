@@ -44,8 +44,8 @@ public class BeanSearcherEnvironmentPostProcessor implements EnvironmentPostProc
         Map<String, Object> defaults = new LinkedHashMap<>();
         defaults.put("bean-searcher.params.pagination.default-size", 10);
         defaults.put("bean-searcher.params.pagination.start",        0);
-        defaults.put("bean-searcher.field-convertor.zone-id",        "GMT+8");
-        defaults.put("bean-searcher.params.convertor.zone-id",       "GMT+8");
+        defaults.put("bean-searcher.field-converter.zone-id",        "GMT+8");
+        defaults.put("bean-searcher.params.converter.zone-id",       "GMT+8");
         return Collections.unmodifiableMap(defaults);
     }
 }

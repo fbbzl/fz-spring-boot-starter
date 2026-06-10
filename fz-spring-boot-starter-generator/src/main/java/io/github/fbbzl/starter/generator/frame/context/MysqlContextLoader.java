@@ -94,10 +94,10 @@ public class MysqlContextLoader
             fieldInfo.setExample(getExampleValue(dataType));
             fieldInfo.setIsNullable(isNullable);
 
-            // validate charactor length
+            // validate character length
             Object maxLengthObj = column.get("character_maximum_length");
             if (maxLengthObj != null) {
-                Integer maxLength = ((Long) maxLengthObj).intValue();
+                Integer maxLength = ((Number) maxLengthObj).intValue();
                 fieldInfo.setMaxLength(maxLength);
                 fieldInfo.setLengthValidation(true);
                 if ("NO".equals(isNullable)) {

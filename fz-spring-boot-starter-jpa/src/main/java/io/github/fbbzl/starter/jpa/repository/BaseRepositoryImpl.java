@@ -97,12 +97,14 @@ public class BaseRepositoryImpl<ENTITY extends BaseTableEntity<ID>, ID extends S
         Throws.ifNull(entity, "entity can not be null when doing update");
         Throws.ifNull(entity.getId(), "id can not be null when doing update");
 
-        super.findById(entity.getId()).ifPresent(byId -> {
-            BeanUtil.copyProperties(entity, byId, CopyOptions.create().setIgnoreNullValue(true).setIgnoreError(true));
-            super.saveAndFlush(byId);
-        });
+        ENTITY merged = super.findById(entity.getId())
+                .map(byId -> {
+                    BeanUtil.copyProperties(entity, byId, CopyOptions.create().setIgnoreNullValue(true).setIgnoreError(true));
+                    return super.saveAndFlush(byId);
+                })
+                .orElse(null);
 
-        return entity;
+        return merged != null ? merged : entity;
     }
 
     @Transactional
@@ -146,16 +148,17 @@ public class BaseRepositoryImpl<ENTITY extends BaseTableEntity<ID>, ID extends S
 
     @ReadOnly
     @Override
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings({"unchecked", "rawtypes"})
     public List<ID> ids(@Nullable ENTITY entity, @Nullable Integer limit)
     {
         Throws.ifNull(limit, "limit can not be null when doing ids-query");
         if (entity == null) return emptyList();
 
-        CriteriaBuilder      cb   = entityManager.getCriteriaBuilder();
-        CriteriaQuery<Object> cq   = cb.createQuery();
-        Root<ENTITY>         root = cq.from(entityClass);
-        cq.select(root.get(BaseJpaEntity.Fields.id));
+        CriteriaBuilder      cb     = entityManager.getCriteriaBuilder();
+        CriteriaQuery<Object> cq    = cb.createQuery();
+        Root<ENTITY>         root   = cq.from(entityClass);
+        Path<ID>             idPath = root.get(BaseJpaEntity.Fields.id);
+        cq.select(idPath);
 
         Predicate predicate = Specifications.byAuto(entityManager, entity).toPredicate(root, cq, cb);
         if (predicate != null) cq.where(predicate);

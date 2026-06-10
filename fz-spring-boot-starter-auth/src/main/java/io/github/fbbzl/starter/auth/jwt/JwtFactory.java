@@ -9,11 +9,11 @@ import cn.hutool.jwt.JWTUtil;
 import cn.hutool.jwt.signers.JWTSigner;
 import cn.hutool.jwt.signers.JWTSignerUtil;
 import io.github.fbbzl.starter.auth.jwt.config.JwtProperties;
+import io.github.fbbzl.starter.core.util.Throws;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.constraints.NotNull;
 import lombok.AccessLevel;
 import lombok.experimental.FieldDefaults;
-import io.github.fbbzl.starter.core.util.Throws;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.lang.Nullable;
 
@@ -40,16 +40,13 @@ public class JwtFactory
     JwtProperties props;
     static volatile JwtFactory self;
 
-    {
-        self = this;
-    }
-
     public JwtFactory(JwtProperties props)
     {
         this.props = props;
+        self = this;
     }
 
-    public JWTSigner getSigner(JwtProperties props)
+    public JWTSigner getSigner()
     {
         return JWTSignerUtil.hs256(props.getSecret().getBytes(StandardCharsets.UTF_8));
     }
@@ -57,13 +54,13 @@ public class JwtFactory
     public static JWT create(@NotNull Object bean)
     {
         JwtFactory factory = self();
-        return create(UUID.randomUUID().toString(), bean, factory.getSigner(factory.props));
+        return create(UUID.randomUUID().toString(), bean, factory.getSigner());
     }
 
     public static JWT create(String subject, @NotNull Object bean)
     {
         JwtFactory factory = self();
-        return create(subject, bean, factory.getSigner(factory.props));
+        return create(subject, bean, factory.getSigner());
     }
 
     public static JWT create(String subject, @NotNull Object bean, JWTSigner signer)
@@ -96,7 +93,7 @@ public class JwtFactory
 
         try {
             JWT       jwt    = JWTUtil.parseToken(token);
-            JWTSigner signer = factory.getSigner(factory.props);
+            JWTSigner signer = factory.getSigner();
             jwt.setSigner(signer);
 
             return verify(jwt, signer) && (!checkExpired || !isExpired(jwt)) ? jwt : null;

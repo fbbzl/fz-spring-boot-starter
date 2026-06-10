@@ -88,7 +88,10 @@ public class DefaultGeneratorInvoker implements GeneratorInvoker, CommandLineRun
         }
 
         for (GeneratorModuleConfig module : modules) {
-            List<String> tableNames = Arrays.asList(module.getTables().split(","));
+            List<String> tableNames = Arrays.stream(module.getTables().split(","))
+                                            .filter(CharSequenceUtil::isNotBlank)
+                                            .map(String::trim)
+                                            .toList();
             if (isEmpty(tableNames)) continue;
 
             for (String tableName : tableNames) {

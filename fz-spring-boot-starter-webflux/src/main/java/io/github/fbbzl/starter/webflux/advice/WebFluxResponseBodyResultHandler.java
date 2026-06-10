@@ -85,7 +85,6 @@ public class WebFluxResponseBodyResultHandler extends ResponseBodyResultHandler
         Object          body       = result.getReturnValue();
 
         if (hasAnnotation(returnType, IgnoreResponseWrap.class)) {
-            operate(body, returnType);
             return result;
         }
 

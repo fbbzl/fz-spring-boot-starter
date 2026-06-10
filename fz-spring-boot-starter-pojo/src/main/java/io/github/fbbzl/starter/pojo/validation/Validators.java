@@ -2,8 +2,12 @@ package io.github.fbbzl.starter.pojo.validation;
 
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.extra.spring.SpringUtil;
-import jakarta.validation.*;
+import jakarta.validation.ConstraintViolation;
+import jakarta.validation.Validation;
+import jakarta.validation.Validator;
+import jakarta.validation.ValidatorFactory;
 import lombok.experimental.UtilityClass;
+import lombok.extern.slf4j.Slf4j;
 
 import java.util.Collection;
 import java.util.HashSet;
@@ -19,6 +23,7 @@ import static java.util.stream.Collectors.joining;
  * @version 1.0
  * @since 2026/1/21 22:56
  */
+@Slf4j
 @UtilityClass
 public final class Validators
 {
@@ -27,6 +32,10 @@ public final class Validators
 
     static {
         VALIDATOR_FACTORY = Validation.buildDefaultValidatorFactory();
+        Runtime.getRuntime().addShutdownHook(new Thread(() -> {
+            try { VALIDATOR_FACTORY.close(); }
+            catch (Exception e) { log.warn("Failed to close ValidatorFactory", e); }
+        }));
         Validator validator;
         try {
             validator = SpringUtil.getBean(Validator.class);

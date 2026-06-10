@@ -139,7 +139,6 @@ public interface BaseMybatisPlusMapper<ENTITY extends BaseTableEntity<ID>, ID ex
     }
 
     @Override
-    @SuppressWarnings("unchecked")
     default List<ID> ids(@Nullable ENTITY entity, @Nullable Integer limit)
     {
         Throws.ifNull(limit, "limit can not be null when doing ids query");
@@ -328,6 +327,7 @@ public interface BaseMybatisPlusMapper<ENTITY extends BaseTableEntity<ID>, ID ex
                 continue;
             }
             if (value instanceof String string && isBlank(string)) continue;
+            if (value instanceof Collection<?> col && isEmpty(col)) continue;
 
             switch (value) {
                 case Enum<?>       enumVal                                       -> wrapper.eq(column,   enumVal);
