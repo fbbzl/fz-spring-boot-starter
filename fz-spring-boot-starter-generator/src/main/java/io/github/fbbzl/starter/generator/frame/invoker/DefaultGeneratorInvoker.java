@@ -4,7 +4,7 @@ import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.io.FileUtil;
 import cn.hutool.core.io.file.FileWriter;
 import cn.hutool.core.text.CharSequenceUtil;
-import io.github.fbbzl.starter.core.util.Throws;
+import org.fz.erwin.exception.Throws;
 import io.github.fbbzl.starter.generator.config.properties.GeneratorConfigProperties;
 import io.github.fbbzl.starter.generator.config.properties.GeneratorModuleConfig;
 import io.github.fbbzl.starter.generator.config.properties.GeneratorModuleConfig.DalPlatform;

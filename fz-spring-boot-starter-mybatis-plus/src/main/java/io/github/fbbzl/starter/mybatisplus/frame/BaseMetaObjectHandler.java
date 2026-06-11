@@ -1,7 +1,7 @@
 package io.github.fbbzl.starter.mybatisplus.frame;
 
 import com.baomidou.mybatisplus.core.handlers.MetaObjectHandler;
-import io.github.fbbzl.starter.core.util.Generics;
+import org.fz.erwin.lang.Generics;
 import io.github.fbbzl.starter.mybatisplus.BaseMybatisPlusEntity;
 import org.apache.ibatis.reflection.MetaObject;
 

@@ -2,7 +2,7 @@ package io.github.fbbzl.starter.generator.frame.context;
 
 import cn.hutool.core.map.MapUtil;
 import cn.hutool.db.DbRuntimeException;
-import io.github.fbbzl.starter.core.util.Throws;
+import org.fz.erwin.exception.Throws;
 import io.github.fbbzl.starter.generator.frame.TypeMapping;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -14,6 +14,8 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+
+import static java.lang.Boolean.TRUE;
 
 /**
  * used to obtain ddl information for database tables
@@ -140,7 +142,7 @@ public class MysqlContextLoader
                 Index index = new Index();
                 index.setName(indexName);
                 index.setColumns(new ArrayList<>());
-                index.setUnique(!nonUnique);
+                index.setUnique(TRUE != nonUnique);
                 return index;
             }).getColumns().add(columnName);
         }

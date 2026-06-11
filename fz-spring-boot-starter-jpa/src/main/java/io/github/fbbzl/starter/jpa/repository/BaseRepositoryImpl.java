@@ -8,7 +8,7 @@ import cn.hutool.db.Page;
 import cn.hutool.db.PageResult;
 import cn.hutool.db.sql.Direction;
 import cn.hutool.db.sql.Order;
-import io.github.fbbzl.starter.core.util.Throws;
+import org.fz.erwin.exception.Throws;
 import io.github.fbbzl.starter.dal.Range;
 import io.github.fbbzl.starter.dal.annotation.ReadOnly;
 import io.github.fbbzl.starter.jpa.BaseJpaEntity;

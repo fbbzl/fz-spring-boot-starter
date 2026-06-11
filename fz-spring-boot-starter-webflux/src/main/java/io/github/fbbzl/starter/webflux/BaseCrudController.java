@@ -3,7 +3,7 @@ package io.github.fbbzl.starter.webflux;
 import cn.hutool.core.lang.Dict;
 import cn.hutool.core.lang.tree.Tree;
 import io.github.fbbzl.starter.audit.frame.annotation.AuditMethod;
-import io.github.fbbzl.starter.core.util.Generics;
+import org.fz.erwin.lang.Generics;
 import io.github.fbbzl.starter.pojo.bo.BaseBo;
 import io.github.fbbzl.starter.pojo.dto.BaseDto;
 import io.github.fbbzl.starter.pojo.dto.BaseDto.Fields;

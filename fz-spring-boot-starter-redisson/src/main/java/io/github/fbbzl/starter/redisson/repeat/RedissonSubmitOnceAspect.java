@@ -3,7 +3,7 @@ package io.github.fbbzl.starter.redisson.repeat;
 import cn.hutool.core.util.ReflectUtil;
 import io.github.fbbzl.starter.core.exception.BizException;
 import io.github.fbbzl.starter.core.exception.ExceptionVerb;
-import io.github.fbbzl.starter.core.util.Throws;
+import org.fz.erwin.exception.Throws;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
