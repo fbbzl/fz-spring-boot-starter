@@ -6,7 +6,6 @@ import com.baomidou.mybatisplus.extension.plugins.inner.BlockAttackInnerIntercep
 import com.baomidou.mybatisplus.extension.plugins.inner.OptimisticLockerInnerInterceptor;
 import com.baomidou.mybatisplus.extension.plugins.inner.PaginationInnerInterceptor;
 import com.baomidou.mybatisplus.extension.toolkit.JdbcUtils;
-import io.github.fbbzl.starter.mybatisplus.frame.BaseMetaObjectHandler;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.context.annotation.Bean;
@@ -26,20 +25,6 @@ public class MybatisPlusConfiguration
 {
 
     @Bean
-    @ConditionalOnMissingBean(BaseMetaObjectHandler.class)
-    public BaseMetaObjectHandler<Long> defaultNoLogin()
-    {
-        return new BaseMetaObjectHandler<>()
-        {
-            @Override
-            public Long getCurrentUserIdentifier()
-            {
-                throw new UnsupportedOperationException("getCurrentUserIdentifier must be implemented");
-            }
-        };
-    }
-
-    @Bean
     @ConditionalOnMissingBean
     public MybatisPlusInterceptor mybatisPlusInterceptor(DataSource dataSource) throws SQLException
     {
@@ -50,7 +35,7 @@ public class MybatisPlusConfiguration
 
             PaginationInnerInterceptor paginationInnerInterceptor = new PaginationInnerInterceptor(dbType);
             paginationInnerInterceptor.setOverflow(true);
-            paginationInnerInterceptor.setMaxLimit(1000L);
+            paginationInnerInterceptor.setMaxLimit(5000L);
 
             interceptor.addInnerInterceptor(new OptimisticLockerInnerInterceptor());
             interceptor.addInnerInterceptor(new BlockAttackInnerInterceptor());

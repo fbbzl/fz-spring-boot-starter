@@ -2,10 +2,10 @@ package io.github.fbbzl.starter.generator.frame.context;
 
 import cn.hutool.core.map.MapUtil;
 import cn.hutool.db.DbRuntimeException;
+import org.fz.erwin.exception.Throws;
+import io.github.fbbzl.starter.generator.frame.TypeMapping;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import io.github.fbbzl.starter.core.util.Throws;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.jdbc.core.JdbcTemplate;
 
 import javax.sql.DataSource;
@@ -14,6 +14,8 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+
+import static java.lang.Boolean.TRUE;
 
 /**
  * used to obtain ddl information for database tables
@@ -28,32 +30,10 @@ import java.util.Map;
 public class MysqlContextLoader
 {
 
-    static Map<String, String> typeMapping = Map.ofEntries(
-            Map.entry("bigint", "Long"),
-            Map.entry("int", "Integer"),
-            Map.entry("integer", "Integer"),
-            Map.entry("varchar", "String"),
-            Map.entry("char", "String"),
-            Map.entry("text", "String"),
-            Map.entry("longtext", "String"),
-            Map.entry("datetime", "LocalDateTime"),
-            Map.entry("timestamp", "LocalDateTime"),
-            Map.entry("date", "LocalDate"),
-            Map.entry("decimal", "BigDecimal"),
-            Map.entry("numeric", "BigDecimal"),
-            Map.entry("tinyint", "Boolean"),
-            Map.entry("float", "Float"),
-            Map.entry("double", "Double"),
-            Map.entry("real", "Double"),
-            Map.entry("json", "String"),
-            Map.entry("boolean", "Boolean"));
+    final TypeMapping     typeMapping;
+    final JdbcTemplate    jdbcTemplate;
 
-    final JdbcTemplate jdbcTemplate;
-
-    @Value("${code.generator.schema:}")
-    private String schema;
-
-    public Table getTableContext(String tableName)
+    public Table getTableContext(String tableName, String schema)
     {
         String tableSql = """
                 SELECT table_name, table_comment
@@ -111,15 +91,15 @@ public class MysqlContextLoader
                     isNullable = MapUtil.getStr(column, "is_nullable");
 
             fieldInfo.setName(columnName);
-            fieldInfo.setJavaType(typeMapping.getOrDefault(dataType.toLowerCase(), "String"));
+            fieldInfo.setJavaType(typeMapping.typeMapping().getOrDefault(dataType.toLowerCase(), "String"));
             fieldInfo.setComment(columnComment != null ? columnComment : columnName);
             fieldInfo.setExample(getExampleValue(dataType));
             fieldInfo.setIsNullable(isNullable);
 
-            // validate charactor length
+            // validate character length
             Object maxLengthObj = column.get("character_maximum_length");
             if (maxLengthObj != null) {
-                Integer maxLength = ((Long) maxLengthObj).intValue();
+                Integer maxLength = ((Number) maxLengthObj).intValue();
                 fieldInfo.setMaxLength(maxLength);
                 fieldInfo.setLengthValidation(true);
                 if ("NO".equals(isNullable)) {
@@ -162,7 +142,7 @@ public class MysqlContextLoader
                 Index index = new Index();
                 index.setName(indexName);
                 index.setColumns(new ArrayList<>());
-                index.setUnique(!nonUnique);
+                index.setUnique(TRUE != nonUnique);
                 return index;
             }).getColumns().add(columnName);
         }

@@ -27,7 +27,7 @@ public class ServiceGenerator extends BaseGenerator
     }
 
     @Override
-    public Template getTemplate() throws Exception
+    public Template getTemplate(Map<String, Object> ftlContext) throws Exception
     {
         return configuration.getTemplate("service.ftl");
     }

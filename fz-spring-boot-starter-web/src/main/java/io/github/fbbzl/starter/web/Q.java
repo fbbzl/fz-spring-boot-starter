@@ -6,10 +6,12 @@ import cn.hutool.db.Page;
 import cn.hutool.db.sql.Order;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.github.fbbzl.starter.dal.Range;
+import io.github.fbbzl.starter.pojo.validation.group.CRUD;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
+import jakarta.validation.groups.Default;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 import org.springframework.web.multipart.MultipartFile;
@@ -38,7 +40,15 @@ public class Q<DATA>
      */
     @Schema(description = "request data")
     @Valid
-    @NotNull(message = "{Q.data}")
+    @NotNull(
+            groups = {
+                    Default.class,
+                    CRUD.C.class,
+                    CRUD.R.class,
+                    CRUD.U.class,
+                    CRUD.D.class
+            },
+            message = "{Q.data}")
     DATA data;
 
     /**

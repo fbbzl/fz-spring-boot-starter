@@ -67,7 +67,7 @@ public class WebFluxResponseBodyResultHandler extends ResponseBodyResultHandler
     {
         return super.supports(result)
                && isApplicationController(result.getReturnTypeSource().getContainingClass())
-               && !HttpEntity.class.isAssignableFrom(result.getReturnType().toClass())
+               && !isHttpEntity(result)
                && !isReactiveVoid(result);
     }
 
@@ -85,7 +85,6 @@ public class WebFluxResponseBodyResultHandler extends ResponseBodyResultHandler
         Object          body       = result.getReturnValue();
 
         if (hasAnnotation(returnType, IgnoreResponseWrap.class)) {
-            operate(body, returnType);
             return result;
         }
 
@@ -95,9 +94,8 @@ public class WebFluxResponseBodyResultHandler extends ResponseBodyResultHandler
             wrappedBody = mono.map(value -> wrap(value, returnType));
             wrappedType = monoResponseType;
         }
-        else if (body instanceof Flux<?> flux) {
-            wrappedBody = flux.collectList().map(value -> wrap(value, returnType));
-            wrappedType = monoResponseType;
+        else if (body instanceof Flux<?>) {
+            return result;
         }
         else {
             wrappedBody = wrap(body, returnType);
@@ -119,16 +117,6 @@ public class WebFluxResponseBodyResultHandler extends ResponseBodyResultHandler
         return body instanceof R<?> response ? response : R.ok(body);
     }
 
-    private void operate(@Nullable Object body, MethodParameter returnType)
-    {
-        if (body == null || hasAnnotation(returnType, IgnoreResponseOperate.class)) {
-            return;
-        }
-        if (body instanceof R<?> response && response.getData() != null) {
-            operate(response.getData());
-        }
-    }
-
     private void operate(Object data)
     {
         Object operateData = data instanceof R.PR<?> page ? page.records() : data;
@@ -140,6 +128,19 @@ public class WebFluxResponseBodyResultHandler extends ResponseBodyResultHandler
         Class<?> containingClass = returnType.getContainingClass();
         return returnType.hasMethodAnnotation(annotationType)
                || AnnotatedElementUtils.hasAnnotation(containingClass, annotationType);
+    }
+
+    private boolean isHttpEntity(HandlerResult result)
+    {
+        ResolvableType returnType = result.getReturnType();
+        if (HttpEntity.class.isAssignableFrom(returnType.toClass())) {
+            return true;
+        }
+        if (!Mono.class.isAssignableFrom(returnType.toClass())) {
+            return false;
+        }
+
+        return HttpEntity.class.isAssignableFrom(returnType.getGeneric(0).toClass());
     }
 
     private boolean isReactiveVoid(HandlerResult result)

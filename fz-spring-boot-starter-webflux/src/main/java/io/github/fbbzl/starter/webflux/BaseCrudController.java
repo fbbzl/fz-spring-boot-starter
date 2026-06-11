@@ -3,7 +3,7 @@ package io.github.fbbzl.starter.webflux;
 import cn.hutool.core.lang.Dict;
 import cn.hutool.core.lang.tree.Tree;
 import io.github.fbbzl.starter.audit.frame.annotation.AuditMethod;
-import io.github.fbbzl.starter.core.util.Generics;
+import org.fz.erwin.lang.Generics;
 import io.github.fbbzl.starter.pojo.bo.BaseBo;
 import io.github.fbbzl.starter.pojo.dto.BaseDto;
 import io.github.fbbzl.starter.pojo.dto.BaseDto.Fields;
@@ -69,6 +69,7 @@ public abstract class BaseCrudController<
     @PostMapping("ids")
     public List<BO> byIds(
             @NotNull
+            @Validated(CRUD.R.class)
             @Parameter(description = "request contains ids", required = true, example = "1,2,3")
             @RequestBody
             Q<Set<ID>> req)
@@ -178,7 +179,6 @@ public abstract class BaseCrudController<
         if (limit != null) return service.ids(req.getData(), limit);
         else               return service.ids(req.getData());
     }
-
     @Operation(description = "[BASE] Compare current data with incoming data, return field differences", summary = "[BASE] Diff by primary key")
     @PostMapping("diff/{id}")
     public List<Map<String, Object>> diff(
@@ -187,6 +187,7 @@ public abstract class BaseCrudController<
             @Parameter(name = "id", description = "the primary key of the record to diff", required = true, example = "1")
             ID id,
             @NotNull
+            @Validated(CRUD.R.class)
             @Parameter(description = "diff request data", required = true)
             @RequestBody
             Q<DTO> req)
@@ -212,6 +213,7 @@ public abstract class BaseCrudController<
     @PostMapping("batch")
     public void createBatch(
             @NotNull
+            @Validated(CRUD.C.class)
             @Parameter(description = "creating batch data", required = true)
             @RequestBody
             Q<Collection<DTO>> req)
@@ -237,6 +239,7 @@ public abstract class BaseCrudController<
     @PutMapping("batch")
     public void updateBatch(
             @NotNull
+            @Validated(CRUD.U.class)
             @Parameter(name = "req", description = "batch updating data", required = true)
             @RequestBody
             Q<Collection<DTO>> req)
@@ -253,24 +256,13 @@ public abstract class BaseCrudController<
             @Parameter(name = "id", description = "The primary key of the record that needs to be update", required = true, example = "1")
             ID id,
             @NotNull
+            @Validated(CRUD.U.class)
             @RequestBody
             Q<Dict> req)
     {
         Map<String, Object> data = req.getData();
         data.put(Fields.id, id);
         return service.patch(data);
-    }
-
-    @AuditMethod(saveParam = false, saveResult = false)
-    @Operation(description = "[BASE] Batch patch update without null fields", summary = "[BASE] Do batch patch update ignore null field value")
-    @PatchMapping("batch")
-    public void patch(
-            @NotNull
-            @Parameter(description = "batch patch data", required = true)
-            @RequestBody
-            Q<Collection<Map<String, Object>>> req)
-    {
-        service.patch(req.getData());
     }
 
     @AuditMethod
@@ -290,6 +282,7 @@ public abstract class BaseCrudController<
     @DeleteMapping("ids")
     public void delete(
             @NotNull
+            @Validated(CRUD.D.class)
             @Parameter(description = "request ids", required = true, example = "1,2,3")
             @RequestBody
             Q<Set<ID>> req)

@@ -8,6 +8,7 @@ import lombok.Data;
 import lombok.experimental.FieldDefaults;
 import lombok.experimental.FieldNameConstants;
 
+import java.io.Serializable;
 import java.time.LocalDateTime;
 
 import static cn.hutool.core.date.DatePattern.NORM_DATETIME_PATTERN;
@@ -21,7 +22,7 @@ import static cn.hutool.core.date.DatePattern.NORM_DATETIME_PATTERN;
 @Data
 @FieldNameConstants
 @FieldDefaults(level = AccessLevel.PROTECTED)
-public abstract class BaseDto<ID> implements Prepare
+public abstract class BaseDto<ID> implements Prepare, Serializable
 {
 
     @NotNull(groups = CRUD.U.class, message = "id can not be null when doing update")

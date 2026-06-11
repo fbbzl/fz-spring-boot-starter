@@ -16,7 +16,7 @@ import com.baomidou.mybatisplus.core.toolkit.LambdaUtils;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.core.toolkit.support.ColumnCache;
 import com.baomidou.mybatisplus.extension.handlers.AbstractJsonTypeHandler;
-import io.github.fbbzl.starter.core.util.Throws;
+import org.fz.erwin.exception.Throws;
 import io.github.fbbzl.starter.dal.BaseDal;
 import io.github.fbbzl.starter.dal.Range;
 import io.github.fbbzl.starter.pojo.entity.BaseTableEntity;
@@ -56,6 +56,8 @@ public interface BaseMybatisPlusMapper<ENTITY extends BaseTableEntity<ID>, ID ex
     @Override
     default ENTITY create(@Nullable ENTITY entity)
     {
+        if (entity == null) return null;
+
         this.insert(entity);
         return entity;
     }
@@ -72,6 +74,8 @@ public interface BaseMybatisPlusMapper<ENTITY extends BaseTableEntity<ID>, ID ex
     @Override
     default void delete(@Nullable ID id)
     {
+        if (id == null) return;
+
         this.deleteById(id);
     }
 
@@ -96,6 +100,8 @@ public interface BaseMybatisPlusMapper<ENTITY extends BaseTableEntity<ID>, ID ex
     @Override
     default void update(@Nullable Iterable<ENTITY> entities)
     {
+        if(isEmpty(entities)) return;
+
         this.updateById(IterUtil.toList(entities), DEFAULT_BATCH_SIZE);
     }
 
@@ -103,12 +109,16 @@ public interface BaseMybatisPlusMapper<ENTITY extends BaseTableEntity<ID>, ID ex
     @Override
     default ENTITY byId(@Nullable ID id)
     {
+        if (id == null) return null;
+
         return this.selectById(id);
     }
 
     @Override
     default List<ENTITY> byIds(@Nullable Collection<ID> ids)
     {
+        if (isEmpty(ids)) return emptyList();
+
         return this.selectByIds(ids);
     }
 
@@ -129,7 +139,6 @@ public interface BaseMybatisPlusMapper<ENTITY extends BaseTableEntity<ID>, ID ex
     }
 
     @Override
-    @SuppressWarnings("unchecked")
     default List<ID> ids(@Nullable ENTITY entity, @Nullable Integer limit)
     {
         Throws.ifNull(limit, "limit can not be null when doing ids query");
@@ -173,7 +182,7 @@ public interface BaseMybatisPlusMapper<ENTITY extends BaseTableEntity<ID>, ID ex
     {
         if (ArrayUtil.isEmpty(ids)) return;
 
-        this.selectList(new UpdateWrapper<ENTITY>().in(BaseMybatisPlusEntity.Fields.id, ids).last(FOR_UPDATE));
+        this.selectList(new QueryWrapper<ENTITY>().in(BaseMybatisPlusEntity.Fields.id, ids).last(FOR_UPDATE));
     }
 
     @Override
@@ -318,9 +327,10 @@ public interface BaseMybatisPlusMapper<ENTITY extends BaseTableEntity<ID>, ID ex
                 continue;
             }
             if (value instanceof String string && isBlank(string)) continue;
+            if (value instanceof Collection<?> col && isEmpty(col)) continue;
 
             switch (value) {
-                case Enum<?>       enumVal                                       -> wrapper.eq(column,   enumVal.ordinal());
+                case Enum<?>       enumVal                                       -> wrapper.eq(column,   enumVal);
                 case Number        number                                        -> wrapper.eq(column,   number);
                 case LocalDateTime localDateTime                                 -> wrapper.eq(column,   localDateTime);
                 case Date          date                                          -> wrapper.eq(column,   date);

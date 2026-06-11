@@ -733,7 +733,7 @@ public class QOperationCustomizer implements GlobalOperationCustomizer, GlobalOp
     private Schema<?> errorResponseSchema()
     {
         Schema<?> schema = new Schema<>().type(TYPE_OBJECT).description("generic response");
-        schema.addProperty("code", new Schema<>().type(TYPE_STRING).description("responce code"));
+        schema.addProperty("code", new Schema<>().type(TYPE_STRING).description("response code"));
         schema.addProperty("success", new Schema<>().type(TYPE_BOOLEAN).description("if is success, true:success, false:fail"));
         schema.addProperty("message", new Schema<>().type(TYPE_STRING).description("response message"));
         schema.addProperty("data", new Schema<>().nullable(true).description("response data"));

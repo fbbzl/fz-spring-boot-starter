@@ -8,14 +8,15 @@ import cn.hutool.db.Page;
 import cn.hutool.db.PageResult;
 import cn.hutool.db.sql.Direction;
 import cn.hutool.db.sql.Order;
+import org.fz.erwin.exception.Throws;
 import io.github.fbbzl.starter.dal.Range;
+import io.github.fbbzl.starter.dal.annotation.ReadOnly;
 import io.github.fbbzl.starter.jpa.BaseJpaEntity;
 import io.github.fbbzl.starter.jpa.Specifications;
 import io.github.fbbzl.starter.pojo.entity.BaseTableEntity;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.LockModeType;
 import jakarta.persistence.criteria.*;
-import io.github.fbbzl.starter.core.util.Throws;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
@@ -24,11 +25,15 @@ import org.springframework.lang.Nullable;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.io.Serializable;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import java.util.Optional;
 import java.util.function.Consumer;
 import java.util.stream.Stream;
 
-import static cn.hutool.core.collection.CollUtil.*;
+import static cn.hutool.core.collection.CollUtil.isEmpty;
+import static cn.hutool.core.collection.CollUtil.isNotEmpty;
 import static java.util.Collections.emptyList;
 
 /**
@@ -57,6 +62,7 @@ public class BaseRepositoryImpl<ENTITY extends BaseTableEntity<ID>, ID extends S
     @Override
     public ENTITY create(@Nullable ENTITY entity)
     {
+        if (entity == null) return null;
         return super.saveAndFlush(entity);
     }
 
@@ -91,12 +97,14 @@ public class BaseRepositoryImpl<ENTITY extends BaseTableEntity<ID>, ID extends S
         Throws.ifNull(entity, "entity can not be null when doing update");
         Throws.ifNull(entity.getId(), "id can not be null when doing update");
 
-        this.findById(entity.getId()).ifPresent(byId -> {
-            BeanUtil.copyProperties(entity, byId, CopyOptions.create().setIgnoreNullValue(true).setIgnoreError(true));
-            this.saveAndFlush(byId);
-        });
+        ENTITY merged = super.findById(entity.getId())
+                .map(byId -> {
+                    BeanUtil.copyProperties(entity, byId, CopyOptions.create().setIgnoreNullValue(true).setIgnoreError(true));
+                    return super.saveAndFlush(byId);
+                })
+                .orElse(null);
 
-        return entity;
+        return merged != null ? merged : entity;
     }
 
     @Transactional
@@ -111,7 +119,7 @@ public class BaseRepositoryImpl<ENTITY extends BaseTableEntity<ID>, ID extends S
     @Override
     public ENTITY byId(@Nullable ID id)
     {
-        if (id != null) return this.findById(id).orElse(null);
+        if (id != null) return super.findById(id).orElse(null);
         else return null;
     }
 
@@ -119,7 +127,7 @@ public class BaseRepositoryImpl<ENTITY extends BaseTableEntity<ID>, ID extends S
     public List<ENTITY> byIds(@Nullable Collection<ID> ids)
     {
         if (isEmpty(ids)) return emptyList();
-        else              return this.findAllById(ids);
+        else              return super.findAllById(ids);
     }
 
     @Override
@@ -138,17 +146,19 @@ public class BaseRepositoryImpl<ENTITY extends BaseTableEntity<ID>, ID extends S
         return findAll(Specifications.byAuto(entityManager, entity, ranges), pageRequest).getContent();
     }
 
+    @ReadOnly
     @Override
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings({"unchecked", "rawtypes"})
     public List<ID> ids(@Nullable ENTITY entity, @Nullable Integer limit)
     {
         Throws.ifNull(limit, "limit can not be null when doing ids-query");
         if (entity == null) return emptyList();
 
-        CriteriaBuilder      cb   = entityManager.getCriteriaBuilder();
-        CriteriaQuery<Object> cq   = cb.createQuery();
-        Root<ENTITY>         root = cq.from(entityClass);
-        cq.select(root.get(BaseJpaEntity.Fields.id));
+        CriteriaBuilder      cb     = entityManager.getCriteriaBuilder();
+        CriteriaQuery<Object> cq    = cb.createQuery();
+        Root<ENTITY>         root   = cq.from(entityClass);
+        Path<ID>             idPath = root.get(BaseJpaEntity.Fields.id);
+        cq.select(idPath);
 
         Predicate predicate = Specifications.byAuto(entityManager, entity).toPredicate(root, cq, cb);
         if (predicate != null) cq.where(predicate);
@@ -172,7 +182,7 @@ public class BaseRepositoryImpl<ENTITY extends BaseTableEntity<ID>, ID extends S
     public long count(@Nullable ENTITY entity)
     {
         if (entity == null) return 0L;
-        return this.count(Specifications.byAuto(entityManager, entity, false));
+        return super.count(Specifications.byAuto(entityManager, entity, false));
     }
 
     @Override
@@ -180,12 +190,14 @@ public class BaseRepositoryImpl<ENTITY extends BaseTableEntity<ID>, ID extends S
     {
         if (entity == null) return false;
 
-        return this.count(Specifications.byAuto(entityManager, entity, false)) > 0;
+        return super.count(Specifications.byAuto(entityManager, entity, false)) > 0;
     }
 
     @Override
     public boolean exists(@Nullable ID id)
     {
+        if (id == null) return false;
+
         return super.existsById(id);
     }
 
@@ -211,13 +223,25 @@ public class BaseRepositoryImpl<ENTITY extends BaseTableEntity<ID>, ID extends S
     {
         if (entity == null) return;
 
-        this.findAll(Specifications.byAuto(entityManager, entity), Sort.unsorted())
-            .forEach(e -> entityManager.lock(e, LockModeType.PESSIMISTIC_WRITE));
+        CriteriaBuilder       cb   = entityManager.getCriteriaBuilder();
+        CriteriaQuery<ENTITY> cq   = cb.createQuery(entityClass);
+        Root<ENTITY>          root = cq.from(entityClass);
+
+        Predicate predicate = Specifications.byAuto(entityManager, entity)
+                .toPredicate(root, cq, cb);
+        if (predicate != null) cq.where(predicate);
+
+        entityManager.createQuery(cq)
+                .setLockMode(LockModeType.PESSIMISTIC_WRITE)
+                .getResultList();
     }
 
+    @Transactional
     @Override
     public void increment(String fieldName, int delta, @Nullable List<ID> ids)
     {
+        if (ArrayUtil.isEmpty(ids)) return;
+
         CriteriaBuilder        cb     = entityManager.getCriteriaBuilder();
         CriteriaUpdate<ENTITY> update = cb.createCriteriaUpdate(entityClass);
         Root<ENTITY>           root   = update.from(entityClass);
@@ -233,9 +257,12 @@ public class BaseRepositoryImpl<ENTITY extends BaseTableEntity<ID>, ID extends S
         entityManager.createQuery(update).executeUpdate();
     }
 
+    @Transactional
     @Override
     public void decrement(String fieldName, int delta, @Nullable List<ID> ids)
     {
+        if (ArrayUtil.isEmpty(ids)) return;
+
         CriteriaBuilder        cb     = entityManager.getCriteriaBuilder();
         CriteriaUpdate<ENTITY> update = cb.createCriteriaUpdate(entityClass);
         Root<ENTITY>           root   = update.from(entityClass);
@@ -260,8 +287,8 @@ public class BaseRepositoryImpl<ENTITY extends BaseTableEntity<ID>, ID extends S
 
         do {
             pageResult = entity == null
-                         ? this.findAll(pageRequest)
-                         : this.findAll(Specifications.byAuto(entityManager, entity), pageRequest);
+                         ? super.findAll(pageRequest)
+                         : super.findAll(Specifications.byAuto(entityManager, entity), pageRequest);
 
             recordsConsumer.accept(pageResult.getContent());
 

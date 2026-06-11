@@ -34,14 +34,14 @@ import static cn.hutool.core.text.CharSequenceUtil.isBlank;
 public class HP<T> implements IPage<T>
 {
 
-    final Page            page;
-    List<T>               records = Collections.emptyList();
-    long                  total;
-    long                  size;
-    long                  current;
+    final Page page;
+    List<T> records = Collections.emptyList();
+    long    total;
+    long    size;
+    long    current;
     final List<OrderItem> orders;
 
-    public HP(Page page, Class<?> entityClass)
+    HP(Page page, Class<?> entityClass)
     {
         Objects.requireNonNull(entityClass, "entityClass must not be null");
         this.page    = page;

@@ -6,7 +6,7 @@ import io.github.fbbzl.starter.auth.jwt.config.JwtProperties;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.AccessLevel;
 import lombok.experimental.FieldDefaults;
-import org.springframework.beans.factory.annotation.Value;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.lang.Nullable;
 
 import static cn.hutool.core.text.CharSequenceUtil.isBlank;
@@ -24,8 +24,13 @@ import static io.github.fbbzl.starter.auth.jwt.JwtFactory.jwt;
 @FieldDefaults(level = AccessLevel.PROTECTED)
 public abstract class JtiStorage
 {
-    @Value("#{jwtProperties.jti}")
     JwtProperties.JtiStorageProperties jtiStorageProps;
+
+    @Autowired
+    protected final void setJwtProperties(JwtProperties jwtProperties)
+    {
+        this.jtiStorageProps = jwtProperties.getJti();
+    }
 
     @Nullable
     public final JWT check(HttpServletRequest request)

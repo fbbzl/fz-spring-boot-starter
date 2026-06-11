@@ -26,6 +26,9 @@ import org.hibernate.validator.constraints.Length;
 import jakarta.validation.constraints.Pattern;
 import cn.hutool.core.lang.RegexPool;
 </#if>
+<#if extraImports?? && extraImports?size gt 0>
+<#list extraImports as imp>import ${imp};
+</#list></#if>
 
 /**
  *

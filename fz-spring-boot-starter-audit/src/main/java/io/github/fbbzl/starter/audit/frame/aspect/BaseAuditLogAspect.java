@@ -18,7 +18,7 @@ import org.aspectj.lang.JoinPoint;
 import org.aspectj.lang.annotation.AfterReturning;
 import org.aspectj.lang.annotation.AfterThrowing;
 import org.aspectj.lang.annotation.Before;
-import io.github.fbbzl.starter.core.util.Throws;
+import org.fz.erwin.exception.Throws;
 import org.springframework.aop.support.AopUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.NamedThreadLocal;
@@ -90,7 +90,7 @@ public abstract class BaseAuditLogAspect<ID extends Serializable, AUDIT_LOG exte
             save(auditLog);
         }
         catch (Exception exp) {
-            log.error("error occur: {}", exp.getMessage());
+            log.error("error occur", exp);
         }
         finally {
             METHOD_COST_TIME.remove();
@@ -103,7 +103,7 @@ public abstract class BaseAuditLogAspect<ID extends Serializable, AUDIT_LOG exte
 
         AuditModule auditModule = AnnotationUtil.getAnnotation(targetClass, AuditModule.class);
         Throws.ifNull(auditModule, "missing @AuditModule on class [{}]", targetClass.getName());
-        Throws.ifNull(auditModule.value(), "@AuditModule value can not be blank on class [{}]", targetClass.getName());
+        Throws.ifBlank(auditModule.value(), "@AuditModule value can not be blank on class [{}]", targetClass.getName());
 
         return auditModule.value();
     }
@@ -115,7 +115,11 @@ public abstract class BaseAuditLogAspect<ID extends Serializable, AUDIT_LOG exte
             return;
         }
 
-        Futures.runAsync(() -> auditDal.create(audit));
+        Futures.runAsync(() -> auditDal.create(audit))
+                .exceptionally(ex -> {
+                    log.error("audit log save failed", ex);
+                    return null;
+                });
     }
 
 }

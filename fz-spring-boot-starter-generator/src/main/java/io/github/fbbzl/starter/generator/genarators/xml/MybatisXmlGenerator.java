@@ -1,7 +1,7 @@
 package io.github.fbbzl.starter.generator.genarators.xml;
 
 import freemarker.template.Template;
-import io.github.fbbzl.starter.generator.config.properties.GeneratorConfigProperties.DalPlatform;
+import io.github.fbbzl.starter.generator.config.properties.GeneratorModuleConfig.DalPlatform;
 import io.github.fbbzl.starter.generator.frame.BaseGenerator;
 import lombok.extern.slf4j.Slf4j;
 
@@ -20,7 +20,7 @@ public class MybatisXmlGenerator extends BaseGenerator
     @Override
     public Path getFilePath(Map<String, Object> ftlContext) throws Exception
     {
-        DalPlatform platformType = genCfg.getPlatformType();
+        DalPlatform platformType = (DalPlatform) ftlContext.get("platformType");
 
         if (platformType == DalPlatform.MYBATIS_PLUS) {
             String xmlPackage = ftlContext.get("moduleName") + ".dal";
@@ -31,7 +31,7 @@ public class MybatisXmlGenerator extends BaseGenerator
     }
 
     @Override
-    public Template getTemplate() throws Exception
+    public Template getTemplate(Map<String, Object> ftlContext) throws Exception
     {
         return configuration.getTemplate("mybatisplus_xml.ftl");
     }

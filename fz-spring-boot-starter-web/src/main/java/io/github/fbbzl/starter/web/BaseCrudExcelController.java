@@ -1,8 +1,8 @@
 package io.github.fbbzl.starter.web;
 
 import io.github.fbbzl.starter.audit.frame.annotation.AuditMethod;
-import io.github.fbbzl.starter.core.util.Generics;
-import io.github.fbbzl.starter.core.util.Throws;
+import org.fz.erwin.lang.Generics;
+import org.fz.erwin.exception.Throws;
 import io.github.fbbzl.starter.excel.BaseEo;
 import io.github.fbbzl.starter.excel.ExcelDto;
 import io.github.fbbzl.starter.pojo.bo.BaseBo;

@@ -1,7 +1,7 @@
 package io.github.fbbzl.starter.core.annotation;
 
 import lombok.NonNull;
-import io.github.fbbzl.starter.core.util.Throws;
+import org.fz.erwin.exception.Throws;
 import org.springframework.boot.env.YamlPropertySourceLoader;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.core.annotation.AliasFor;

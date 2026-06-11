@@ -3,6 +3,7 @@ package io.github.fbbzl.starter.pojo.tree;
 import java.io.Serializable;
 
 import static cn.hutool.core.text.CharSequenceUtil.splitToArray;
+import static org.apache.commons.lang3.ArrayUtils.EMPTY_STRING_ARRAY;
 
 /**
  * @author fengbinbin
@@ -28,6 +29,7 @@ public interface Treeable<ID extends Serializable>
 
     default String[] getAncestorArray()
     {
-        return splitToArray(getAncestors(), getAncestorSplitter());
+        String ancestors = getAncestors();
+        return ancestors != null ? splitToArray(ancestors, getAncestorSplitter()) : EMPTY_STRING_ARRAY;
     }
 }

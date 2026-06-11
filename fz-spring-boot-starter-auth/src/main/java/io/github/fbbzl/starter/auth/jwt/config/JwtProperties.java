@@ -3,7 +3,6 @@ package io.github.fbbzl.starter.auth.jwt.config;
 import lombok.Data;
 import lombok.experimental.FieldDefaults;
 import org.springframework.boot.context.properties.ConfigurationProperties;
-import org.springframework.lang.Nullable;
 
 import java.time.Duration;
 
@@ -36,7 +35,6 @@ public class JwtProperties
         String   key = "APPLICATION:JTI:{}";
         Duration ttl = Duration.ofHours(2);
 
-        @Nullable
         public String formatKey(String jti)
         {
             if (isBlank(jti))

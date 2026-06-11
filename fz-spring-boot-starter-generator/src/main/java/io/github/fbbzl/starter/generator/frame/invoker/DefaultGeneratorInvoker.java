@@ -4,9 +4,12 @@ import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.io.FileUtil;
 import cn.hutool.core.io.file.FileWriter;
 import cn.hutool.core.text.CharSequenceUtil;
+import org.fz.erwin.exception.Throws;
 import io.github.fbbzl.starter.generator.config.properties.GeneratorConfigProperties;
-import io.github.fbbzl.starter.generator.config.properties.GeneratorConfigProperties.DalPlatform;
+import io.github.fbbzl.starter.generator.config.properties.GeneratorModuleConfig;
+import io.github.fbbzl.starter.generator.config.properties.GeneratorModuleConfig.DalPlatform;
 import io.github.fbbzl.starter.generator.frame.BaseGenerator;
+import io.github.fbbzl.starter.generator.frame.TypeMapping;
 import io.github.fbbzl.starter.generator.frame.context.Field;
 import io.github.fbbzl.starter.generator.frame.context.Index;
 import io.github.fbbzl.starter.generator.frame.context.MysqlContextLoader;
@@ -24,7 +27,6 @@ import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
-import io.github.fbbzl.starter.core.util.Throws;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Primary;
 import org.springframework.ui.freemarker.FreeMarkerTemplateUtils;
@@ -33,10 +35,8 @@ import java.io.File;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.LocalDateTime;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+import java.util.stream.Collectors;
 
 import static cn.hutool.core.collection.CollUtil.isEmpty;
 import static cn.hutool.core.date.DatePattern.NORM_DATETIME_FORMATTER;
@@ -56,6 +56,7 @@ import static java.lang.Boolean.TRUE;
 public class DefaultGeneratorInvoker implements GeneratorInvoker, CommandLineRunner {
 
     MysqlContextLoader        ddlContext;
+    TypeMapping               typeMapping;
     GeneratorConfigProperties genCfg;
 
     /**
@@ -80,30 +81,41 @@ public class DefaultGeneratorInvoker implements GeneratorInvoker, CommandLineRun
     public void doGenerate()
     {
         log.info("code generation begins");
-        List<String> tableNames = Arrays.asList(genCfg.getTables().split(","));
-        if (isEmpty(tableNames)) return;
+        List<GeneratorModuleConfig> modules = genCfg.getGenerator();
+        if (modules == null || modules.isEmpty()) {
+            log.warn("no generator module configuration found, skip");
+            return;
+        }
 
-        for (String tableName : tableNames) {
-            try {
-                Table table = ddlContext.getTableContext(tableName.trim());
-                Throws.ifNull(table, "table [{}] not exist", tableName);
+        for (GeneratorModuleConfig module : modules) {
+            List<String> tableNames = Arrays.stream(module.getTables().split(","))
+                                            .filter(CharSequenceUtil::isNotBlank)
+                                            .map(String::trim)
+                                            .toList();
+            if (isEmpty(tableNames)) continue;
 
-                Map<String, Object> ftlContext = this.tableContextToFtlContext(table);
-                for (BaseGenerator generator : generators) {
-                    log.info("generating table: [{}], generator-bean name: [{}] ...", tableName, generator.getGeneratorBeanName());
+            for (String tableName : tableNames) {
+                try {
+                    Table table = ddlContext.getTableContext(tableName.trim(), module.getSchema());
+                    Throws.ifNull(table, "table [{}] not exist", tableName);
 
-                    Path filePath = generator.getFilePath(ftlContext);
-                    if (filePath != null)
-                    {
-                        File   generatingFilePath = Paths.get(genCfg.getOutputPath().toString(), filePath.toString()).toFile();
-                        String generatingContent  = FreeMarkerTemplateUtils.processTemplateIntoString(generator.getTemplate(), ftlContext);
+                    Map<String, Object> ftlContext = this.tableContextToFtlContext(table, module);
+                    for (BaseGenerator generator : generators) {
+                        log.info("generating table: [{}], generator-bean name: [{}] ...", tableName, generator.getGeneratorBeanName());
 
-                        this.writeFile(generatingFilePath, generatingContent);
+                        Path filePath = generator.getFilePath(ftlContext);
+                        if (filePath != null)
+                        {
+                            File   generatingFilePath = Paths.get(module.getOutputPath().toString(), filePath.toString()).toFile();
+                            String generatingContent  = FreeMarkerTemplateUtils.processTemplateIntoString(generator.getTemplate(ftlContext), ftlContext);
+
+                            this.writeFile(generatingFilePath, generatingContent);
+                        }
                     }
                 }
-            }
-            catch (Exception e) {
-                log.error("generating table [{}] failed", tableName, e);
+                catch (Exception e) {
+                    log.error("generating table [{}] failed", tableName, e);
+                }
             }
         }
         log.info("code generation ends");
@@ -112,10 +124,10 @@ public class DefaultGeneratorInvoker implements GeneratorInvoker, CommandLineRun
     /**
      * The database context is converted to the context in which the freemarker is generated, e.g. an underscore to a hump
      */
-    public Map<String, Object> tableContextToFtlContext(Table tableContext) {
-        String              modulePackage = genCfg.getModulePackage();
-        String              tablePrefix   = genCfg.getTablePrefix();
-        String              author        = genCfg.getAuthor();
+    public Map<String, Object> tableContextToFtlContext(Table tableContext, GeneratorModuleConfig module) {
+        String              modulePackage = module.getModulePackage();
+        String              tablePrefix   = module.getTablePrefix();
+        String              author        = module.getAuthor();
         Map<String, Object> ftlContext    = HashMap.newHashMap(32);
         ftlContext.put("package",        modulePackage);
         ftlContext.put("varName",        underscoreToCamelCase(removePrefix(tableContext.getTableName(), tablePrefix)));
@@ -125,10 +137,11 @@ public class DefaultGeneratorInvoker implements GeneratorInvoker, CommandLineRun
         ftlContext.put("tableName",      tableContext.getTableName());
         ftlContext.put("schemaName",     tableContext.getSchemaName());
         ftlContext.put("author",         author);
-        ftlContext.put("primaryKeyType", genCfg.getPrimaryKeyType());
+        ftlContext.put("primaryKeyType", module.getPrimaryKeyType());
         ftlContext.put("date",           NORM_DATETIME_FORMATTER.format(LocalDateTime.now()));
-        ftlContext.put("excel",          genCfg.isExcel());
-        if (genCfg.getPlatformType() == DalPlatform.JPA)
+        ftlContext.put("excel",          module.isExcel());
+        ftlContext.put("platformType",   module.getPlatformType());
+        if (module.getPlatformType() == DalPlatform.JPA)
             ftlContext.put("dalClass", ftlContext.get("className") + "Repository");
         else
             ftlContext.put("dalClass", ftlContext.get("className") + "Mapper");
@@ -137,6 +150,14 @@ public class DefaultGeneratorInvoker implements GeneratorInvoker, CommandLineRun
         ftlContext.put("columns", fields.stream().map(Field::getName).toArray());
         fields.forEach(field -> field.setName(underscoreToCamelCase(field.getName())));
         ftlContext.put("fields", fields);
+
+        Map<String, String> importMap = typeMapping.typeImportMapping();
+        Set<String> extraImports = fields.stream()
+                .map(Field::getJavaType)
+                .filter(importMap::containsKey)
+                .map(importMap::get)
+                .collect(Collectors.toSet());
+        ftlContext.put("extraImports", extraImports);
 
         // get all index information
         List<Index> indexes = tableContext.getIndexes();

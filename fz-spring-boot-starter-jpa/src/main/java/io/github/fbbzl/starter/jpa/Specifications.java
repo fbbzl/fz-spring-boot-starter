@@ -5,6 +5,7 @@ import cn.hutool.db.sql.Condition.LikeType;
 import cn.hutool.db.sql.Direction;
 import cn.hutool.db.sql.Order;
 import cn.hutool.json.JSONUtil;
+import org.fz.erwin.exception.Throws;
 import io.github.fbbzl.starter.dal.Range;
 import io.github.fbbzl.starter.pojo.entity.BaseTableEntity;
 import jakarta.persistence.Column;
@@ -13,21 +14,15 @@ import jakarta.persistence.criteria.*;
 import jakarta.persistence.metamodel.Attribute;
 import jakarta.persistence.metamodel.EntityType;
 import jakarta.persistence.metamodel.SingularAttribute;
-import io.github.fbbzl.starter.core.util.Throws;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.util.ReflectionUtils;
 
 import java.lang.reflect.Field;
+import java.lang.reflect.Method;
 import java.time.LocalDateTime;
-import java.util.Collection;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Stream;
 
 import static cn.hutool.core.text.CharSequenceUtil.isBlank;
@@ -110,7 +105,7 @@ public class Specifications {
                     case String        string when stringLike
                                                     -> predicates.add(cb.like((Path<String>) root.get(attribute(entityType, field)), buildLikeValue(string, LikeType.Contains, false)));
                     case String        string        -> predicates.add(cb.equal(root.get(attribute(entityType, field)), string));
-                    case Enum<?>       enumVal       -> predicates.add(cb.equal(root.get(attribute(entityType, field)), enumVal.ordinal()));
+                    case Enum<?>       enumVal       -> predicates.add(cb.equal(root.get(attribute(entityType, field)), enumVal));
                     case Number        number        -> predicates.add(cb.equal(root.get(attribute(entityType, field)), number));
                     case LocalDateTime localDateTime -> predicates.add(cb.equal(root.get(attribute(entityType, field)), localDateTime));
                     case Date          date          -> predicates.add(cb.equal(root.get(attribute(entityType, field)), date));
@@ -135,15 +130,24 @@ public class Specifications {
 
     private static <ENTITY extends BaseTableEntity> boolean isJsonField(Attribute<? super ENTITY, ?> attr)
     {
-        if (!(attr.getJavaMember() instanceof Field field)) return false;
+        Object member = attr.getJavaMember();
+        if (member instanceof Field field) {
+            JdbcTypeCode jdbcTypeCode = field.getAnnotation(JdbcTypeCode.class);
+            if (jdbcTypeCode != null && jdbcTypeCode.value() == SqlTypes.JSON) return true;
 
-        JdbcTypeCode jdbcTypeCode = field.getAnnotation(JdbcTypeCode.class);
-        if (jdbcTypeCode != null && jdbcTypeCode.value() == SqlTypes.JSON) return true;
+            Column column = field.getAnnotation(Column.class);
+            if (column != null && !isBlank(column.columnDefinition())
+                && column.columnDefinition().toLowerCase(Locale.ROOT).contains("json")) return true;
+        }
+        if (member instanceof Method method) {
+            JdbcTypeCode jdbcTypeCode = method.getAnnotation(JdbcTypeCode.class);
+            if (jdbcTypeCode != null && jdbcTypeCode.value() == SqlTypes.JSON) return true;
 
-        Column column = field.getAnnotation(Column.class);
-        if (column == null || isBlank(column.columnDefinition())) return false;
-
-        return column.columnDefinition().toLowerCase(Locale.ROOT).contains("json");
+            Column column = method.getAnnotation(Column.class);
+            if (column != null && !isBlank(column.columnDefinition())
+                && column.columnDefinition().toLowerCase(Locale.ROOT).contains("json")) return true;
+        }
+        return false;
     }
 
     private static <ENTITY extends BaseTableEntity> void jsonQuery(
@@ -198,7 +202,20 @@ public class Specifications {
 
     private static <ENTITY extends BaseTableEntity> Object getValue(ENTITY sqlQueryObject, Attribute<? super ENTITY, ?> attr)
     {
-        return ReflectionUtils.getField((Field) attr.getJavaMember(), sqlQueryObject);
+        Object member = attr.getJavaMember();
+        if (member instanceof Field field) {
+            ReflectionUtils.makeAccessible(field);
+            return ReflectionUtils.getField(field, sqlQueryObject);
+        }
+        if (member instanceof Method method) {
+            try {
+                method.setAccessible(true);
+                return method.invoke(sqlQueryObject);
+            } catch (ReflectiveOperationException e) {
+                return null;
+            }
+        }
+        return null;
     }
 
     private static <ENTITY, E> SingularAttribute<? super ENTITY, E> attribute(EntityType<ENTITY> entityType, Attribute<?, E> attr)

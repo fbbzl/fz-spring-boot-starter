@@ -8,6 +8,9 @@ import io.github.fbbzl.starter.pojo.bo.BaseBo;
 import lombok.experimental.FieldNameConstants;
 
 import static lombok.AccessLevel.PRIVATE;
+<#if extraImports?? && extraImports?size gt 0>
+<#list extraImports as imp>import ${imp};
+</#list></#if>
 
 /**
  * ${className} business object
