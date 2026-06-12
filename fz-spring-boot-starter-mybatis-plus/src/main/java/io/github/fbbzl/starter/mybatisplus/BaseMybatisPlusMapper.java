@@ -16,18 +16,20 @@ import com.baomidou.mybatisplus.core.toolkit.LambdaUtils;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.core.toolkit.support.ColumnCache;
 import com.baomidou.mybatisplus.extension.handlers.AbstractJsonTypeHandler;
-import org.fz.erwin.exception.Throws;
 import io.github.fbbzl.starter.dal.BaseDal;
 import io.github.fbbzl.starter.dal.Range;
 import io.github.fbbzl.starter.pojo.entity.BaseTableEntity;
 import io.github.fbbzl.starter.pojo.validation.group.CRUD;
 import jakarta.validation.constraints.NotNull;
+import org.apache.ibatis.executor.BatchResult;
+import org.fz.erwin.exception.Throws;
 import org.springframework.core.ResolvableType;
 import org.springframework.lang.Nullable;
 import org.springframework.validation.annotation.Validated;
 
 import java.io.Serializable;
 import java.lang.reflect.Field;
+import java.sql.Statement;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.function.Consumer;
@@ -88,21 +90,45 @@ public interface BaseMybatisPlusMapper<ENTITY extends BaseTableEntity<ID>, ID ex
     }
 
     @Override
-    default ENTITY update(
+    default int update(
             @Validated(CRUD.U.class)
             @NotNull(message = "entity can not be null when doing update")
             ENTITY entity)
     {
-        this.updateById(entity);
-        return entity;
+        return this.updateById(entity);
     }
 
     @Override
-    default void update(@Nullable Iterable<ENTITY> entities)
+    default int update(@Nullable Iterable<ENTITY> entities)
     {
-        if(isEmpty(entities)) return;
+        if (isEmpty(entities)) return 0;
 
-        this.updateById(IterUtil.toList(entities), DEFAULT_BATCH_SIZE);
+        return affectedRows(this.updateById(IterUtil.toList(entities), DEFAULT_BATCH_SIZE));
+    }
+
+    default int affectedRows(@Nullable List<BatchResult> batchResults)
+    {
+        if (isEmpty(batchResults)) return 0;
+
+        int affectedRows = 0;
+        for (BatchResult batchResult : batchResults)
+        {
+            int[] updateCounts = batchResult.getUpdateCounts();
+            if (ArrayUtil.isEmpty(updateCounts)) continue;
+
+            for (int updateCount : updateCounts)
+            {
+                if (updateCount == Statement.SUCCESS_NO_INFO)
+                {
+                    affectedRows++;
+                }
+                else if (updateCount > 0)
+                {
+                    affectedRows += updateCount;
+                }
+            }
+        }
+        return affectedRows;
     }
 
     @Nullable

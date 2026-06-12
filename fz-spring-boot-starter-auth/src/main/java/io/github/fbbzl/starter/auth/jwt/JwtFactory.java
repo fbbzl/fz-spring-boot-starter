@@ -9,12 +9,12 @@ import cn.hutool.jwt.JWTUtil;
 import cn.hutool.jwt.signers.JWTSigner;
 import cn.hutool.jwt.signers.JWTSignerUtil;
 import io.github.fbbzl.starter.auth.jwt.config.JwtProperties;
-import org.fz.erwin.exception.Throws;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.constraints.NotNull;
 import lombok.AccessLevel;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
+import org.fz.erwin.exception.Throws;
 import org.springframework.lang.Nullable;
 
 import java.nio.charset.StandardCharsets;
@@ -48,7 +48,9 @@ public class JwtFactory
 
     public JWTSigner getSigner()
     {
-        return JWTSignerUtil.hs256(props.getSecret().getBytes(StandardCharsets.UTF_8));
+        String secret = props.getSecret();
+        Throws.ifBlank(secret, "jwt secret must be configured");
+        return JWTSignerUtil.hs256(secret.getBytes(StandardCharsets.UTF_8));
     }
 
     public static JWT create(@NotNull Object bean)
@@ -91,15 +93,15 @@ public class JwtFactory
         String     token   = token(request);
         if (isBlank(token)) return null;
 
+        JWTSigner signer = factory.getSigner();
         try {
-            JWT       jwt    = JWTUtil.parseToken(token);
-            JWTSigner signer = factory.getSigner();
+            JWT jwt = JWTUtil.parseToken(token);
             jwt.setSigner(signer);
 
             return verify(jwt, signer) && (!checkExpired || !isExpired(jwt)) ? jwt : null;
         }
         catch (RuntimeException error) {
-            log.error("jwt parse error", error);
+            log.error("jwt parse or verify failed", error);
             return null;
         }
     }

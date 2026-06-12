@@ -13,8 +13,6 @@ import cn.hutool.db.PageResult;
 import cn.hutool.db.sql.Order;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.github.fbbzl.starter.core.exception.ExceptionVerb;
-import org.fz.erwin.lang.Generics;
-import org.fz.erwin.exception.Throws;
 import io.github.fbbzl.starter.dal.BaseDal;
 import io.github.fbbzl.starter.dal.Range;
 import io.github.fbbzl.starter.pojo.bo.BaseBo;
@@ -33,6 +31,8 @@ import lombok.AccessLevel;
 import lombok.Setter;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
+import org.fz.erwin.exception.Throws;
+import org.fz.erwin.lang.Generics;
 import org.springframework.beans.factory.BeanNameAware;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.lang.Nullable;
@@ -43,7 +43,6 @@ import java.io.Serializable;
 import java.util.*;
 import java.util.function.Function;
 
-import jakarta.validation.ConstraintViolation;
 import static cn.hutool.core.collection.CollUtil.isEmpty;
 import static cn.hutool.core.collection.CollUtil.newHashSet;
 import static cn.hutool.core.lang.tree.TreeNodeConfig.DEFAULT_CONFIG;
@@ -402,7 +401,10 @@ public abstract class BaseCrudService<
     {
         dto.prepareUpdate();
         Validators.validateAndThrow(dto, CRUD.U.class);
-        return struct.entityToBo(dal.update(struct.dtoToEntity(dto)));
+        ID id = dto.getId();
+        int affectedRows = dal.update(struct.dtoToEntity(dto));
+        if (affectedRows <= 0) throw ExceptionVerb.RESOURCE_NOT_FOUND.on(entityClass, id).get();
+        return byId(id);
     }
 
     @Transactional
@@ -424,7 +426,10 @@ public abstract class BaseCrudService<
         DTO dto = objectMapper.convertValue(data, dtoClass);
         Throws.ifNull(dto.getId(), "id can not be null when doing update");
         Validators.validateNonNullPropertyAndThrow(dto, CRUD.U.class);
-        return struct.entityToBo(dal.update(struct.dtoToEntity(dto)));
+        ID id = dto.getId();
+        int affectedRows = dal.update(struct.dtoToEntity(dto));
+        if (affectedRows <= 0) throw ExceptionVerb.RESOURCE_NOT_FOUND.on(entityClass, id).get();
+        return byId(id);
     }
 
     @Transactional

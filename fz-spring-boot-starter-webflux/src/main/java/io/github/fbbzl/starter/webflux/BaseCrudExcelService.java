@@ -11,6 +11,7 @@ import io.github.fbbzl.starter.pojo.validation.Validators;
 import io.github.fbbzl.starter.pojo.validation.group.CRUD;
 import jakarta.validation.constraints.Positive;
 import jakarta.validation.constraints.Size;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.validation.annotation.Validated;
 
 import java.io.Serializable;
@@ -50,6 +51,7 @@ public abstract class BaseCrudExcelService<
         else return struct.boToEo(this.list(dto, limit, orders));
     }
 
+    @Transactional
     public void importExcel(
             @Size(max = 1024, message = "the number of collection cannot exceed 1024")
             Collection<EO> eos)

@@ -129,14 +129,14 @@ public class WebExceptionAdvice
     public Object handleHttpRequestMethodNotSupportedException(HttpRequestMethodNotSupportedException exception)
     {
         log.error("http request method not supported exception occurred: {}", defaultIfBlank(getRootCauseMessage(exception), "handle http request method not supported exception"));
-        return badRequest(exception.getMessage());
+        return failed(HttpStatus.METHOD_NOT_ALLOWED, exception.getMessage());
     }
 
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     @ExceptionHandler(DuplicateKeyException.class)
     public Object handleDuplicateKey(DuplicateKeyException ex) {
         log.warn("duplicate key exception occurred", ex);
-        return R.fail("some properties if the data already exists, check the unique fields and try again");
+        return badRequest("some properties if the data already exists, check the unique fields and try again");
     }
 
     @ResponseStatus(HttpStatus.BAD_REQUEST)
@@ -146,10 +146,10 @@ public class WebExceptionAdvice
 
         log.warn("data integrity violation exception occurred", ex);
         if (root instanceof SQLIntegrityConstraintViolationException) {
-            return R.fail("the data does not meet uniqueness or integrity constraints, please check and try again");
+            return badRequest("the data does not meet uniqueness or integrity constraints, please check and try again");
         }
 
-        return R.fail("data is not saved, please check the contents");
+        return badRequest("data is not saved, please check the contents");
     }
 
     /**
@@ -187,7 +187,12 @@ public class WebExceptionAdvice
 
     private static <DATA> R<DATA> badRequest(String message)
     {
-        return R.fail(String.valueOf(HttpStatus.BAD_REQUEST.value()), message, null);
+        return failed(HttpStatus.BAD_REQUEST, message);
+    }
+
+    private static <DATA> R<DATA> failed(HttpStatus httpStatus, String message)
+    {
+        return R.fail(String.valueOf(httpStatus.value()), message, null);
     }
 
     private String erroredMethodMessage(MethodArgumentNotValidException exception)

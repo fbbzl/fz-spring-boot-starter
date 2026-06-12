@@ -8,7 +8,6 @@ import cn.hutool.db.Page;
 import cn.hutool.db.PageResult;
 import cn.hutool.db.sql.Direction;
 import cn.hutool.db.sql.Order;
-import org.fz.erwin.exception.Throws;
 import io.github.fbbzl.starter.dal.Range;
 import io.github.fbbzl.starter.dal.annotation.ReadOnly;
 import io.github.fbbzl.starter.jpa.BaseJpaEntity;
@@ -17,6 +16,7 @@ import io.github.fbbzl.starter.pojo.entity.BaseTableEntity;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.LockModeType;
 import jakarta.persistence.criteria.*;
+import org.fz.erwin.exception.Throws;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
@@ -25,12 +25,10 @@ import org.springframework.lang.Nullable;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 import java.util.function.Consumer;
 import java.util.stream.Stream;
+import java.util.stream.StreamSupport;
 
 import static cn.hutool.core.collection.CollUtil.isEmpty;
 import static cn.hutool.core.collection.CollUtil.isNotEmpty;
@@ -92,27 +90,47 @@ public class BaseRepositoryImpl<ENTITY extends BaseTableEntity<ID>, ID extends S
 
     @Transactional
     @Override
-    public ENTITY update(@Nullable ENTITY entity)
+    public int update(@Nullable ENTITY entity)
     {
         Throws.ifNull(entity, "entity can not be null when doing update");
         Throws.ifNull(entity.getId(), "id can not be null when doing update");
 
-        ENTITY merged = super.findById(entity.getId())
+        return super.findById(entity.getId())
                 .map(byId -> {
                     BeanUtil.copyProperties(entity, byId, CopyOptions.create().setIgnoreNullValue(true).setIgnoreError(true));
-                    return super.saveAndFlush(byId);
+                    super.saveAndFlush(byId);
+                    return 1;
                 })
-                .orElse(null);
-
-        return merged != null ? merged : entity;
+                .orElse(0);
     }
 
     @Transactional
     @Override
-    public void update(@Nullable Iterable<ENTITY> entities)
+    public int update(@Nullable Iterable<ENTITY> entities)
     {
-        if (isEmpty(entities)) return;
-        super.saveAllAndFlush(entities);
+        if (entities == null) return 0;
+
+        List<ENTITY> entityList = StreamSupport.stream(entities.spliterator(), false).toList();
+        if (isEmpty(entityList)) return 0;
+
+        Map<ID, ENTITY> updateEntityMap = new LinkedHashMap<>();
+        for (ENTITY entity : entityList)
+        {
+            Throws.ifNull(entity, "entity can not be null when doing update");
+            Throws.ifNull(entity.getId(), "id can not be null when doing update");
+            updateEntityMap.put(entity.getId(), entity);
+        }
+
+        List<ENTITY> existingEntities = super.findAllById(updateEntityMap.keySet());
+        if (isEmpty(existingEntities)) return 0;
+
+        CopyOptions copyOptions = CopyOptions.create().setIgnoreNullValue(true).setIgnoreError(true);
+        for (ENTITY existingEntity : existingEntities)
+        {
+            BeanUtil.copyProperties(updateEntityMap.get(existingEntity.getId()), existingEntity, copyOptions);
+        }
+        super.saveAllAndFlush(existingEntities);
+        return existingEntities.size();
     }
 
     @Nullable

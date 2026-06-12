@@ -148,7 +148,7 @@ public class WebFluxResponseBodyResultHandler extends ResponseBodyResultHandler
         ResolvableType returnType = result.getReturnType();
         Class<?>       rawType    = returnType.toClass();
         if (Void.TYPE.equals(rawType) || Void.class.equals(rawType)) {
-            return false;
+            return true;
         }
         if (!Mono.class.isAssignableFrom(rawType)) {
             return false;

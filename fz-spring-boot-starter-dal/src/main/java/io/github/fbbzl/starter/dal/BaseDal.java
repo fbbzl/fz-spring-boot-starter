@@ -30,9 +30,9 @@ public interface BaseDal<ENTITY extends BaseTableEntity<ID>, ID extends Serializ
 
     void delete(@Nullable Iterable<ID> ids);
 
-    ENTITY update(@Nullable ENTITY entity);
+    int update(@Nullable ENTITY entity);
 
-    void update(@Nullable Iterable<ENTITY> entities);
+    int update(@Nullable Iterable<ENTITY> entities);
 
     @Nullable
     ENTITY byId(@Nullable ID id);

@@ -24,7 +24,7 @@ public class JwtProperties
     String               prefix  = "Bearer ";
     String               issuer  = "pms";
     Duration             expires = Duration.ofHours(2);
-    String               secret  = "s!d_=55%^h*&*()_+|!@$[]23uy04u5.,><';`~`~!@#$%^&*()_+~||@#%u!!$%p@#g/?;:,.trlu";
+    String               secret;
     JtiStorageProperties jti     = new JtiStorageProperties();
 
     @Data
