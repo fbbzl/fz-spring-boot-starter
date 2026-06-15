@@ -1,12 +1,10 @@
 package io.github.fbbzl.starter.webflux;
 
-import cn.hutool.core.lang.Dict;
+import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.lang.tree.Tree;
 import io.github.fbbzl.starter.audit.frame.annotation.AuditMethod;
-import org.fz.erwin.lang.Generics;
 import io.github.fbbzl.starter.pojo.bo.BaseBo;
 import io.github.fbbzl.starter.pojo.dto.BaseDto;
-import io.github.fbbzl.starter.pojo.dto.BaseDto.Fields;
 import io.github.fbbzl.starter.pojo.entity.BaseTableEntity;
 import io.github.fbbzl.starter.pojo.validation.group.CRUD;
 import io.github.fbbzl.starter.webflux.Q.OQ;
@@ -18,6 +16,7 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
+import org.fz.erwin.lang.Generics;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.lang.Nullable;
 import org.springframework.validation.annotation.Validated;
@@ -224,7 +223,7 @@ public abstract class BaseCrudController<
     @AuditMethod
     @Operation(description = "[BASE] Update without null fields", summary = "[BASE] Do update ignore null field value")
     @PutMapping
-    public BO update(
+    public int update(
             @NotNull
             @Validated(CRUD.U.class)
             @Parameter(name = "req", description = "updating data", required = true)
@@ -237,14 +236,14 @@ public abstract class BaseCrudController<
     @AuditMethod(saveParam = false, saveResult = false)
     @Operation(description = "[BASE] Batch updates without null fields", summary = "[BASE] Do batch update ignore null field value")
     @PutMapping("batch")
-    public void updateBatch(
+    public int updateBatch(
             @NotNull
             @Validated(CRUD.U.class)
             @Parameter(name = "req", description = "batch updating data", required = true)
             @RequestBody
             Q<Collection<DTO>> req)
     {
-        service.update(req.getData());
+        return service.update(req.getData());
     }
 
     @AuditMethod
@@ -256,13 +255,12 @@ public abstract class BaseCrudController<
             @Parameter(name = "id", description = "The primary key of the record that needs to be update", required = true, example = "1")
             ID id,
             @NotNull
-            @Validated(CRUD.U.class)
             @RequestBody
-            Q<Dict> req)
+            Q<DTO> req)
     {
-        Map<String, Object> data = req.getData();
-        data.put(Fields.id, id);
-        return service.patch(data);
+        DTO dto = req.getData();
+        dto.setId(id);
+        return service.patch(BeanUtil.beanToMap(dto, false, false));
     }
 
     @AuditMethod

@@ -9,15 +9,14 @@ import io.github.fbbzl.starter.pojo.crane4j.AssembleBeanAnnotationHandler;
 import io.github.fbbzl.starter.webflux.advice.WebExceptionAdvice;
 import io.github.fbbzl.starter.webflux.advice.WebFluxResponseBodyResultHandler;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnWebApplication;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnWebApplication;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
 import org.springframework.core.ReactiveAdapterRegistry;
 import org.springframework.http.codec.ServerCodecConfigurer;
 import org.springframework.web.reactive.accept.RequestedContentTypeResolver;
-
 /**
  * @author fengbinbin
  * @version 1.0
@@ -61,4 +60,5 @@ public class WebFluxConfiguration
                                                     operateTemplate,
                                                     asyncBeanOperationExecutor);
     }
+
 }

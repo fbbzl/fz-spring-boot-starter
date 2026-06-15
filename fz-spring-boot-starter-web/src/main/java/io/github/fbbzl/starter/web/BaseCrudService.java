@@ -395,27 +395,24 @@ public abstract class BaseCrudService<
     }
 
     @Transactional
-    public BO update(
+    public int update(
             @NotNull(message = "data can not be null when doing update")
             DTO dto)
     {
         dto.prepareUpdate();
         Validators.validateAndThrow(dto, CRUD.U.class);
-        ID id = dto.getId();
-        int affectedRows = dal.update(struct.dtoToEntity(dto));
-        if (affectedRows <= 0) throw ExceptionVerb.RESOURCE_NOT_FOUND.on(entityClass, id).get();
-        return byId(id);
+        return dal.update(struct.dtoToEntity(dto));
     }
 
     @Transactional
-    public void update(
+    public int update(
             @Size(max = 1024, message = "the number of collection cannot exceed 1024")
             Collection<DTO> dtos)
     {
-        if (isEmpty(dtos)) return;
+        if (isEmpty(dtos)) return 0;
         dtos.forEach(Prepare::prepareUpdate);
         Validators.validateAndThrow(dtos, CRUD.U.class);
-        dal.update(struct.dtoToEntity(dtos));
+        return dal.update(struct.dtoToEntity(dtos));
     }
 
     @Transactional

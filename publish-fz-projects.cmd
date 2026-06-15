@@ -220,7 +220,7 @@ if not "%STATUS_SIZE%"=="0" (
 )
 
 for %%R in (%COMMIT_REMOTES%) do (
-    call :run_in_dir "%COMMIT_PROJECT_PATH%" git -C "%COMMIT_PROJECT_PATH%" push %%R HEAD:%BRANCH% || exit /b 1
+    call :run_in_dir "%COMMIT_PROJECT_PATH%" git -C "%COMMIT_PROJECT_PATH%" push --force %%R HEAD:%BRANCH% || exit /b 1
 )
 exit /b 0
 
@@ -427,3 +427,4 @@ if (command === "getVersion") {
 } else {
     fail("Unknown helper command: " + command);
 }
+
