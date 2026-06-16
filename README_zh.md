@@ -47,7 +47,7 @@
 <dependency>
     <groupId>io.github.fbbzl</groupId>
     <artifactId>fz-spring-boot-starter-web</artifactId>
-    <version>1.3.76_3.5.15</version>
+    <version>1.3.77_3.5.15</version>
 </dependency>
 ```
 
