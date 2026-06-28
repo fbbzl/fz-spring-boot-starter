@@ -2,10 +2,9 @@ package io.github.fbbzl.starter.generator.frame.context;
 
 import cn.hutool.core.map.MapUtil;
 import cn.hutool.db.DbRuntimeException;
-import org.fz.erwin.exception.Throws;
 import io.github.fbbzl.starter.generator.frame.TypeMapping;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
+import org.fz.erwin.exception.Throws;
 import org.springframework.jdbc.core.JdbcTemplate;
 
 import javax.sql.DataSource;
@@ -25,7 +24,6 @@ import static java.lang.Boolean.TRUE;
  * @since 2025/8/29 14:32
  */
 
-@Slf4j
 @RequiredArgsConstructor
 public class MysqlContextLoader
 {

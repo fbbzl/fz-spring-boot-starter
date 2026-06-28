@@ -1,12 +1,11 @@
-package io.github.fbbzl.starter.web.customizer;
+package io.github.fbbzl.starter.webflux.customizer;
 
 import cn.hutool.core.map.MapUtil;
-import cn.hutool.core.util.ObjectUtil;
-import cn.hutool.core.util.StrUtil;
+import cn.hutool.core.text.CharSequenceUtil;
 import cn.hutool.core.util.TypeUtil;
 import com.fasterxml.jackson.databind.JsonNode;
-import io.github.fbbzl.starter.web.BaseCrudController;
-import io.github.fbbzl.starter.web.Q;
+import io.github.fbbzl.starter.webflux.BaseCrudController;
+import io.github.fbbzl.starter.webflux.Q;
 import io.swagger.v3.core.converter.AnnotatedType;
 import io.swagger.v3.core.converter.ModelConverters;
 import io.swagger.v3.core.converter.ResolvedSchema;
@@ -24,12 +23,17 @@ import org.springdoc.core.customizers.GlobalOpenApiCustomizer;
 import org.springdoc.core.customizers.GlobalOperationCustomizer;
 import org.springframework.core.GenericTypeResolver;
 import org.springframework.core.MethodParameter;
+import org.springframework.lang.NonNull;
 import org.springframework.lang.Nullable;
 import org.springframework.web.method.HandlerMethod;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.*;
 import java.util.*;
+import java.util.function.Consumer;
+
+import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
+import static org.springframework.http.MediaType.MULTIPART_FORM_DATA_VALUE;
 
 /**
  * Resolves request body schemas for inherited generic controller methods.
@@ -38,10 +42,9 @@ import java.util.*;
  * @version 1.0
  * @since 2026/5/14 23:30
  */
-public class QOperationCustomizer implements GlobalOperationCustomizer, GlobalOpenApiCustomizer
+@SuppressWarnings({"rawtypes"})
+public class QuestOperationCustomizer implements GlobalOperationCustomizer, GlobalOpenApiCustomizer
 {
-    private static final String APPLICATION_JSON     = org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
-    private static final String MULTIPART_FORM_DATA = org.springframework.http.MediaType.MULTIPART_FORM_DATA_VALUE;
     private static final String FILES_PROPERTY      = "files";
     private static final String WILDCARD_MEDIA_TYPE = "*/*";
     private static final String HTTP_BAD_REQUEST    = "400";
@@ -61,30 +64,30 @@ public class QOperationCustomizer implements GlobalOperationCustomizer, GlobalOp
     @Override
     public Operation customize(Operation operation, HandlerMethod handlerMethod)
     {
-        if (ObjectUtil.isNull(operation)) {
-            return operation;
+        if (operation == null) {
+            return null;
         }
         if (!supportsController(handlerMethod)) {
             return operation;
         }
 
         MethodParameter requestBodyParameter = findRequestBodyParameter(handlerMethod);
-        if (ObjectUtil.isNull(requestBodyParameter)) {
+        if (requestBodyParameter == null) {
             return operation;
         }
 
         Type requestBodyType = resolveParameterType(requestBodyParameter, handlerMethod.getBeanType());
-        if (ObjectUtil.isNull(requestBodyType)) {
+        if (requestBodyType == null) {
             return operation;
         }
 
         Schema<?> schema = resolveRequestBodySchema(requestBodyType, requestBodyParameter);
-        if (ObjectUtil.isNull(schema)) {
+        if (schema == null) {
             return operation;
         }
 
         RequestBody requestBody = operation.getRequestBody();
-        if (ObjectUtil.isNull(requestBody)) {
+        if (requestBody == null) {
             requestBody = new RequestBody();
             operation.setRequestBody(requestBody);
         }
@@ -105,18 +108,18 @@ public class QOperationCustomizer implements GlobalOperationCustomizer, GlobalOp
     @Override
     public void customise(OpenAPI openApi)
     {
-        if (ObjectUtil.isNull(openApi)) {
+        if (openApi == null) {
             return;
         }
 
         Components components = openApi.getComponents();
-        if (ObjectUtil.isNull(components)) {
+        if (components == null) {
             components = new Components();
             openApi.setComponents(components);
         }
 
         Map<String, Schema> schemas = components.getSchemas();
-        if (ObjectUtil.isNull(schemas)) {
+        if (schemas == null) {
             schemas = new LinkedHashMap<>();
             components.setSchemas(schemas);
         }
@@ -125,7 +128,7 @@ public class QOperationCustomizer implements GlobalOperationCustomizer, GlobalOp
         componentSchemas.forEach(referencedSchemas::putIfAbsent);
         referencedSchemas.forEach((schemaName, referencedSchema) -> {
             Schema existingSchema = componentSchemas.get(schemaName);
-            if (ObjectUtil.isNull(existingSchema)) {
+            if (existingSchema == null) {
                 componentSchemas.put(schemaName, referencedSchema);
                 return;
             }
@@ -151,12 +154,12 @@ public class QOperationCustomizer implements GlobalOperationCustomizer, GlobalOp
 
     private void applyOpenApiExamples(OpenAPI openApi)
     {
-        if (ObjectUtil.isNull(openApi) || ObjectUtil.isNull(openApi.getPaths())) {
+        if (openApi == null || openApi.getPaths() == null) {
             return;
         }
 
         openApi.getPaths().values().forEach(pathItem -> {
-            if (ObjectUtil.isNull(pathItem)) {
+            if (pathItem == null) {
                 return;
             }
             pathItem.readOperations().forEach(this::applyOperationExamples);
@@ -165,40 +168,54 @@ public class QOperationCustomizer implements GlobalOperationCustomizer, GlobalOp
 
     private void applyOperationExamples(Operation operation)
     {
-        if (ObjectUtil.isNull(operation)) {
+        if (operation == null) {
             return;
         }
+        applyRequestBodyExamples(operation.getRequestBody());
+        applyResponseExamples(operation.getResponses());
+    }
 
-        if (ObjectUtil.isNotNull(operation.getRequestBody())
-            && MapUtil.isNotEmpty(operation.getRequestBody().getContent())) {
-            operation.getRequestBody().getContent().forEach((contentType, mediaType) -> {
-                if (ObjectUtil.isNull(mediaType) || ObjectUtil.isNull(mediaType.getSchema())) {
-                    return;
-                }
-                applyExample(mediaType, mediaType.getSchema(), contentType);
-            });
-        }
-
-        if (MapUtil.isEmpty(operation.getResponses())) {
+    private void applyRequestBodyExamples(RequestBody requestBody)
+    {
+        if (requestBody == null || MapUtil.isEmpty(requestBody.getContent())) {
             return;
         }
-        operation.getResponses().forEach((statusCode, apiResponse) -> {
-            if (ObjectUtil.isNull(apiResponse)) {
-                return;
-            }
-            if (isErrorResponseStatus(statusCode)) {
-                applyErrorResponseExample(apiResponse, statusCode);
-            }
-            if (MapUtil.isEmpty(apiResponse.getContent())) {
-                return;
-            }
-            apiResponse.getContent().forEach((contentType, mediaType) -> {
-                if (ObjectUtil.isNull(mediaType) || ObjectUtil.isNull(mediaType.getSchema())) {
-                    return;
-                }
-                applyExample(mediaType, mediaType.getSchema(), contentType);
-            });
-        });
+        requestBody.getContent().forEach(this::applyMediaTypeExample);
+    }
+
+    private void applyResponseExamples(Map<String, ApiResponse> responses)
+    {
+        if (MapUtil.isEmpty(responses)) {
+            return;
+        }
+        responses.forEach(this::applyApiResponseExample);
+    }
+
+    private void applyApiResponseExample(String statusCode, ApiResponse apiResponse)
+    {
+        if (apiResponse == null) {
+            return;
+        }
+        if (isErrorResponseStatus(statusCode)) {
+            applyErrorResponseExample(apiResponse, statusCode);
+        }
+        applyResponseContentExamples(apiResponse.getContent());
+    }
+
+    private void applyResponseContentExamples(Content content)
+    {
+        if (MapUtil.isEmpty(content)) {
+            return;
+        }
+        content.forEach(this::applyMediaTypeExample);
+    }
+
+    private void applyMediaTypeExample(String contentType, MediaType mediaType)
+    {
+        if (mediaType == null || mediaType.getSchema() == null) {
+            return;
+        }
+        applyExample(mediaType, mediaType.getSchema(), contentType);
     }
 
     private boolean isErrorResponseStatus(String statusCode)
@@ -214,19 +231,19 @@ public class QOperationCustomizer implements GlobalOperationCustomizer, GlobalOp
             apiResponse.setContent(content);
         }
 
-        MediaType mediaType = content.get(APPLICATION_JSON);
-        if (ObjectUtil.isNull(mediaType)) {
+        MediaType mediaType = content.get(APPLICATION_JSON_VALUE);
+        if (mediaType == null) {
             mediaType = content.get(WILDCARD_MEDIA_TYPE);
         }
-        if (ObjectUtil.isNull(mediaType)) {
+        if (mediaType == null) {
             mediaType = new MediaType();
         }
 
         content.remove(WILDCARD_MEDIA_TYPE);
-        content.addMediaType(APPLICATION_JSON, mediaType);
+        content.addMediaType(APPLICATION_JSON_VALUE, mediaType);
         mediaType.setSchema(errorResponseSchema());
 
-        Object example = errorResponseExample(statusCode);
+        Object               example  = errorResponseExample(statusCode);
         Map<String, Example> examples = new LinkedHashMap<>();
         examples.put("default", new Example().value(example));
         mediaType.setExample(example);
@@ -265,24 +282,24 @@ public class QOperationCustomizer implements GlobalOperationCustomizer, GlobalOp
     protected Type resolveParameterType(MethodParameter methodParameter, Class<?> controllerClass)
     {
         Type actualType = GenericTypeResolver.resolveType(methodParameter.getGenericParameterType(), controllerClass);
-        if (ObjectUtil.isNull(actualType) || TypeUtil.isUnknown(actualType) || TypeUtil.hasTypeVariable(actualType)) {
+        if (TypeUtil.isUnknown(actualType) || TypeUtil.hasTypeVariable(actualType)) {
             return null;
         }
         return actualType;
     }
 
     @Nullable
-    protected Schema<?> resolveRequestBodySchema(Type requestBodyType, MethodParameter methodParameter)
+    protected Schema resolveRequestBodySchema(Type requestBodyType, MethodParameter methodParameter)
     {
-        return resolveSchema(requestBodyType, methodParameter.getParameterAnnotations(), true);
+        return resolveSchema(requestBodyType, methodParameter.getParameterAnnotations());
     }
 
     protected String resolveContentType(MethodParameter methodParameter)
     {
         if (isMultipartFormDataParameter(methodParameter)) {
-            return MULTIPART_FORM_DATA;
+            return MULTIPART_FORM_DATA_VALUE;
         }
-        return APPLICATION_JSON;
+        return APPLICATION_JSON_VALUE;
     }
 
     protected boolean isMultipartFormDataParameter(MethodParameter methodParameter)
@@ -292,23 +309,23 @@ public class QOperationCustomizer implements GlobalOperationCustomizer, GlobalOp
 
     protected boolean isMultipartFormData(String contentType)
     {
-        return MULTIPART_FORM_DATA.equals(contentType);
+        return MULTIPART_FORM_DATA_VALUE.equals(contentType);
     }
 
     protected void applyMultipartFormDataSchema(Schema<?> schema)
     {
         Schema<?> multipartSchema = dereference(schema);
-        if (ObjectUtil.isNull(multipartSchema) || MapUtil.isEmpty(multipartSchema.getProperties())) {
+        if (MapUtil.isEmpty(multipartSchema.getProperties())) {
             return;
         }
 
-        Schema<?> filesSchema = (Schema<?>) multipartSchema.getProperties().get(FILES_PROPERTY);
-        if (ObjectUtil.isNull(filesSchema)) {
+        Schema<?> filesSchema = multipartSchema.getProperties().get(FILES_PROPERTY);
+        if (filesSchema == null) {
             return;
         }
 
         Schema<?> binaryFileSchema = new Schema<>()
-                .type("string")
+                .type(TYPE_STRING)
                 .format("binary");
         ArraySchema binaryFilesSchema = new ArraySchema();
         binaryFilesSchema.setDescription(filesSchema.getDescription());
@@ -319,15 +336,15 @@ public class QOperationCustomizer implements GlobalOperationCustomizer, GlobalOp
     }
 
     @Nullable
-    protected Schema<?> resolveSchema(Type type, Annotation[] annotations, boolean resolveAsRef)
+    protected Schema resolveSchema(Type type, Annotation[] annotations)
     {
-        AnnotatedType annotatedType = new AnnotatedType(type).resolveAsRef(resolveAsRef);
-        if (ObjectUtil.isNotNull(annotations)) {
+        AnnotatedType annotatedType = new AnnotatedType(type).resolveAsRef(true);
+        if (annotations != null) {
             annotatedType.ctxAnnotations(annotations);
         }
 
         ResolvedSchema resolvedSchema = ModelConverters.getInstance().resolveAsResolvedSchema(annotatedType);
-        if (ObjectUtil.isNull(resolvedSchema) || ObjectUtil.isNull(resolvedSchema.schema)) {
+        if (resolvedSchema == null || resolvedSchema.schema == null) {
             return null;
         }
 
@@ -349,20 +366,20 @@ public class QOperationCustomizer implements GlobalOperationCustomizer, GlobalOp
             Map<TypeVariable<?>, Type> typeVariables,
             Set<String> visitedTypes)
     {
-        if (ObjectUtil.isNull(type) || ObjectUtil.isNull(schema)) {
+        if (type == null || schema == null) {
             return;
         }
 
-        Type resolvedType = resolveTypeVariable(type, typeVariables);
+        Type      resolvedType = resolveTypeVariable(type, typeVariables);
         Schema<?> actualSchema = dereference(schema);
-        String visitedKey = resolvedType.getTypeName() + ":" + ObjectUtil.defaultIfNull(schema.get$ref(), "");
+        String    visitedKey   = resolvedType.getTypeName() + ":" + (schema.get$ref() != null ? schema.get$ref() : "");
         if (!visitedTypes.add(visitedKey)) {
             return;
         }
 
         if (resolvedType instanceof ParameterizedType parameterizedType) {
             Class<?> rawClass = resolveRawClass(parameterizedType.getRawType());
-            if (ObjectUtil.isNull(rawClass)) {
+            if (rawClass == null) {
                 return;
             }
 
@@ -391,7 +408,7 @@ public class QOperationCustomizer implements GlobalOperationCustomizer, GlobalOp
             Map<TypeVariable<?>, Type> typeVariables,
             Set<String> visitedTypes)
     {
-        if (!(schema instanceof ArraySchema arraySchema) || ObjectUtil.isNull(arraySchema.getItems())) {
+        if (!(schema instanceof ArraySchema arraySchema) || arraySchema.getItems() == null) {
             return;
         }
         Type[] actualTypeArguments = parameterizedType.getActualTypeArguments();
@@ -407,7 +424,7 @@ public class QOperationCustomizer implements GlobalOperationCustomizer, GlobalOp
             Map<TypeVariable<?>, Type> typeVariables,
             Set<String> visitedTypes)
     {
-        if (!(schema instanceof ArraySchema arraySchema) || ObjectUtil.isNull(arraySchema.getItems())) {
+        if (!(schema instanceof ArraySchema arraySchema) || arraySchema.getItems() == null) {
             return;
         }
         applyGenericPropertyAnnotations(clazz.getComponentType(), arraySchema.getItems(), typeVariables, visitedTypes);
@@ -419,50 +436,37 @@ public class QOperationCustomizer implements GlobalOperationCustomizer, GlobalOp
             Map<TypeVariable<?>, Type> typeVariables,
             Set<String> visitedTypes)
     {
-        if (ObjectUtil.isNull(schema) || MapUtil.isEmpty(schema.getProperties())) {
+        if (schema == null || MapUtil.isEmpty(schema.getProperties())) {
             return;
         }
 
         for (Class<?> currentClass = clazz;
-             ObjectUtil.isNotNull(currentClass) && !Object.class.equals(currentClass);
+             currentClass != null && !Object.class.equals(currentClass);
              currentClass = currentClass.getSuperclass()) {
             for (Field field : currentClass.getDeclaredFields()) {
                 if (Modifier.isStatic(field.getModifiers())) {
                     continue;
                 }
-
-                Schema<?> propertySchema = (Schema<?>) schema.getProperties().get(field.getName());
-                if (ObjectUtil.isNull(propertySchema)) {
-                    continue;
+                Schema<?> propertySchema = schema.getProperties().get(field.getName());
+                if (propertySchema != null) {
+                    applySchemaAnnotation(field.getAnnotation(io.swagger.v3.oas.annotations.media.Schema.class), propertySchema);
+                    Type fieldType = resolveTypeVariable(field.getGenericType(), typeVariables);
+                    applyGenericPropertyAnnotations(fieldType, propertySchema, typeVariables, visitedTypes);
                 }
-
-                applySchemaAnnotation(field.getAnnotation(io.swagger.v3.oas.annotations.media.Schema.class), propertySchema);
-                Type fieldType = resolveTypeVariable(field.getGenericType(), typeVariables);
-                applyGenericPropertyAnnotations(fieldType, propertySchema, typeVariables, visitedTypes);
             }
         }
     }
 
     private void applySchemaAnnotation(@Nullable io.swagger.v3.oas.annotations.media.Schema schemaAnnotation, Schema<?> schema)
     {
-        if (ObjectUtil.isNull(schemaAnnotation) || ObjectUtil.isNull(schema)) {
+        if (schemaAnnotation == null || schema == null) {
             return;
         }
-        if (StrUtil.isNotBlank(schemaAnnotation.description())) {
-            schema.setDescription(schemaAnnotation.description());
-        }
-        if (StrUtil.isNotBlank(schemaAnnotation.title())) {
-            schema.setTitle(schemaAnnotation.title());
-        }
-        if (StrUtil.isNotBlank(schemaAnnotation.format())) {
-            schema.setFormat(schemaAnnotation.format());
-        }
-        if (StrUtil.isNotBlank(schemaAnnotation.example())) {
-            schema.setExample(schemaAnnotation.example());
-        }
-        if (StrUtil.isNotBlank(schemaAnnotation.defaultValue())) {
-            schema.setDefault(schemaAnnotation.defaultValue());
-        }
+        setIfNotBlank(schema::setDescription, schemaAnnotation.description());
+        setIfNotBlank(schema::setTitle, schemaAnnotation.title());
+        setIfNotBlank(schema::setFormat, schemaAnnotation.format());
+        setIfNotBlank(schema::setExample, schemaAnnotation.example());
+        setIfNotBlank(schema::setDefault, schemaAnnotation.defaultValue());
         if (schemaAnnotation.deprecated()) {
             schema.setDeprecated(Boolean.TRUE);
         }
@@ -471,14 +475,19 @@ public class QOperationCustomizer implements GlobalOperationCustomizer, GlobalOp
         }
     }
 
-    @Nullable
+    private void setIfNotBlank(Consumer<String> setter, String value)
+    {
+        if (CharSequenceUtil.isNotBlank(value)) setter.accept(value);
+    }
+
     private Schema<?> dereference(Schema<?> schema)
     {
-        if (ObjectUtil.isNull(schema) || StrUtil.isBlank(schema.get$ref())) {
+        if (CharSequenceUtil.isBlank(schema.get$ref())) {
             return schema;
         }
-        String schemaName = StrUtil.subAfter(schema.get$ref(), REF_SEPARATOR, true);
-        return ObjectUtil.defaultIfNull(referencedSchemas.get(schemaName), schema);
+        String    schemaName     = CharSequenceUtil.subAfter(schema.get$ref(), REF_SEPARATOR, true);
+        Schema<?> resolvedSchema = referencedSchemas.get(schemaName);
+        return resolvedSchema != null ? resolvedSchema : schema;
     }
 
     private Map<TypeVariable<?>, Type> resolveTypeVariables(
@@ -486,13 +495,13 @@ public class QOperationCustomizer implements GlobalOperationCustomizer, GlobalOp
             Map<TypeVariable<?>, Type> parentTypeVariables)
     {
         Map<TypeVariable<?>, Type> typeVariables = new LinkedHashMap<>(parentTypeVariables);
-        Class<?> rawClass = resolveRawClass(parameterizedType.getRawType());
-        if (ObjectUtil.isNull(rawClass)) {
+        Class<?>                   rawClass      = resolveRawClass(parameterizedType.getRawType());
+        if (rawClass == null) {
             return typeVariables;
         }
 
-        TypeVariable<?>[] variables = rawClass.getTypeParameters();
-        Type[] actualTypes = parameterizedType.getActualTypeArguments();
+        TypeVariable<?>[] variables   = rawClass.getTypeParameters();
+        Type[]            actualTypes = parameterizedType.getActualTypeArguments();
         for (int index = 0; index < variables.length && index < actualTypes.length; index++) {
             typeVariables.put(variables[index], resolveTypeVariable(actualTypes[index], parentTypeVariables));
         }
@@ -502,10 +511,11 @@ public class QOperationCustomizer implements GlobalOperationCustomizer, GlobalOp
     private Type resolveTypeVariable(Type type, Map<TypeVariable<?>, Type> typeVariables)
     {
         if (type instanceof TypeVariable<?> typeVariable) {
-            return ObjectUtil.defaultIfNull(typeVariables.get(typeVariable), typeVariable);
+            Type resolvedType = typeVariables.get(typeVariable);
+            return resolvedType != null ? resolvedType : typeVariable;
         }
         if (type instanceof ParameterizedType parameterizedType) {
-            Type[] actualTypes = parameterizedType.getActualTypeArguments();
+            Type[] actualTypes         = parameterizedType.getActualTypeArguments();
             Type[] resolvedActualTypes = new Type[actualTypes.length];
             for (int index = 0; index < actualTypes.length; index++) {
                 resolvedActualTypes[index] = resolveTypeVariable(actualTypes[index], typeVariables);
@@ -526,15 +536,17 @@ public class QOperationCustomizer implements GlobalOperationCustomizer, GlobalOp
         return null;
     }
 
-    private record ResolvedParameterizedType(Type ownerType, Type rawType, Type[] actualTypeArguments) implements ParameterizedType
+    private record ResolvedParameterizedType(Type ownerType, Type rawType,
+                                             Type[] actualTypeArguments) implements ParameterizedType
     {
-
+        @NonNull
         @Override
         public Type[] getActualTypeArguments()
         {
             return actualTypeArguments;
         }
 
+        @NonNull
         @Override
         public Type getRawType()
         {
@@ -565,6 +577,37 @@ public class QOperationCustomizer implements GlobalOperationCustomizer, GlobalOp
             typeName.append(">");
             return typeName.toString();
         }
+
+        @Override
+        public boolean equals(Object o)
+        {
+            if (this == o) {
+                return true;
+            }
+            if (!(o instanceof ResolvedParameterizedType(Type type, Type rawType1, Type[] typeArguments))) {
+                return false;
+            }
+            return Objects.equals(ownerType, type)
+                   && Objects.equals(rawType, rawType1)
+                   && Arrays.equals(actualTypeArguments, typeArguments);
+        }
+
+        @Override
+        public int hashCode()
+        {
+            return Objects.hash(ownerType, rawType, Arrays.hashCode(actualTypeArguments));
+        }
+
+        @NonNull
+        @Override
+        public String toString()
+        {
+            return "ResolvedParameterizedType[" +
+                   "ownerType=" + ownerType +
+                   ", rawType=" + rawType +
+                   ", actualTypeArguments=" + Arrays.toString(actualTypeArguments) +
+                   ']';
+        }
     }
 
     private void applySchema(RequestBody requestBody, Schema<?> schema, String contentType, boolean exclusiveContentType)
@@ -583,7 +626,7 @@ public class QOperationCustomizer implements GlobalOperationCustomizer, GlobalOp
         }
 
         content.forEach((mediaTypeName, mediaType) -> {
-            if (ObjectUtil.isNotNull(mediaType)) {
+            if (mediaType != null) {
                 mediaType.setSchema(schema);
                 applyExample(mediaType, schema, mediaTypeName);
             }
@@ -592,7 +635,7 @@ public class QOperationCustomizer implements GlobalOperationCustomizer, GlobalOp
 
     private void applyExample(MediaType mediaType, Schema<?> schema, String contentType)
     {
-        if (!isJsonContentType(contentType) || ObjectUtil.isNull(schema)) {
+        if (!isJsonContentType(contentType) || schema == null) {
             return;
         }
 
@@ -608,12 +651,12 @@ public class QOperationCustomizer implements GlobalOperationCustomizer, GlobalOp
 
     private boolean isJsonContentType(String contentType)
     {
-        return APPLICATION_JSON.equals(contentType) || StrUtil.startWith(contentType, APPLICATION_JSON + ";");
+        return APPLICATION_JSON_VALUE.equals(contentType) || CharSequenceUtil.startWith(contentType, APPLICATION_JSON_VALUE + ";");
     }
 
     private void applySchemaExample(Schema<?> schema, Object example)
     {
-        if (ObjectUtil.isNull(schema) || isNullExample(example)) {
+        if (schema == null || isNullExample(example)) {
             return;
         }
         if (isNullExample(schema.getExample())) {
@@ -621,7 +664,7 @@ public class QOperationCustomizer implements GlobalOperationCustomizer, GlobalOp
         }
 
         Schema<?> actualSchema = dereference(schema);
-        if (ObjectUtil.isNotNull(actualSchema) && isNullExample(actualSchema.getExample())) {
+        if (isNullExample(actualSchema.getExample())) {
             actualSchema.setExample(example);
         }
     }
@@ -629,127 +672,152 @@ public class QOperationCustomizer implements GlobalOperationCustomizer, GlobalOp
     @Nullable
     private Object buildExample(Schema<?> schema, Set<String> visitedSchemas)
     {
-        if (ObjectUtil.isNull(schema)) {
+        if (schema == null) {
             return null;
         }
 
-        String schemaKey = ObjectUtil.defaultIfNull(schema.get$ref(), String.valueOf(System.identityHashCode(schema)));
+        String schemaKey = schema.get$ref() != null ? schema.get$ref() : String.valueOf(System.identityHashCode(schema));
         if (!visitedSchemas.add(schemaKey)) {
             return null;
         }
 
         Schema<?> actualSchema = dereference(schema);
-        Object explicitExample = exampleValue(actualSchema.getExample());
+        Object    example      = resolveExplicitExample(actualSchema);
+        if (example != null) {
+            return example;
+        }
+
+        example = buildComposedExample(actualSchema, visitedSchemas);
+        if (example != null) {
+            return example;
+        }
+
+        if (actualSchema instanceof ArraySchema arraySchema) {
+            return buildArrayExample(arraySchema, visitedSchemas);
+        }
+        if (MapUtil.isNotEmpty(actualSchema.getProperties())) {
+            return buildObjectExample(actualSchema, visitedSchemas);
+        }
+        return resolveDefaultExample(actualSchema);
+    }
+
+    @Nullable
+    private Object resolveExplicitExample(Schema<?> schema)
+    {
+        Object explicitExample = exampleValue(schema.getExample());
         if (!isNullExample(explicitExample)) {
             return explicitExample;
         }
-        if (ObjectUtil.isNotNull(actualSchema.getExamples()) && !actualSchema.getExamples().isEmpty()) {
-            Object example = exampleValue(actualSchema.getExamples().get(0));
+        if (schema.getExamples() != null && !schema.getExamples().isEmpty()) {
+            Object example = exampleValue(schema.getExamples().getFirst());
             if (!isNullExample(example)) {
                 return example;
             }
         }
-        if (ObjectUtil.isNotNull(actualSchema.getEnum()) && !actualSchema.getEnum().isEmpty()) {
-            return actualSchema.getEnum().get(0);
+        if (schema.getEnum() != null && !schema.getEnum().isEmpty()) {
+            return schema.getEnum().getFirst();
         }
+        return null;
+    }
 
-        Object composedExample = buildComposedExample(actualSchema, visitedSchemas);
-        if (ObjectUtil.isNotNull(composedExample)) {
-            return composedExample;
+    private Object buildArrayExample(ArraySchema arraySchema, Set<String> visitedSchemas)
+    {
+        Object itemExample = buildExample(arraySchema.getItems(), visitedSchemas);
+        if (itemExample == null || isNullExample(itemExample)) {
+            return List.of();
         }
+        return List.of(itemExample);
+    }
 
-        if (actualSchema instanceof ArraySchema arraySchema) {
-            Object itemExample = buildExample(arraySchema.getItems(), visitedSchemas);
-            return isNullExample(itemExample) ? List.of() : List.of(itemExample);
-        }
+    private Map<String, Object> buildObjectExample(Schema<?> schema, Set<String> visitedSchemas)
+    {
+        Map<String, Object> example = new LinkedHashMap<>();
+        schema.getProperties().forEach((name, property) -> {
+            if (!(property instanceof Schema<?> propertySchema)
+                || Boolean.TRUE.equals(propertySchema.getReadOnly())) {
+                return;
+            }
 
-        if (MapUtil.isNotEmpty(actualSchema.getProperties())) {
-            Map<String, Object> example = new LinkedHashMap<>();
-            actualSchema.getProperties().forEach((name, property) -> {
-                if (!(property instanceof Schema<?> propertySchema)
-                    || Boolean.TRUE.equals(propertySchema.getReadOnly())) {
-                    return;
-                }
+            Object propertyExample = buildExample(propertySchema, new HashSet<>(visitedSchemas));
+            if (!isNullExample(propertyExample)) {
+                example.put(name, propertyExample);
+            }
+        });
+        return example;
+    }
 
-                Object propertyExample = buildExample(propertySchema, new HashSet<>(visitedSchemas));
-                if (!isNullExample(propertyExample)) {
-                    example.put(name, propertyExample);
-                }
-            });
-            return example;
-        }
-
-        Object defaultValue = defaultValueExample(actualSchema);
+    @Nullable
+    private Object resolveDefaultExample(Schema<?> schema)
+    {
+        Object defaultValue = defaultValueExample(schema);
         if (!isNullExample(defaultValue)) {
             return defaultValue;
         }
-        return defaultExample(actualSchema);
+        return defaultExample(schema);
     }
 
     @Nullable
     private Object buildComposedExample(Schema<?> schema, Set<String> visitedSchemas)
     {
-        if (ObjectUtil.isNull(schema)) {
+        if (schema == null) {
             return null;
         }
 
-        if (ObjectUtil.isNotNull(schema.getAllOf()) && !schema.getAllOf().isEmpty()) {
-            Map<String, Object> example = new LinkedHashMap<>();
-            for (Schema<?> composedSchema : schema.getAllOf()) {
-                Object composedExample = buildExample(composedSchema, new HashSet<>(visitedSchemas));
-                if (composedExample instanceof Map<?, ?> composedMap) {
-                    composedMap.forEach((key, value) -> {
-                        if (key instanceof String fieldName && !isNullExample(value)) {
-                            example.put(fieldName, value);
-                        }
-                    });
-                }
-            }
-            return example.isEmpty() ? null : example;
+        if (schema.getAllOf() != null && !schema.getAllOf().isEmpty()) {
+            return buildAllOfExample(schema.getAllOf(), visitedSchemas);
         }
-
-        if (ObjectUtil.isNotNull(schema.getOneOf()) && !schema.getOneOf().isEmpty()) {
-            return buildExample(schema.getOneOf().get(0), visitedSchemas);
+        if (schema.getOneOf() != null && !schema.getOneOf().isEmpty()) {
+            return buildExample(schema.getOneOf().getFirst(), visitedSchemas);
         }
-        if (ObjectUtil.isNotNull(schema.getAnyOf()) && !schema.getAnyOf().isEmpty()) {
-            return buildExample(schema.getAnyOf().get(0), visitedSchemas);
+        if (schema.getAnyOf() != null && !schema.getAnyOf().isEmpty()) {
+            return buildExample(schema.getAnyOf().getFirst(), visitedSchemas);
         }
         return null;
     }
 
     @Nullable
+    private Object buildAllOfExample(List<Schema> allOfSchemas, Set<String> visitedSchemas)
+    {
+        Map<String, Object> example = new LinkedHashMap<>();
+        for (Schema composedSchema : allOfSchemas) {
+            Object composedExample = buildExample(composedSchema, new HashSet<>(visitedSchemas));
+            if (composedExample instanceof Map<?, ?> composedMap) {
+                composedMap.forEach((key, value) -> {
+                    if (key instanceof String fieldName && !isNullExample(value)) {
+                        example.put(fieldName, value);
+                    }
+                });
+            }
+        }
+        return example.isEmpty() ? null : example;
+    }
+
+    @Nullable
     private Object defaultExample(Schema<?> schema)
     {
-        if (ObjectUtil.isNull(schema)) {
+        if (schema == null) {
             return null;
         }
 
         String type = resolveSchemaType(schema);
-        if (TYPE_STRING.equals(type)) {
-            if (FORMAT_DATE.equals(schema.getFormat())) {
-                return "2026-01-01";
-            }
-            if (FORMAT_DATE_TIME.equals(schema.getFormat())) {
-                return "2026-01-01T00:00:00";
-            }
-            return TYPE_STRING;
-        }
-        if (TYPE_INTEGER.equals(type)) {
-            return 0;
-        }
-        if (TYPE_NUMBER.equals(type)) {
-            return 0;
-        }
-        if (TYPE_BOOLEAN.equals(type)) {
-            return Boolean.TRUE;
-        }
-        if (TYPE_OBJECT.equals(type)) {
+        if (type == null) {
             return new LinkedHashMap<>();
         }
-        if (TYPE_ARRAY.equals(type)) {
-            return List.of();
-        }
-        return new LinkedHashMap<>();
+        return switch (type) {
+            case TYPE_STRING -> {
+                if (FORMAT_DATE.equals(schema.getFormat())) {
+                    yield "2026-01-01";
+                }
+                if (FORMAT_DATE_TIME.equals(schema.getFormat())) {
+                    yield "2026-01-01T00:00:00";
+                }
+                yield TYPE_STRING;
+            }
+            case TYPE_INTEGER, TYPE_NUMBER -> 0;
+            case TYPE_BOOLEAN -> Boolean.TRUE;
+            case TYPE_ARRAY -> List.of();
+            default -> new LinkedHashMap<>();
+        };
     }
 
     private Schema<?> errorResponseSchema()
@@ -775,7 +843,7 @@ public class QOperationCustomizer implements GlobalOperationCustomizer, GlobalOp
     private boolean isNullExample(Object value)
     {
         Object actualValue = exampleValue(value);
-        if (ObjectUtil.isNull(actualValue)) {
+        if (actualValue == null) {
             return true;
         }
         if (actualValue instanceof JsonNode jsonNode) {
@@ -796,7 +864,7 @@ public class QOperationCustomizer implements GlobalOperationCustomizer, GlobalOp
     @Nullable
     private Object defaultValueExample(Schema<?> schema)
     {
-        if (ObjectUtil.isNull(schema)) {
+        if (schema == null) {
             return null;
         }
 
@@ -809,50 +877,43 @@ public class QOperationCustomizer implements GlobalOperationCustomizer, GlobalOp
         if (defaultValue instanceof String defaultText && defaultText.isEmpty() && !TYPE_STRING.equals(type)) {
             return null;
         }
-        if (TYPE_STRING.equals(type)) {
+        if (type == null) {
             return defaultValue;
         }
-        if (TYPE_INTEGER.equals(type)) {
-            return defaultValue instanceof Number ? defaultValue : null;
-        }
-        if (TYPE_NUMBER.equals(type)) {
-            return defaultValue instanceof Number ? defaultValue : null;
-        }
-        if (TYPE_BOOLEAN.equals(type)) {
-            return defaultValue instanceof Boolean ? defaultValue : null;
-        }
-        if (TYPE_ARRAY.equals(type)) {
-            return defaultValue instanceof Collection<?> || defaultValue.getClass().isArray() ? defaultValue : null;
-        }
-        if (TYPE_OBJECT.equals(type)) {
-            return defaultValue instanceof Map<?, ?> ? defaultValue : null;
-        }
-        return defaultValue;
+        return switch (type) {
+            case TYPE_INTEGER, TYPE_NUMBER -> defaultValue instanceof Number ? defaultValue : null;
+            case TYPE_BOOLEAN -> defaultValue instanceof Boolean ? defaultValue : null;
+            case TYPE_ARRAY -> defaultValue instanceof Collection<?> || Objects.requireNonNull(defaultValue).getClass().isArray() ? defaultValue : null;
+            case TYPE_OBJECT -> defaultValue instanceof Map<?, ?> ? defaultValue : null;
+            default -> defaultValue;
+        };
     }
 
     @Nullable
     private String resolveSchemaType(Schema<?> schema)
     {
-        if (ObjectUtil.isNull(schema)) {
+        if (schema == null) {
             return null;
         }
 
         String type = schema.getType();
-        if (StrUtil.isNotBlank(type)) {
+        if (CharSequenceUtil.isNotBlank(type)) {
             return type;
         }
 
         Set<String> types = schema.getTypes();
-        if (ObjectUtil.isNull(types) || types.isEmpty()) {
+        if (types == null || types.isEmpty()) {
             return null;
         }
 
-        if (types.contains(TYPE_STRING)) return TYPE_STRING;
-        if (types.contains(TYPE_INTEGER)) return TYPE_INTEGER;
-        if (types.contains(TYPE_NUMBER)) return TYPE_NUMBER;
-        if (types.contains(TYPE_BOOLEAN)) return TYPE_BOOLEAN;
-        if (types.contains(TYPE_ARRAY)) return TYPE_ARRAY;
-        if (types.contains(TYPE_OBJECT)) return TYPE_OBJECT;
-        return types.iterator().next();
+        return switch (types) {
+            case Set<String> s when s.contains(TYPE_STRING) -> TYPE_STRING;
+            case Set<String> s when s.contains(TYPE_INTEGER) -> TYPE_INTEGER;
+            case Set<String> s when s.contains(TYPE_NUMBER) -> TYPE_NUMBER;
+            case Set<String> s when s.contains(TYPE_BOOLEAN) -> TYPE_BOOLEAN;
+            case Set<String> s when s.contains(TYPE_ARRAY) -> TYPE_ARRAY;
+            case Set<String> s when s.contains(TYPE_OBJECT) -> TYPE_OBJECT;
+            default -> types.iterator().next();
+        };
     }
 }

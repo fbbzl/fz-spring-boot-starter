@@ -2,7 +2,6 @@ package io.github.fbbzl.starter.generator.genarators.eo;
 
 import freemarker.template.Template;
 import io.github.fbbzl.starter.generator.frame.BaseGenerator;
-import lombok.extern.slf4j.Slf4j;
 
 import java.nio.file.Path;
 import java.util.Map;
@@ -13,7 +12,6 @@ import java.util.Map;
  * @since 2026/2/11 22:27
  */
 
-@Slf4j
 public class EoGenerator extends BaseGenerator
 {
 

@@ -15,7 +15,6 @@ import io.swagger.v3.oas.annotations.Parameter;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
 import lombok.experimental.FieldDefaults;
-import lombok.extern.slf4j.Slf4j;
 import org.fz.erwin.lang.Generics;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.lang.Nullable;
@@ -36,7 +35,6 @@ import static lombok.AccessLevel.PROTECTED;
  * @version 1.0
  * @since 2025/8/22 14:24
  */
-@Slf4j
 @Validated
 @SuppressWarnings("all")
 @FieldDefaults(level = PROTECTED)

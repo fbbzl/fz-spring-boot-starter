@@ -3,7 +3,6 @@ package io.github.fbbzl.starter.redisson.config;
 
 import io.github.fbbzl.starter.redisson.limiter.aspect.RedissonRateLimitAspect;
 import io.github.fbbzl.starter.redisson.repeat.RedissonSubmitOnceAspect;
-import lombok.extern.slf4j.Slf4j;
 import org.redisson.Redisson;
 import org.redisson.api.RedissonClient;
 import org.redisson.config.Config;
@@ -30,7 +29,6 @@ import static cn.hutool.core.text.CharSequenceUtil.isNotBlank;
  * @version 1.0
  * @since 2026/4/22 10:20
  */
-@Slf4j
 @AutoConfiguration(beforeName = {
         "org.redisson.spring.starter.RedissonAutoConfigurationV2",
         "org.redisson.spring.starter.RedissonAutoConfigurationV4"

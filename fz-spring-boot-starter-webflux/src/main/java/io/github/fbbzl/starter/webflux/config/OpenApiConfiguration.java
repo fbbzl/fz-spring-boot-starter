@@ -1,6 +1,6 @@
 package io.github.fbbzl.starter.webflux.config;
 
-import io.github.fbbzl.starter.webflux.customizer.QOperationCustomizer;
+import io.github.fbbzl.starter.webflux.customizer.QuestOperationCustomizer;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnWebApplication;
@@ -17,8 +17,8 @@ public class OpenApiConfiguration
 {
     @Bean
     @ConditionalOnMissingBean
-    public QOperationCustomizer qOperationCustomizer()
+    public QuestOperationCustomizer qOperationCustomizer()
     {
-        return new QOperationCustomizer();
+        return new QuestOperationCustomizer();
     }
 }

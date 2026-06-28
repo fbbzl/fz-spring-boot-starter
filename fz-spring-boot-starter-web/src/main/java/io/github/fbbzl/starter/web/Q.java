@@ -14,6 +14,7 @@ import jakarta.validation.constraints.Size;
 import jakarta.validation.groups.Default;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
+import org.jspecify.annotations.Nullable;
 import org.springframework.web.multipart.MultipartFile;
 
 import static lombok.AccessLevel.PRIVATE;
@@ -49,6 +50,7 @@ public class Q<DATA>
                     CRUD.D.class
             },
             message = "{Q.data}")
+    @Nullable
     DATA data;
 
     /**
@@ -59,9 +61,10 @@ public class Q<DATA>
 
     @Size(max = 64, message = "{Q.requestId.size}")
     @Schema(description = "request identifier")
+    @Nullable
     String requestId;
 
-    public static <DATA> Q<DATA> of(DATA data)
+    public static <DATA> Q<DATA> of(@Nullable DATA data)
     {
         Q<DATA> q = new Q<>();
         q.setData(data);
@@ -82,10 +85,11 @@ public class Q<DATA>
         @Valid
         @Size(max = 128, message = "{RQ.ranges.size}")
         @Schema(description = "range query conditions")
-        Range[] ranges;
+        @Nullable
+        BaseRange[] ranges;
 
         @SafeVarargs
-        public static <DATA, RANGE extends Range> RQ<DATA> of(DATA data, RANGE... ranges)
+        public static <DATA, RANGE extends BaseRange> RQ<DATA> of(@Nullable DATA data, RANGE... ranges)
         {
             RQ<DATA> rq = new RQ<>();
             rq.setData(data);
@@ -107,23 +111,27 @@ public class Q<DATA>
             @Size(max = 128, message = "{RQ.BaseRange.field.size}")
             @NotNull(message = "{RQ.BaseRange.field}")
             @Schema(description = "range query field")
+            @Nullable
             String field;
 
             @Schema(description = "range query start value")
+            @Nullable
             Object start;
 
             @Schema(description = "range query end value")
+            @Nullable
             Object end;
 
             @Schema(description = "whether the range query is closed interval")
+            @Nullable
             Boolean close = Boolean.TRUE;
 
-            public static <VALUE extends Comparable<? super VALUE>> Range of(String field, VALUE start, VALUE end)
+            public static <VALUE extends Comparable<? super VALUE>> Range of(String field, @Nullable VALUE start, @Nullable VALUE end)
             {
                 return of(field, start, end, true);
             }
 
-            public static <VALUE extends Comparable<? super VALUE>> Range of(String field, VALUE start, VALUE end, Boolean close)
+            public static <VALUE extends Comparable<? super VALUE>> Range of(String field, @Nullable VALUE start, @Nullable VALUE end, @Nullable Boolean close)
             {
                 BaseRange range = new BaseRange();
                 range.setField(field);
@@ -148,14 +156,18 @@ public class Q<DATA>
 
         @Size(max = 128, message = "{OQ.orders.size}")
         @Schema(description = "orders")
+        @Nullable
         Order[] orders;
 
-        public static <DATA> OQ<DATA> of(DATA data, Order... orders)
+        public static <DATA> OQ<DATA> of(@Nullable DATA data, @Nullable Order... orders)
         {
-            return of(data, orders, (BaseRange) null);
+            OQ<DATA> oq = new OQ<>();
+            oq.setData(data);
+            oq.setOrders(orders);
+            return oq;
         }
 
-        public static <DATA> OQ<DATA> of(DATA data, Order[] orders, BaseRange... ranges)
+        public static <DATA> OQ<DATA> of(@Nullable DATA data, @Nullable Order[] orders, @Nullable BaseRange... ranges)
         {
             OQ<DATA> oq = new OQ<>();
             oq.setData(data);
@@ -178,9 +190,10 @@ public class Q<DATA>
 
         @NotNull(message = "{PQ.page.page}")
         @Schema(description = "paging parameters page numbers start from 0")
+        @Nullable
         Page page;
 
-        public static <DATA> PQ<DATA> of(DATA data, Page page)
+        public static <DATA> PQ<DATA> of(@Nullable DATA data, @Nullable Page page)
         {
             PQ<DATA> pq = new PQ<>();
             pq.setData(data);
@@ -201,9 +214,11 @@ public class Q<DATA>
 
         @Size(max = 128, message = "{FQ.files.size}")
         @Schema(description = "uploaded files")
+        @Nullable
         MultipartFile[] files;
 
         @JsonIgnore
+        @Nullable
         public MultipartFile getSingleFile()
         {
             return ArrayUtil.get(files, 0);

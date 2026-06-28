@@ -140,26 +140,11 @@ public class JwtFactory
         return jti.toString();
     }
 
-    public static boolean isExpired(HttpServletRequest request)
-    {
-        return isExpired(jwt(request));
-    }
-
     public static boolean isExpired(JWT jwt)
     {
         Object exp = payload(jwt, EXPIRES_AT);
         Long   sec = Convert.toLong(exp);
         return sec == null || Instant.now().getEpochSecond() > sec;
-    }
-
-    private static boolean verify(JWT jwt, JWTSigner signer)
-    {
-        try {
-            return jwt.verify(signer);
-        } catch (RuntimeException error) {
-            log.debug("jwt verify failed", error);
-            return false;
-        }
     }
 
     @Nullable
@@ -189,6 +174,16 @@ public class JwtFactory
         if (payloads == null) return null;
 
         return BeanUtil.toBean(payloads, beanType);
+    }
+
+    private static boolean verify(JWT jwt, JWTSigner signer)
+    {
+        try {
+            return jwt.verify(signer);
+        } catch (RuntimeException error) {
+            log.debug("jwt verify failed", error);
+            return false;
+        }
     }
 
     private static JwtFactory self()

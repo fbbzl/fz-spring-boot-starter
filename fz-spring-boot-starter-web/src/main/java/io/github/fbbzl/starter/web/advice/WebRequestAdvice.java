@@ -5,8 +5,6 @@ import io.github.fbbzl.starter.web.Q;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
-import lombok.extern.slf4j.Slf4j;
-
 import org.springframework.boot.autoconfigure.condition.ConditionalOnWebApplication;
 import org.springframework.core.MethodParameter;
 import org.springframework.core.annotation.Order;
@@ -25,7 +23,6 @@ import java.lang.reflect.Type;
  * @since 4/12/2026 3:02 下午
  */
 
-@Slf4j
 @Order(AdviceOrder.WEB_REQUEST)
 @RestControllerAdvice
 @RequiredArgsConstructor

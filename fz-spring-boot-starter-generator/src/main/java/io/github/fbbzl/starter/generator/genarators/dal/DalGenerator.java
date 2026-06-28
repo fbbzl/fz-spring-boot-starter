@@ -3,7 +3,6 @@ package io.github.fbbzl.starter.generator.genarators.dal;
 import freemarker.template.Template;
 import io.github.fbbzl.starter.generator.config.properties.GeneratorModuleConfig.DalPlatform;
 import io.github.fbbzl.starter.generator.frame.BaseGenerator;
-import lombok.extern.slf4j.Slf4j;
 
 import java.nio.file.Path;
 import java.util.Map;
@@ -14,7 +13,6 @@ import java.util.Map;
  * @since 2025/8/30 15:54
  */
 
-@Slf4j
 public class DalGenerator extends BaseGenerator
 {
     public Path getFilePath(Map<String, Object> ftlContext)

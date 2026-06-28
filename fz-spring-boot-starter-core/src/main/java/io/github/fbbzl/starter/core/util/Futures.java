@@ -1,7 +1,6 @@
 package io.github.fbbzl.starter.core.util;
 
 import lombok.experimental.Delegate;
-import lombok.extern.slf4j.Slf4j;
 
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
@@ -13,7 +12,6 @@ import java.util.function.*;
  * @version 1.0
  * @since 2026/4/22 14:24
  */
-@Slf4j
 public class Futures<T>
 {
 
