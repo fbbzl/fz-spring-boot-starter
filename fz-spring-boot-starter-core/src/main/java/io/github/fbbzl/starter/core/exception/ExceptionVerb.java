@@ -20,6 +20,7 @@ import static cn.hutool.core.text.CharSequenceUtil.toCamelCase;
 
 @Getter
 @RequiredArgsConstructor
+@SuppressWarnings("all")
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public enum ExceptionVerb
 {
@@ -39,24 +40,24 @@ public enum ExceptionVerb
 
     int httpStatusCode;
 
-    public <SUBJECT> Supplier<? extends BizException> on(SUBJECT subject, Object context)
+    public <SUBJECT> Supplier<BizException> on(SUBJECT subject, Object context)
     {
         Throws.ifNull(subject, "subject can not be null");
         return on(subject.getClass(), context);
     }
 
-    public <SUBJECT> Supplier<? extends BizException> on(SUBJECT subject, Object context, Throwable cause)
+    public <SUBJECT> Supplier<BizException> on(SUBJECT subject, Object context, Throwable cause)
     {
         Throws.ifNull(subject, "subject can not be null");
         return on(subject.getClass(), context, cause);
     }
 
-    public Supplier<? extends BizException> on(Class<?> subjectType, Object context)
+    public Supplier<BizException> on(Class<?> subjectType, Object context)
     {
         return on(subjectType, context, null);
     }
 
-    public Supplier<? extends BizException> on(Class<?> subjectType, Object context, Throwable cause)
+    public Supplier<BizException> on(Class<?> subjectType, Object context, Throwable cause)
     {
         Objects.requireNonNull(subjectType, "subjectType can not be null");
         return () -> new BizException(this, format("[{}] {}, context: [{}]", subjectType.getSimpleName(), toCamelCase(this.name()), context), cause);

@@ -63,8 +63,4 @@ public abstract class BaseAuditLog<ID extends Serializable> implements BaseTable
     @Schema(description = "error message")
     String errorMsg;
 
-    @NotNull(groups = CRUD.ALL.class, message = "{BaseAuditLog.timeCost}")
-    @Schema(description = "method time cost")
-    Long timeCost = 0L;
-
 }

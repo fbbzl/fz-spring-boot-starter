@@ -3,9 +3,7 @@ package io.github.fbbzl.starter.pojo.validation;
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.extra.spring.SpringUtil;
 import jakarta.validation.ConstraintViolation;
-import jakarta.validation.Validation;
 import jakarta.validation.Validator;
-import jakarta.validation.ValidatorFactory;
 import lombok.experimental.UtilityClass;
 import lombok.extern.slf4j.Slf4j;
 
@@ -27,22 +25,10 @@ import static java.util.stream.Collectors.joining;
 @UtilityClass
 public final class Validators
 {
-    private static final ValidatorFactory VALIDATOR_FACTORY;
-    private static final Validator        VALIDATOR;
+    private static final Validator VALIDATOR;
 
     static {
-        VALIDATOR_FACTORY = Validation.buildDefaultValidatorFactory();
-        Runtime.getRuntime().addShutdownHook(new Thread(() -> {
-            try { VALIDATOR_FACTORY.close(); }
-            catch (Exception e) { log.warn("Failed to close ValidatorFactory", e); }
-        }));
-        Validator validator;
-        try {
-            validator = SpringUtil.getBean(Validator.class);
-        } catch (RuntimeException e) {
-            validator = VALIDATOR_FACTORY.getValidator();
-        }
-        VALIDATOR = validator;
+        VALIDATOR = SpringUtil.getBean(Validator.class);
     }
 
     public static <BEAN> Set<ConstraintViolation<BEAN>> validate(BEAN obj)

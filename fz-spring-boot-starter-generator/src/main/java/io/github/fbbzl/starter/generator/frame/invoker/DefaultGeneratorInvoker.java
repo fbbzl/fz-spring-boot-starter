@@ -4,7 +4,6 @@ import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.io.FileUtil;
 import cn.hutool.core.io.file.FileWriter;
 import cn.hutool.core.text.CharSequenceUtil;
-import org.fz.erwin.exception.Throws;
 import io.github.fbbzl.starter.generator.config.properties.GeneratorConfigProperties;
 import io.github.fbbzl.starter.generator.config.properties.GeneratorModuleConfig;
 import io.github.fbbzl.starter.generator.config.properties.GeneratorModuleConfig.DalPlatform;
@@ -27,6 +26,7 @@ import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
+import org.fz.erwin.exception.Throws;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Primary;
 import org.springframework.ui.freemarker.FreeMarkerTemplateUtils;
@@ -34,7 +34,6 @@ import org.springframework.ui.freemarker.FreeMarkerTemplateUtils;
 import java.io.File;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -43,6 +42,7 @@ import static cn.hutool.core.date.DatePattern.NORM_DATETIME_FORMATTER;
 import static cn.hutool.core.text.CharSequenceUtil.removePrefix;
 import static cn.hutool.core.text.CharSequenceUtil.upperFirst;
 import static java.lang.Boolean.TRUE;
+import static java.time.LocalDateTime.now;
 
 /**
  * @author fengbinbin
@@ -82,7 +82,7 @@ public class DefaultGeneratorInvoker implements GeneratorInvoker, CommandLineRun
     {
         log.info("code generation begins");
         List<GeneratorModuleConfig> modules = genCfg.getGenerator();
-        if (modules == null || modules.isEmpty()) {
+        if (CollUtil.isEmpty(modules)) {
             log.warn("no generator module configuration found, skip");
             return;
         }
@@ -138,7 +138,7 @@ public class DefaultGeneratorInvoker implements GeneratorInvoker, CommandLineRun
         ftlContext.put("schemaName",     tableContext.getSchemaName());
         ftlContext.put("author",         author);
         ftlContext.put("primaryKeyType", module.getPrimaryKeyType());
-        ftlContext.put("date",           NORM_DATETIME_FORMATTER.format(LocalDateTime.now()));
+        ftlContext.put("date",           NORM_DATETIME_FORMATTER.format(now()));
         ftlContext.put("excel",          module.isExcel());
         ftlContext.put("platformType",   module.getPlatformType());
         if (module.getPlatformType() == DalPlatform.JPA)

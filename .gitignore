@@ -1,8 +1,13 @@
 HELP.md
+
+### Maven ###
 target/
 .mvn/wrapper/maven-wrapper.jar
-!**/src/main/**/target/
-!**/src/test/**/target/
+**/.flattened-pom.xml
+
+### Gradle ###
+build/
+.gradle/
 
 ### STS ###
 .apt_generated
@@ -14,7 +19,7 @@ target/
 .sts4-cache
 
 ### IntelliJ IDEA ###
-.idea
+.idea/
 *.iws
 *.iml
 *.ipr
@@ -25,31 +30,17 @@ target/
 /dist/
 /nbdist/
 /.nb-gradle/
-build/
-!**/src/main/**/build/
-!**/src/test/**/build/
 
 ### VS Code ###
 .vscode/
 
 ### Local tools ###
 .xcodemap/
+.opencode/
+.omo/
+
+### JRebel ###
+**/src/main/resources/rebel.xml
 
 /generated-sources/
-/*/.flattened-pom.xml
-/.flattened-pom.xml
-/.opencode/
-/fz-spring-boot-starter-audit/src/main/resources/rebel.xml
-/fz-spring-boot-starter-auth/src/main/resources/rebel.xml
-/fz-spring-boot-starter-core/src/main/resources/rebel.xml
-/fz-spring-boot-starter-dal/src/main/resources/rebel.xml
-/fz-spring-boot-starter-excel/src/main/resources/rebel.xml
-/fz-spring-boot-starter-generator/src/main/resources/rebel.xml
-/fz-spring-boot-starter-jpa/src/main/resources/rebel.xml
-/fz-spring-boot-starter-message/src/main/resources/rebel.xml
-/fz-spring-boot-starter-mybatis-plus/src/main/resources/rebel.xml
-/fz-spring-boot-starter-pojo/src/main/resources/rebel.xml
-/fz-spring-boot-starter-redisson/src/main/resources/rebel.xml
-/fz-spring-boot-starter-web/src/main/resources/rebel.xml
-/fz-spring-boot-starter-webflux/src/main/resources/rebel.xml
-/src/main/resources/rebel.xml
+

@@ -9,10 +9,12 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.core.metadata.OrderItem;
 import com.baomidou.mybatisplus.core.toolkit.LambdaUtils;
 import com.baomidou.mybatisplus.core.toolkit.support.ColumnCache;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.AccessLevel;
+import lombok.Data;
 import lombok.experimental.Accessors;
+import lombok.experimental.FieldDefaults;
 
+import java.io.Serializable;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -28,10 +30,10 @@ import static cn.hutool.core.text.CharSequenceUtil.isBlank;
  * @version 1.0
  * @since 2026/5/19
  */
-@Getter
-@Setter
+@Data
 @Accessors(chain = true)
-public class HP<T> implements IPage<T>
+@FieldDefaults(level = AccessLevel.PRIVATE)
+public class HP<T extends Serializable> implements IPage<T>
 {
 
     final Page page;
@@ -50,7 +52,7 @@ public class HP<T> implements IPage<T>
         this.orders  = toOrderItems(entityClass, page.getOrders());
     }
 
-    public static <T> HP<T> of(Page page, Class<?> entityClass)
+    public static <T extends Serializable> HP<T> of(Page page, Class<?> entityClass)
     {
         return new HP<>(page, entityClass);
     }
@@ -68,7 +70,7 @@ public class HP<T> implements IPage<T>
         return pageResult;
     }
 
-    static List<OrderItem> toOrderItems(Class<?> entityClass, Order... orders)
+    List<OrderItem> toOrderItems(Class<?> entityClass, Order... orders)
     {
         if (ArrayUtil.isEmpty(orders)) return Collections.emptyList();
 
@@ -84,7 +86,7 @@ public class HP<T> implements IPage<T>
                      .toList();
     }
 
-    static String orderField(Class<?> entityClass, String field)
+    String orderField(Class<?> entityClass, String field)
     {
         if (entityClass == null || isBlank(field)) return null;
 

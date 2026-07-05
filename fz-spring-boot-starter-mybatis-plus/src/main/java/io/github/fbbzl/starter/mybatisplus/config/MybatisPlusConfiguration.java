@@ -6,6 +6,7 @@ import com.baomidou.mybatisplus.extension.plugins.inner.BlockAttackInnerIntercep
 import com.baomidou.mybatisplus.extension.plugins.inner.OptimisticLockerInnerInterceptor;
 import com.baomidou.mybatisplus.extension.plugins.inner.PaginationInnerInterceptor;
 import com.baomidou.mybatisplus.extension.toolkit.JdbcUtils;
+import io.github.fbbzl.starter.mybatisplus.frame.LogicDeleteWithDeleteAtInnerInterceptor;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.context.annotation.Bean;
@@ -37,9 +38,10 @@ public class MybatisPlusConfiguration
             paginationInnerInterceptor.setOverflow(true);
             paginationInnerInterceptor.setMaxLimit(5000L);
 
-            interceptor.addInnerInterceptor(new OptimisticLockerInnerInterceptor());
-            interceptor.addInnerInterceptor(new BlockAttackInnerInterceptor());
             interceptor.addInnerInterceptor(paginationInnerInterceptor);
+            interceptor.addInnerInterceptor(new BlockAttackInnerInterceptor());
+            interceptor.addInnerInterceptor(new OptimisticLockerInnerInterceptor());
+            interceptor.addInnerInterceptor(new LogicDeleteWithDeleteAtInnerInterceptor());
         }
 
         return interceptor;

@@ -4,9 +4,6 @@ import cn.hutool.extra.servlet.JakartaServletUtil;
 import io.github.fbbzl.starter.redisson.annotation.RateLimit;
 import jakarta.servlet.UnavailableException;
 import jakarta.servlet.http.HttpServletRequest;
-import org.springframework.web.context.request.RequestContextHolder;
-import org.springframework.web.context.request.RequestAttributes;
-import org.springframework.web.context.request.ServletRequestAttributes;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
@@ -17,7 +14,9 @@ import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.reflect.MethodSignature;
 import org.redisson.api.RRateLimiter;
 import org.redisson.api.RedissonClient;
-
+import org.springframework.web.context.request.RequestAttributes;
+import org.springframework.web.context.request.RequestContextHolder;
+import org.springframework.web.context.request.ServletRequestAttributes;
 
 import java.lang.reflect.Method;
 import java.time.Duration;
@@ -51,13 +50,12 @@ public class RedissonRateLimitAspect
         String       key         = buildRateLimitKey(request, point, rateLimit);
         RRateLimiter rateLimiter = redissonClient.getRateLimiter(key);
 
-        if (!rateLimiter.isExists()) {
-            rateLimiter.trySetRate(
-                    rateLimit.type(),
-                    rateLimit.permits(),
-                    Duration.of(rateLimit.timeWindowMillis(), MILLIS),
-                    Duration.of(rateLimit.keepAliveMillis(), MILLIS));
-        }
+        // trySetRate returns false if rate already configured - one round-trip less than isExists + trySetRate
+        rateLimiter.trySetRate(
+                rateLimit.type(),
+                rateLimit.permits(),
+                Duration.of(rateLimit.timeWindowMillis(), MILLIS),
+                Duration.of(rateLimit.keepAliveMillis(), MILLIS));
 
         boolean acquired = rateLimiter.tryAcquire();
 

@@ -4,6 +4,7 @@ package io.github.fbbzl.starter.audit.frame.aspect;
 import cn.hutool.core.annotation.AnnotationUtil;
 import cn.hutool.core.exceptions.ExceptionUtil;
 import cn.hutool.core.util.ArrayUtil;
+import cn.hutool.core.util.StrUtil;
 import cn.hutool.json.JSONUtil;
 import io.github.fbbzl.starter.audit.BaseAuditLog;
 import io.github.fbbzl.starter.audit.frame.annotation.AuditMethod;
@@ -17,11 +18,9 @@ import lombok.extern.slf4j.Slf4j;
 import org.aspectj.lang.JoinPoint;
 import org.aspectj.lang.annotation.AfterReturning;
 import org.aspectj.lang.annotation.AfterThrowing;
-import org.aspectj.lang.annotation.Before;
 import org.fz.erwin.exception.Throws;
 import org.springframework.aop.support.AopUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.core.NamedThreadLocal;
 import org.springframework.lang.Nullable;
 
 import java.io.Serializable;
@@ -36,18 +35,12 @@ import java.io.Serializable;
 @FieldDefaults(level = AccessLevel.PROTECTED)
 public abstract class BaseAuditLogAspect<ID extends Serializable, AUDIT_LOG extends BaseAuditLog<ID>>
 {
+    private static final int MAX_AUDIT_TEXT_LENGTH = 10000;
+
     @Autowired(required = false)
     BaseDal<AUDIT_LOG, ID> auditDal;
 
     protected abstract AUDIT_LOG buildAuditLog(AuditMethod auditLog);
-
-    static final ThreadLocal<Long> METHOD_COST_TIME = new NamedThreadLocal<>("CostTime");
-
-    @Before(value = "@annotation(audit)")
-    public void doBefore(JoinPoint joinPoint, AuditMethod audit)
-    {
-        METHOD_COST_TIME.set(System.currentTimeMillis());
-    }
 
     @AfterReturning(pointcut = "@annotation(audit)", returning = "result")
     public void doAfterReturning(JoinPoint joinPoint, AuditMethod audit, Object result)
@@ -56,7 +49,7 @@ public abstract class BaseAuditLogAspect<ID extends Serializable, AUDIT_LOG exte
     }
 
     @AfterThrowing(value = "@annotation(audit)", throwing = "err")
-    public void doAfterThrowing(JoinPoint joinPoint, AuditMethod audit, Exception err)
+    public void doAfterThrowing(JoinPoint joinPoint, AuditMethod audit, Throwable err)
     {
         doLog(joinPoint, audit, err, null);
     }
@@ -64,18 +57,16 @@ public abstract class BaseAuditLogAspect<ID extends Serializable, AUDIT_LOG exte
     protected void doLog(
             JoinPoint joinPoint,
             @NotNull AuditMethod audit,
-            @Nullable Exception err,
+            @Nullable Throwable err,
             @Nullable Object jsonResult)
     {
         try {
             AUDIT_LOG auditLog = this.buildAuditLog(audit);
             auditLog.setModule(this.getModule(joinPoint));
             auditLog.setMethod(joinPoint.getSignature().getName());
-            Long startTime = METHOD_COST_TIME.get();
-            auditLog.setTimeCost(startTime != null ? System.currentTimeMillis() - startTime : -1L);
 
             if (audit.saveParam() && ArrayUtil.isNotEmpty(joinPoint.getArgs())) {
-                auditLog.setParam(JSONUtil.toJsonStr(joinPoint.getArgs()));
+                auditLog.setParam(StrUtil.subPre(JSONUtil.toJsonStr(joinPoint.getArgs()), MAX_AUDIT_TEXT_LENGTH));
             }
 
             if (err != null) {
@@ -84,16 +75,13 @@ public abstract class BaseAuditLogAspect<ID extends Serializable, AUDIT_LOG exte
             }
 
             if (audit.saveResult() && jsonResult != null) {
-                auditLog.setResult(JSONUtil.toJsonStr(jsonResult));
+                auditLog.setResult(StrUtil.subPre(JSONUtil.toJsonStr(jsonResult), MAX_AUDIT_TEXT_LENGTH));
             }
 
             save(auditLog);
         }
         catch (Exception exp) {
             log.error("error occur", exp);
-        }
-        finally {
-            METHOD_COST_TIME.remove();
         }
     }
 

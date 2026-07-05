@@ -2,6 +2,7 @@ package io.github.fbbzl.starter.mybatisplus;
 
 import cn.hutool.core.collection.IterUtil;
 import cn.hutool.core.util.ArrayUtil;
+import cn.hutool.core.util.PrimitiveArrayUtil;
 import cn.hutool.core.util.ReflectUtil;
 import cn.hutool.db.Page;
 import cn.hutool.db.PageResult;
@@ -18,7 +19,6 @@ import com.baomidou.mybatisplus.core.toolkit.support.ColumnCache;
 import com.baomidou.mybatisplus.extension.handlers.AbstractJsonTypeHandler;
 import io.github.fbbzl.starter.dal.BaseDal;
 import io.github.fbbzl.starter.dal.Range;
-import io.github.fbbzl.starter.pojo.entity.BaseTableEntity;
 import io.github.fbbzl.starter.pojo.validation.group.CRUD;
 import jakarta.validation.constraints.NotNull;
 import org.apache.ibatis.executor.BatchResult;
@@ -32,8 +32,6 @@ import java.lang.reflect.Field;
 import java.sql.Statement;
 import java.time.LocalDateTime;
 import java.util.*;
-import java.util.function.Consumer;
-import java.util.regex.Pattern;
 
 import static cn.hutool.core.collection.CollUtil.*;
 import static cn.hutool.core.text.CharSequenceUtil.isBlank;
@@ -48,12 +46,10 @@ import static java.util.Collections.emptyList;
  * @version 1.0
  * @since 2026/3/8 16:43
  */
-public interface BaseMybatisPlusMapper<ENTITY extends BaseTableEntity<ID>, ID extends Serializable>
+public interface BaseMybatisPlusMapper<ENTITY extends BaseMybatisPlusEntity<ID>, ID extends Serializable>
         extends BaseMapper<ENTITY>,
                 BaseDal<ENTITY, ID>
 {
-
-    Pattern SAFE_COLUMN_NAME = Pattern.compile("^[a-zA-Z_][a-zA-Z0-9_]{0,63}$");
 
     @Override
     default ENTITY create(@Nullable ENTITY entity)
@@ -76,16 +72,18 @@ public interface BaseMybatisPlusMapper<ENTITY extends BaseTableEntity<ID>, ID ex
     @Override
     default void delete(@Nullable ID id)
     {
-        if (id == null) return;
-
+        if (id == null) {
+            return;
+        }
         this.deleteById(id);
     }
 
     @Override
     default void delete(@Nullable Iterable<ID> ids)
     {
-        if (isEmpty(ids)) return;
-
+        if (isEmpty(ids)) {
+            return;
+        }
         this.deleteByIds(newHashSet(ids));
     }
 
@@ -99,7 +97,7 @@ public interface BaseMybatisPlusMapper<ENTITY extends BaseTableEntity<ID>, ID ex
     }
 
     @Override
-    default int update(@Nullable Iterable<ENTITY> entities)
+    default int update(Iterable<ENTITY> entities)
     {
         if (isEmpty(entities)) return 0;
 
@@ -114,7 +112,7 @@ public interface BaseMybatisPlusMapper<ENTITY extends BaseTableEntity<ID>, ID ex
         for (BatchResult batchResult : batchResults)
         {
             int[] updateCounts = batchResult.getUpdateCounts();
-            if (ArrayUtil.isEmpty(updateCounts)) continue;
+            if (PrimitiveArrayUtil.isEmpty(updateCounts)) continue;
 
             for (int updateCount : updateCounts)
             {
@@ -144,18 +142,11 @@ public interface BaseMybatisPlusMapper<ENTITY extends BaseTableEntity<ID>, ID ex
     default List<ENTITY> byIds(@Nullable Collection<ID> ids)
     {
         if (isEmpty(ids)) return emptyList();
-
         return this.selectByIds(ids);
     }
 
     @Override
-    default Optional<ENTITY> one(@Nullable ENTITY entity)
-    {
-        return Optional.ofNullable(this.selectOne(autoQuery(entity)));
-    }
-
-    @Override
-    default List<ENTITY> list(@Nullable ENTITY entity, @Nullable Integer limit, @Nullable Order[] orders, @Nullable Range[] ranges)
+    default List<ENTITY> list(@Nullable ENTITY entity, Integer limit, @Nullable Order[] orders, @Nullable Range[] ranges)
     {
         Throws.ifNull(limit, "limit can not be null when doing list query");
         if (entity == null) return emptyList();
@@ -165,7 +156,7 @@ public interface BaseMybatisPlusMapper<ENTITY extends BaseTableEntity<ID>, ID ex
     }
 
     @Override
-    default List<ID> ids(@Nullable ENTITY entity, @Nullable Integer limit)
+    default List<ID> ids(@Nullable ENTITY entity, Integer limit)
     {
         Throws.ifNull(limit, "limit can not be null when doing ids query");
         if (entity == null) return emptyList();
@@ -177,7 +168,7 @@ public interface BaseMybatisPlusMapper<ENTITY extends BaseTableEntity<ID>, ID ex
     }
 
     @Override
-    default PageResult<ENTITY> page(@Nullable Page page, @Nullable ENTITY entity)
+    default PageResult<ENTITY> page(Page page, @Nullable ENTITY entity)
     {
         Throws.ifNull(page, "page can not be null");
         Class<?> entityClass = entity != null ? entity.getClass()
@@ -188,18 +179,14 @@ public interface BaseMybatisPlusMapper<ENTITY extends BaseTableEntity<ID>, ID ex
     @Override
     default long count(@Nullable ENTITY entity)
     {
+        if (entity == null) return 0L;
         return this.selectCount(autoQuery(entity, false));
-    }
-
-    @Override
-    default boolean exists(@Nullable ENTITY entity)
-    {
-        return this.selectCount(autoQuery(entity, false)) > 0;
     }
 
     @Override
     default boolean exists(@Nullable ID id)
     {
+        if (id == null) return false;
         return this.selectCount(new QueryWrapper<ENTITY>().eq(BaseMybatisPlusEntity.Fields.id, id)) > 0;
     }
 
@@ -220,42 +207,39 @@ public interface BaseMybatisPlusMapper<ENTITY extends BaseTableEntity<ID>, ID ex
     }
 
     @Override
-    default void increment(String columnName, int delta, @Nullable List<ID> ids)
+    default void increment(String fieldName, int delta, @Nullable List<ID> ids)
     {
         if (ArrayUtil.isEmpty(ids)) return;
-        Throws.ifFalse(SAFE_COLUMN_NAME.matcher(columnName).matches(), "illegal column name: {}", columnName);
+
+        String column = resolveColumn(fieldName);
+        Throws.ifBlank(column, "can not resolve column from field [{}] on entity", fieldName);
 
         this.update(new UpdateWrapper<ENTITY>()
-                            .setSql(columnName + " = " + columnName + " + " + delta)
+                            .setSql(column + " = " + column + " + " + delta)
                             .in(BaseMybatisPlusEntity.Fields.id, ids));
     }
 
     @Override
-    default void decrement(String columnName, int delta, @Nullable List<ID> ids)
+    default void decrement(String fieldName, int delta, @Nullable List<ID> ids)
     {
         if (ArrayUtil.isEmpty(ids)) return;
-        Throws.ifFalse(SAFE_COLUMN_NAME.matcher(columnName).matches(), "illegal column name: {}", columnName);
+
+        String column = resolveColumn(fieldName);
+        Throws.ifBlank(column, "can not resolve column from field [{}] on entity", fieldName);
 
         this.update(new UpdateWrapper<ENTITY>()
-                            .setSql(columnName + " = " + columnName + " - " + delta)
+                            .setSql(column + " = " + column + " - " + delta)
                             .in(BaseMybatisPlusEntity.Fields.id, ids));
     }
 
-    @Override
-    default void doBatchConsume(@Nullable ENTITY entity, int batchSize, Consumer<List<ENTITY>> recordsConsumer)
+    default String resolveColumn(String fieldName)
     {
-        int                pageNumber = 0;
-        Page               page       = new Page(pageNumber, batchSize);
-        PageResult<ENTITY> pageResult;
+        @SuppressWarnings("unchecked")
+        Class<ENTITY>            entityClass = (Class<ENTITY>) ResolvableType.forClass(BaseMybatisPlusMapper.class, this.getClass()).getGeneric(0).resolve();
+        Map<String, ColumnCache> columnMap   = LambdaUtils.getColumnMap(entityClass);
+        if (isEmpty(columnMap)) return null;
 
-        do {
-            pageResult = this.page(page, entity);
-
-            recordsConsumer.accept(pageResult);
-
-            pageNumber++;
-            page.setPageNumber(pageNumber);
-        } while (pageResult.size() == batchSize);
+        return column(columnMap, fieldName);
     }
 
     default QueryWrapper<ENTITY> range(QueryWrapper<ENTITY> wrapper, Range... ranges)

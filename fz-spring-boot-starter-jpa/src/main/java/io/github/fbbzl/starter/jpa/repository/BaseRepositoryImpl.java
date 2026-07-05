@@ -12,21 +12,25 @@ import io.github.fbbzl.starter.dal.Range;
 import io.github.fbbzl.starter.dal.annotation.ReadOnly;
 import io.github.fbbzl.starter.jpa.BaseJpaEntity;
 import io.github.fbbzl.starter.jpa.Specifications;
-import io.github.fbbzl.starter.pojo.entity.BaseTableEntity;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.LockModeType;
 import jakarta.persistence.criteria.*;
+import lombok.AccessLevel;
+import lombok.experimental.Delegate;
+import lombok.experimental.FieldDefaults;
 import org.fz.erwin.exception.Throws;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
+import org.springframework.data.jpa.repository.support.JpaRepositoryImplementation;
 import org.springframework.data.jpa.repository.support.SimpleJpaRepository;
+import org.springframework.lang.NonNull;
 import org.springframework.lang.Nullable;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.io.Serializable;
+import java.time.LocalDateTime;
 import java.util.*;
-import java.util.function.Consumer;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
@@ -40,20 +44,22 @@ import static java.util.Collections.emptyList;
  * @version 1.0
  * @since 2020/1/3/001 13:30
  */
-public class BaseRepositoryImpl<ENTITY extends BaseTableEntity<ID>, ID extends Serializable>
-        extends SimpleJpaRepository<ENTITY, ID>
-        implements BaseRepository<ENTITY, ID>
+@FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
+public class BaseRepositoryImpl<ENTITY extends BaseJpaEntity<ID>, ID extends Serializable>
+        implements BaseRepository<ENTITY, ID>, JpaRepositoryImplementation<ENTITY, ID>
 {
 
-    private final Class<ENTITY> entityClass;
-    private final EntityManager entityManager;
+    Class<ENTITY> entityClass;
+    EntityManager entityManager;
+    @Delegate
+    SimpleJpaRepository<ENTITY, ID> delegateRepository;
 
     @Autowired(required = false)
     public BaseRepositoryImpl(Class<ENTITY> entityClass, EntityManager entityManager)
     {
-        super(entityClass, entityManager);
-        this.entityManager = entityManager;
-        this.entityClass   = entityClass;
+        this.entityManager      = entityManager;
+        this.entityClass        = entityClass;
+        this.delegateRepository = new SimpleJpaRepository<>(entityClass, entityManager);
     }
 
     @Transactional
@@ -61,7 +67,7 @@ public class BaseRepositoryImpl<ENTITY extends BaseTableEntity<ID>, ID extends S
     public ENTITY create(@Nullable ENTITY entity)
     {
         if (entity == null) return null;
-        return super.saveAndFlush(entity);
+        return delegateRepository.saveAndFlush(entity);
     }
 
     @Transactional
@@ -69,44 +75,178 @@ public class BaseRepositoryImpl<ENTITY extends BaseTableEntity<ID>, ID extends S
     public List<ENTITY> create(@Nullable Iterable<ENTITY> entities)
     {
         if (isEmpty(entities)) return emptyList();
-        return super.saveAllAndFlush(entities);
+        return delegateRepository.saveAllAndFlush(entities);
     }
 
     @Transactional
     @Override
     public void delete(@Nullable ID id)
     {
-        if (id != null) super.deleteById(id);
+        if (id == null) return;
+        deleteByIds(List.of(id));
     }
 
     @Transactional
     @Override
     public void delete(@Nullable Iterable<ID> ids)
     {
-        if (isEmpty(ids)) return;
+        deleteByIds(toList(ids));
+    }
 
-        super.deleteAllById(ids);
+    @Override
+    public <S extends ENTITY> S save(@NonNull S entity)
+    {
+        return delegateRepository.save(entity);
     }
 
     @Transactional
     @Override
-    public int update(@Nullable ENTITY entity)
+    public void deleteById(@NonNull ID id)
+    {
+        delete(id);
+    }
+
+    @Transactional
+    @Override
+    @SuppressWarnings("unchecked")
+    public void deleteAllById(@NonNull Iterable<? extends ID> ids)
+    {
+        delete((Iterable<ID>) ids);
+    }
+
+    @Transactional
+    @Override
+    public void delete(@Nullable ENTITY entity)
+    {
+        if (entity == null) return;
+        deleteByIds(List.of(entity.getId()));
+    }
+
+    @Transactional
+    @Override
+    public void deleteAll(@NonNull Iterable<? extends ENTITY> entities)
+    {
+        deleteByIds(extractIds(entities));
+    }
+
+    @Override
+    public <S extends ENTITY> S saveAndFlush(@NonNull S entity)
+    {
+        return delegateRepository.saveAndFlush(entity);
+    }
+
+    @Deprecated
+    @Transactional
+    @Override
+    public void deleteInBatch(@NonNull Iterable<ENTITY> entities)
+    {
+        deleteByIds(extractIds(entities));
+    }
+
+    @Transactional
+    @Override
+    public void deleteAllInBatch(@NonNull Iterable<ENTITY> entities)
+    {
+        deleteByIds(extractIds(entities));
+    }
+
+    @Transactional
+    @Override
+    public void deleteAllByIdInBatch(@NonNull Iterable<ID> ids)
+    {
+        deleteByIds(toList(ids));
+    }
+
+    @Transactional
+    @Override
+    public void deleteAll()
+    {
+        setDeleteAt();
+
+        CriteriaBuilder        cb     = entityManager.getCriteriaBuilder();
+        CriteriaDelete<ENTITY> delete = cb.createCriteriaDelete(entityClass);
+        delete.from(entityClass);
+        entityManager.createQuery(delete).executeUpdate();
+    }
+
+    @Transactional
+    @Override
+    public void deleteAllInBatch()
+    {
+        deleteAll();
+    }
+
+    private void deleteByIds(Collection<ID> ids)
+    {
+        if (isEmpty(ids)) return;
+
+        setDeleteAt(ids);
+
+        CriteriaBuilder        cb     = entityManager.getCriteriaBuilder();
+        CriteriaDelete<ENTITY> delete = cb.createCriteriaDelete(entityClass);
+        Root<ENTITY>           root   = delete.from(entityClass);
+        delete.where(root.get(BaseJpaEntity.Fields.id).in(ids));
+        entityManager.createQuery(delete).executeUpdate();
+    }
+
+    private void setDeleteAt(Collection<ID> ids)
+    {
+        if (isEmpty(ids)) return;
+
+        CriteriaBuilder        cb     = entityManager.getCriteriaBuilder();
+        CriteriaUpdate<ENTITY> update = cb.createCriteriaUpdate(entityClass);
+        Root<ENTITY>           root   = update.from(entityClass);
+
+        update.set(root.get(BaseJpaEntity.Fields.deleteAt), LocalDateTime.now());
+        update.where(root.get(BaseJpaEntity.Fields.id).in(ids));
+
+        entityManager.createQuery(update).executeUpdate();
+    }
+
+    private void setDeleteAt()
+    {
+        CriteriaBuilder        cb     = entityManager.getCriteriaBuilder();
+        CriteriaUpdate<ENTITY> update = cb.createCriteriaUpdate(entityClass);
+        Root<ENTITY>           root   = update.from(entityClass);
+
+        update.set(root.get(BaseJpaEntity.Fields.deleteAt), LocalDateTime.now());
+
+        entityManager.createQuery(update).executeUpdate();
+    }
+
+    private List<ID> toList(Iterable<ID> ids)
+    {
+        return ids == null ? emptyList() : StreamSupport.stream(ids.spliterator(), false).toList();
+    }
+
+    private List<ID> extractIds(Iterable<? extends ENTITY> entities)
+    {
+        if (entities == null) return emptyList();
+        return StreamSupport.stream(entities.spliterator(), false)
+                            .filter(Objects::nonNull)
+                            .map(BaseJpaEntity::getId)
+                            .toList();
+    }
+
+    @Transactional
+    @Override
+    public int update(ENTITY entity)
     {
         Throws.ifNull(entity, "entity can not be null when doing update");
         Throws.ifNull(entity.getId(), "id can not be null when doing update");
 
-        return super.findById(entity.getId())
-                .map(byId -> {
-                    BeanUtil.copyProperties(entity, byId, CopyOptions.create().setIgnoreNullValue(true).setIgnoreError(true));
-                    super.saveAndFlush(byId);
-                    return 1;
-                })
-                .orElse(0);
+        return delegateRepository.findById(entity.getId())
+                                 .map(byId -> {
+                                     BeanUtil.copyProperties(entity, byId, CopyOptions.create().setIgnoreNullValue(true).setIgnoreError(false));
+                                     delegateRepository.saveAndFlush(byId);
+                                     return 1;
+                                 })
+                                 .orElse(0);
     }
 
     @Transactional
     @Override
-    public int update(@Nullable Iterable<ENTITY> entities)
+    public int update(Iterable<ENTITY> entities)
     {
         if (entities == null) return 0;
 
@@ -114,22 +254,20 @@ public class BaseRepositoryImpl<ENTITY extends BaseTableEntity<ID>, ID extends S
         if (isEmpty(entityList)) return 0;
 
         Map<ID, ENTITY> updateEntityMap = new LinkedHashMap<>();
-        for (ENTITY entity : entityList)
-        {
+        for (ENTITY entity : entityList) {
             Throws.ifNull(entity, "entity can not be null when doing update");
             Throws.ifNull(entity.getId(), "id can not be null when doing update");
             updateEntityMap.put(entity.getId(), entity);
         }
 
-        List<ENTITY> existingEntities = super.findAllById(updateEntityMap.keySet());
+        List<ENTITY> existingEntities = delegateRepository.findAllById(updateEntityMap.keySet());
         if (isEmpty(existingEntities)) return 0;
 
-        CopyOptions copyOptions = CopyOptions.create().setIgnoreNullValue(true).setIgnoreError(true);
-        for (ENTITY existingEntity : existingEntities)
-        {
+        CopyOptions copyOptions = CopyOptions.create().setIgnoreNullValue(true).setIgnoreError(false);
+        for (ENTITY existingEntity : existingEntities) {
             BeanUtil.copyProperties(updateEntityMap.get(existingEntity.getId()), existingEntity, copyOptions);
         }
-        super.saveAllAndFlush(existingEntities);
+        delegateRepository.saveAllAndFlush(existingEntities);
         return existingEntities.size();
     }
 
@@ -137,7 +275,7 @@ public class BaseRepositoryImpl<ENTITY extends BaseTableEntity<ID>, ID extends S
     @Override
     public ENTITY byId(@Nullable ID id)
     {
-        if (id != null) return super.findById(id).orElse(null);
+        if (id != null) return delegateRepository.findById(id).orElse(null);
         else return null;
     }
 
@@ -145,17 +283,11 @@ public class BaseRepositoryImpl<ENTITY extends BaseTableEntity<ID>, ID extends S
     public List<ENTITY> byIds(@Nullable Collection<ID> ids)
     {
         if (isEmpty(ids)) return emptyList();
-        else              return super.findAllById(ids);
+        else return delegateRepository.findAllById(ids);
     }
 
     @Override
-    public Optional<ENTITY> one(@Nullable ENTITY entity)
-    {
-        return super.findOne(Specifications.byAuto(entityManager, entity));
-    }
-
-    @Override
-    public List<ENTITY> list(@Nullable ENTITY entity, @Nullable Integer limit, @Nullable Order[] orders, @Nullable Range[] ranges)
+    public List<ENTITY> list(@Nullable ENTITY entity, Integer limit, @Nullable Order[] orders, @Nullable Range[] ranges)
     {
         Throws.ifNull(limit, "limit can not be null when doing list-query");
         if (entity == null) return emptyList();
@@ -166,16 +298,16 @@ public class BaseRepositoryImpl<ENTITY extends BaseTableEntity<ID>, ID extends S
 
     @ReadOnly
     @Override
-    @SuppressWarnings({"unchecked", "rawtypes"})
-    public List<ID> ids(@Nullable ENTITY entity, @Nullable Integer limit)
+    @SuppressWarnings({"unchecked"})
+    public List<ID> ids(@Nullable ENTITY entity, Integer limit)
     {
         Throws.ifNull(limit, "limit can not be null when doing ids-query");
         if (entity == null) return emptyList();
 
-        CriteriaBuilder      cb     = entityManager.getCriteriaBuilder();
-        CriteriaQuery<Object> cq    = cb.createQuery();
-        Root<ENTITY>         root   = cq.from(entityClass);
-        Path<ID>             idPath = root.get(BaseJpaEntity.Fields.id);
+        CriteriaBuilder       cb     = entityManager.getCriteriaBuilder();
+        CriteriaQuery<Object> cq     = cb.createQuery();
+        Root<ENTITY>          root   = cq.from(entityClass);
+        Path<ID>              idPath = root.get(BaseJpaEntity.Fields.id);
         cq.select(idPath);
 
         Predicate predicate = Specifications.byAuto(entityManager, entity).toPredicate(root, cq, cb);
@@ -185,13 +317,15 @@ public class BaseRepositoryImpl<ENTITY extends BaseTableEntity<ID>, ID extends S
     }
 
     @Override
-    public PageResult<ENTITY> page(@Nullable Page page, @Nullable ENTITY entity)
+    public PageResult<ENTITY> page(Page page, @Nullable ENTITY entity)
     {
         Throws.ifNull(page, "page can not be null when doing page-query");
 
         PageRequest pageRequest = PageRequest.of(page.getPageNumber(), page.getPageSize(), toSort(page.getOrders()));
 
-        org.springframework.data.domain.Page<ENTITY> pageImpl = findAll(Specifications.byAuto(entityManager, entity), pageRequest);
+        org.springframework.data.domain.Page<ENTITY> pageImpl = entity == null
+                                                                  ? findAll(pageRequest)
+                                                                  : findAll(Specifications.byAuto(entityManager, entity), pageRequest);
 
         return this.toPageResult(pageImpl.getNumber(), pageImpl.getSize(), pageImpl.getTotalElements(), pageImpl.getContent());
     }
@@ -200,15 +334,7 @@ public class BaseRepositoryImpl<ENTITY extends BaseTableEntity<ID>, ID extends S
     public long count(@Nullable ENTITY entity)
     {
         if (entity == null) return 0L;
-        return super.count(Specifications.byAuto(entityManager, entity, false));
-    }
-
-    @Override
-    public boolean exists(@Nullable ENTITY entity)
-    {
-        if (entity == null) return false;
-
-        return super.count(Specifications.byAuto(entityManager, entity, false)) > 0;
+        return delegateRepository.count(Specifications.byAuto(entityManager, entity, false));
     }
 
     @Override
@@ -216,7 +342,7 @@ public class BaseRepositoryImpl<ENTITY extends BaseTableEntity<ID>, ID extends S
     {
         if (id == null) return false;
 
-        return super.existsById(id);
+        return delegateRepository.existsById(id);
     }
 
     @Transactional
@@ -246,12 +372,12 @@ public class BaseRepositoryImpl<ENTITY extends BaseTableEntity<ID>, ID extends S
         Root<ENTITY>          root = cq.from(entityClass);
 
         Predicate predicate = Specifications.byAuto(entityManager, entity)
-                .toPredicate(root, cq, cb);
+                                            .toPredicate(root, cq, cb);
         if (predicate != null) cq.where(predicate);
 
         entityManager.createQuery(cq)
-                .setLockMode(LockModeType.PESSIMISTIC_WRITE)
-                .getResultList();
+                     .setLockMode(LockModeType.PESSIMISTIC_WRITE)
+                     .getResultList();
     }
 
     @Transactional
@@ -294,25 +420,6 @@ public class BaseRepositoryImpl<ENTITY extends BaseTableEntity<ID>, ID extends S
         update.where(root.get(BaseJpaEntity.Fields.id).in(ids));
 
         entityManager.createQuery(update).executeUpdate();
-    }
-
-    @Override
-    public void doBatchConsume(@Nullable ENTITY entity, int batchSize, Consumer<List<ENTITY>> recordsConsumer)
-    {
-        int                                          pageNumber  = 0;
-        PageRequest                                  pageRequest = PageRequest.of(pageNumber, batchSize);
-        org.springframework.data.domain.Page<ENTITY> pageResult;
-
-        do {
-            pageResult = entity == null
-                         ? super.findAll(pageRequest)
-                         : super.findAll(Specifications.byAuto(entityManager, entity), pageRequest);
-
-            recordsConsumer.accept(pageResult.getContent());
-
-            pageNumber++;
-            pageRequest = PageRequest.of(pageNumber, batchSize);
-        } while (pageResult.hasNext());
     }
 
     @SafeVarargs

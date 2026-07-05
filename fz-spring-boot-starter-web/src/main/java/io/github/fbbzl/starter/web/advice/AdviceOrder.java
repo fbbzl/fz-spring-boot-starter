@@ -1,5 +1,6 @@
 package io.github.fbbzl.starter.web.advice;
 
+import lombok.experimental.UtilityClass;
 import org.springframework.core.Ordered;
 
 /**
@@ -9,18 +10,27 @@ import org.springframework.core.Ordered;
  * @version 1.0
  * @since 2026/4/29
  */
-public interface AdviceOrder
+@UtilityClass
+public final class AdviceOrder
 {
 
-    /** {@link WebRequestAdvice} */
-    int WEB_REQUEST          = Ordered.LOWEST_PRECEDENCE;
+    /**
+     * {@link WebRequestAdvice}
+     */
+    public static final int WEB_REQUEST = Ordered.LOWEST_PRECEDENCE;
 
-    /** {@link WebResponseWrapAdvice} */
-    int WEB_RESPONSE_WRAP    = Ordered.HIGHEST_PRECEDENCE + 100;
+    /**
+     * {@link WebResponseWrapAdvice}
+     */
+    public static final int WEB_RESPONSE_WRAP = Ordered.HIGHEST_PRECEDENCE + 100;
 
-    /** {@link WebResponseOperateAdvice} */
-    int WEB_RESPONSE_OPERATE = Ordered.HIGHEST_PRECEDENCE + 200;
+    /**
+     * {@link WebResponseOperateAdvice}
+     */
+    public static final int WEB_RESPONSE_OPERATE = Ordered.HIGHEST_PRECEDENCE + 200;
 
-    /** {@link WebExceptionAdvice} */
-    int WEB_EXCEPTION        = Ordered.LOWEST_PRECEDENCE;
+    /**
+     * {@link WebExceptionAdvice}
+     */
+    public static final int WEB_EXCEPTION = Ordered.LOWEST_PRECEDENCE;
 }

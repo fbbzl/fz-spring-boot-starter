@@ -40,7 +40,9 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.validation.annotation.Validated;
 
 import java.io.Serializable;
-import java.util.*;
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
 import java.util.function.Function;
 
 import static cn.hutool.core.collection.CollUtil.isEmpty;
@@ -60,6 +62,7 @@ import static java.util.stream.Collectors.toMap;
 
 @Validated
 @Slf4j
+@SuppressWarnings("all")
 @FieldDefaults(level = AccessLevel.PROTECTED)
 public abstract class BaseCrudService<
         ID            extends Serializable,
@@ -69,6 +72,8 @@ public abstract class BaseCrudService<
         DAL           extends BaseDal<ENTITY, ID>,
         STRUCT_MAPPER extends BaseCrudStructMapper<ENTITY, DTO, BO>> implements BeanNameAware, Container<ID>
 {
+    public static final int DEFAULT_MAX_LIMIT = 10_000;
+
     Class<ENTITY> entityClass = Generics.getGenericSuperType(this.getClass(), BaseCrudService.class, 1);
     Class<DTO>    dtoClass    = Generics.getGenericSuperType(this.getClass(), BaseCrudService.class, 2);
     Class<BO>     boClass     = Generics.getGenericSuperType(this.getClass(), BaseCrudService.class, 3);
@@ -104,6 +109,11 @@ public abstract class BaseCrudService<
         return map(ids);
     }
 
+    protected int getDefaultMaxLimit()
+    {
+        return DEFAULT_MAX_LIMIT;
+    }
+
     @Nullable
     public BO byId(
             @NotNull(message = "id can not be null when doing id-query")
@@ -133,7 +143,7 @@ public abstract class BaseCrudService<
     public List<BO> list(
             DTO dto)
     {
-        return list(dto, Integer.MAX_VALUE, null, null);
+        return list(dto, getDefaultMaxLimit(), null, null);
     }
 
     public List<BO> list(
@@ -169,7 +179,7 @@ public abstract class BaseCrudService<
             @Size(max = 1024, message = "the number of ranges cannot exceed 1024")
             Range[] ranges)
     {
-        return list(dto, Integer.MAX_VALUE, null, ranges);
+        return list(dto, getDefaultMaxLimit(), null, ranges);
     }
 
     public List<BO> list(
@@ -177,7 +187,7 @@ public abstract class BaseCrudService<
             @Size(max = 1024, message = "the number of order cannot exceed 1024")
             Order[] orders)
     {
-        return list(dto, Integer.MAX_VALUE, orders, null);
+        return list(dto, getDefaultMaxLimit(), orders, null);
     }
 
     public List<BO> list(
@@ -201,7 +211,7 @@ public abstract class BaseCrudService<
         if (dto == null) return emptyList();
         dto.prepareQuery();
         Validators.validateAndThrow(dto, CRUD.R.class);
-        return dal.ids(struct.dtoToEntity(dto), Integer.MAX_VALUE);
+        return dal.ids(struct.dtoToEntity(dto), getDefaultMaxLimit());
     }
 
     public List<ID> ids(
@@ -231,7 +241,7 @@ public abstract class BaseCrudService<
             ID rootId,
             DTO dto)
     {
-        return tree(rootId, dto, Integer.MAX_VALUE, null, null);
+        return tree(rootId, dto, getDefaultMaxLimit(), null, null);
     }
 
     public List<Tree<ID>> tree(
@@ -275,7 +285,7 @@ public abstract class BaseCrudService<
             @Size(max = 1024, message = "the number of ranges cannot exceed 1024")
             Range[] ranges)
     {
-        return tree(rootId, dto, Integer.MAX_VALUE, null, ranges);
+        return tree(rootId, dto, getDefaultMaxLimit(), null, ranges);
     }
 
     public List<Tree<ID>> tree(
@@ -285,7 +295,7 @@ public abstract class BaseCrudService<
             @Size(max = 1024, message = "the number of order cannot exceed 1024")
             Order[] orders)
     {
-        return tree(rootId, dto, Integer.MAX_VALUE, orders, null);
+        return tree(rootId, dto, getDefaultMaxLimit(), orders, null);
     }
 
     public List<Tree<ID>> tree(
@@ -342,34 +352,6 @@ public abstract class BaseCrudService<
         dto.prepareQuery();
         Validators.validateAndThrow(dto, CRUD.R.class);
         return dal.count(struct.dtoToEntity(dto));
-    }
-
-    public List<Map<String, Object>> diff(
-            @NotNull(message = "id can not be null when doing diff")
-            ID id,
-            @NotNull(message = "data can not be null when doing diff")
-            DTO dto)
-    {
-        BO          current    = byId(id);
-        DTO         currentDto = struct.boToDto(current);
-        Map<String, Object> currentMap = objectMapper.convertValue(currentDto, Map.class);
-        Map<String, Object> newMap     = objectMapper.convertValue(dto, Map.class);
-        if (currentMap == null || newMap == null) return List.of();
-
-        List<Map<String, Object>> diffs = new ArrayList<>();
-        for (Map.Entry<String, Object> entry : newMap.entrySet()) {
-            String field  = entry.getKey();
-            Object oldVal = currentMap.get(field);
-            Object newVal = entry.getValue();
-            if (!Objects.equals(oldVal, newVal)) {
-                Map<String, Object> diff = new HashMap<>();
-                diff.put("field",    field);
-                diff.put("oldValue", oldVal);
-                diff.put("newValue", newVal);
-                diffs.add(diff);
-            }
-        }
-        return diffs;
     }
 
     @Transactional
@@ -437,10 +419,7 @@ public abstract class BaseCrudService<
         dto.prepareDelete();
         Validators.validateAndThrow(dto, CRUD.D.class);
         Throws.ifNull(dto.getId(), "id can not be null when doing delete");
-        List<ID> ids = ids(dto);
-        if (isEmpty(ids)) return;
-
-        dal.delete(ids);
+        dal.delete(dto.getId());
     }
 
     @Transactional

@@ -24,6 +24,7 @@ import org.springframework.web.reactive.result.method.annotation.ResponseBodyRes
 import org.springframework.web.server.ServerWebExchange;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
+import reactor.core.scheduler.Schedulers;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
@@ -75,38 +76,36 @@ public class WebFluxResponseBodyResultHandler extends ResponseBodyResultHandler
     @Override
     public Mono<Void> handleResult(@NonNull ServerWebExchange exchange, @NonNull HandlerResult result)
     {
-        HandlerResult handledResult = doHandleResult(result);
-        return super.handleResult(exchange, handledResult);
+        return doHandleResult(result).flatMap(handledResult -> super.handleResult(exchange, handledResult));
     }
 
-    private HandlerResult doHandleResult(HandlerResult result)
+    private Mono<HandlerResult> doHandleResult(HandlerResult result)
     {
         MethodParameter returnType = result.getReturnTypeSource();
         Object          body       = result.getReturnValue();
 
         if (hasAnnotation(returnType, IgnoreResponseWrap.class)) {
-            return result;
+            return Mono.just(result);
         }
 
-        Object wrappedBody;
-        MethodParameter wrappedType;
         if (body instanceof Mono<?> mono) {
-            wrappedBody = mono.map(value -> wrap(value, returnType));
-            wrappedType = monoResponseType;
+            return wrapAsync(mono, returnType).map(wrapped -> newResult(result, wrapped, monoResponseType));
         }
-        else if (body instanceof Flux<?>) {
-            return result;
+        if (body instanceof Flux<?>) {
+            return Mono.just(result);
         }
-        else {
-            wrappedBody = wrap(body, returnType);
-            wrappedType = responseType;
-        }
-
-        return new HandlerResult(result.getHandler(), wrappedBody, wrappedType, result.getBindingContext())
-                .setExceptionHandler(result.getExceptionHandler());
+        return Mono.fromCallable(() -> wrapValue(body, returnType))
+                   .subscribeOn(Schedulers.boundedElastic())
+                   .map(wrapped -> newResult(result, wrapped, responseType));
     }
 
-    private Object wrap(@Nullable Object body, MethodParameter returnType)
+    private Mono<R<?>> wrapAsync(Mono<?> mono, MethodParameter returnType)
+    {
+        return mono.flatMap(value -> Mono.fromCallable(() -> wrapValue(value, returnType))
+                                         .subscribeOn(Schedulers.boundedElastic()));
+    }
+
+    private R<?> wrapValue(@Nullable Object body, MethodParameter returnType)
     {
         if (!hasAnnotation(returnType, IgnoreResponseOperate.class)) {
             Object operateBody = body instanceof R<?> response ? response.getData() : body;
@@ -121,6 +120,12 @@ public class WebFluxResponseBodyResultHandler extends ResponseBodyResultHandler
     {
         Object operateData = data instanceof R.PR<?> page ? page.records() : data;
         operateTemplate.execute(operateData, asyncBeanOperationExecutor, Grouped.alwaysMatch());
+    }
+
+    private HandlerResult newResult(HandlerResult original, Object body, MethodParameter type)
+    {
+        return new HandlerResult(original.getHandler(), body, type, original.getBindingContext())
+                .setExceptionHandler(original.getExceptionHandler());
     }
 
     private boolean hasAnnotation(MethodParameter returnType, Class<? extends Annotation> annotationType)

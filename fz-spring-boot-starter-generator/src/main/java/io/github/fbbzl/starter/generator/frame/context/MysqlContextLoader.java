@@ -14,8 +14,6 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-import static java.lang.Boolean.TRUE;
-
 /**
  * used to obtain ddl information for database tables
  *
@@ -129,7 +127,10 @@ public class MysqlContextLoader
         for (Map<String, Object> row : indexRows) {
             String  indexName  = MapUtil.getStr(row, "index_name");
             String  columnName = MapUtil.getStr(row, "column_name");
-            Boolean nonUnique  = MapUtil.getBool(row, "non_unique");
+
+            // information_schema.statistics.non_unique is an int (0=unique, 1=not unique)
+            Object  nonUniqueObj = row.get("non_unique");
+            boolean nonUnique    = nonUniqueObj instanceof Number number && number.intValue() != 0;
 
             // exclude primary key indexes
             if ("PRIMARY".equalsIgnoreCase(indexName)) {
@@ -140,7 +141,7 @@ public class MysqlContextLoader
                 Index index = new Index();
                 index.setName(indexName);
                 index.setColumns(new ArrayList<>());
-                index.setUnique(TRUE != nonUnique);
+                index.setUnique(!nonUnique);
                 return index;
             }).getColumns().add(columnName);
         }

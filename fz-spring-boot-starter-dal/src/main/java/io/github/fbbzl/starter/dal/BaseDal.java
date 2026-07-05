@@ -30,27 +30,33 @@ public interface BaseDal<ENTITY extends BaseTableEntity<ID>, ID extends Serializ
 
     void delete(@Nullable Iterable<ID> ids);
 
-    int update(@Nullable ENTITY entity);
+    int update(ENTITY entity);
 
-    int update(@Nullable Iterable<ENTITY> entities);
+    int update(Iterable<ENTITY> entities);
 
     @Nullable
     ENTITY byId(@Nullable ID id);
 
     List<ENTITY> byIds(@Nullable Collection<ID> ids);
 
-    Optional<ENTITY> one(@Nullable ENTITY entity);
+    default Optional<ENTITY> one(ENTITY entity)
+    {
+        return this.list(entity, 1, null, null).stream().findFirst();
+    }
 
-    List<ENTITY> list(@Nullable ENTITY entity, @Nullable Integer limit, @Nullable Order[] orders, @Nullable Range[] ranges);
+    List<ENTITY> list(@Nullable ENTITY entity, Integer limit, @Nullable Order[] orders, @Nullable Range[] ranges);
 
-    default List<ID> ids(@Nullable ENTITY entity, @Nullable Integer limit)
+    default List<ID> ids(@Nullable ENTITY entity, Integer limit)
     {
         return this.list(entity, limit, null, null).stream().map(BaseTableEntity::getId).toList();
     }
 
-    PageResult<ENTITY> page(@Nullable Page page, @Nullable ENTITY entity);
+    PageResult<ENTITY> page(Page page, @Nullable ENTITY entity);
 
-    boolean exists(@Nullable ENTITY entity);
+    default boolean exists(@Nullable ENTITY entity)
+    {
+        return this.count(entity) > 0;
+    }
 
     boolean exists(@Nullable ID id);
 
@@ -62,7 +68,20 @@ public interface BaseDal<ENTITY extends BaseTableEntity<ID>, ID extends Serializ
 
     void decrement(String fieldName, int delta, @Nullable List<ID> ids);
 
-    void doBatchConsume(@Nullable ENTITY entity, int batchSize, Consumer<List<ENTITY>> recordsConsumer);
+    default void doBatchConsume(@Nullable ENTITY entity, int batchSize, Consumer<List<ENTITY>> recordsConsumer)
+    {
+        if (batchSize <= 0) return;
+
+        int  pageNumber = 0;
+        long total      = -1;
+        do {
+            PageResult<ENTITY> pageResult = this.page(new Page(pageNumber, batchSize), entity);
+            total = pageResult.getTotal();
+            if (total <= 0 || pageResult.isEmpty()) return;
+            recordsConsumer.accept(pageResult);
+            pageNumber++;
+        } while ((long) pageNumber * batchSize < total);
+    }
 
     long count(@Nullable ENTITY entity);
 

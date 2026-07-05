@@ -14,7 +14,7 @@ import jakarta.validation.constraints.Size;
 import jakarta.validation.groups.Default;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
-import org.jspecify.annotations.Nullable;
+import org.springframework.lang.Nullable;
 import org.springframework.web.multipart.MultipartFile;
 
 import static lombok.AccessLevel.PRIVATE;
@@ -212,7 +212,7 @@ public class Q<DATA>
     public static class FQ
     {
 
-        @Size(max = 128, message = "{FQ.files.size}")
+        @Size(min = 1, max = 128, message = "{FQ.files.size}")
         @Schema(description = "uploaded files")
         @Nullable
         MultipartFile[] files;

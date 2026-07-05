@@ -5,7 +5,6 @@ import cn.hutool.db.sql.Condition.LikeType;
 import cn.hutool.db.sql.Direction;
 import cn.hutool.db.sql.Order;
 import cn.hutool.json.JSONUtil;
-import org.fz.erwin.exception.Throws;
 import io.github.fbbzl.starter.dal.Range;
 import io.github.fbbzl.starter.pojo.entity.BaseTableEntity;
 import jakarta.persistence.Column;
@@ -13,7 +12,9 @@ import jakarta.persistence.EntityManager;
 import jakarta.persistence.criteria.*;
 import jakarta.persistence.metamodel.Attribute;
 import jakarta.persistence.metamodel.EntityType;
+import jakarta.persistence.metamodel.ManagedType;
 import jakarta.persistence.metamodel.SingularAttribute;
+import org.fz.erwin.exception.Throws;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
 import org.springframework.data.jpa.domain.Specification;
@@ -25,6 +26,7 @@ import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Stream;
 
+import static cn.hutool.core.collection.CollUtil.isEmpty;
 import static cn.hutool.core.text.CharSequenceUtil.isBlank;
 import static cn.hutool.db.sql.SqlUtil.buildLikeValue;
 
@@ -83,49 +85,81 @@ public class Specifications {
     {
         Throws.ifNull(sqlQueryEntity, "sqlQueryEntity can not be null when building specification");
 
+        return (Root<ENTITY> root, CriteriaQuery<?> query, CriteriaBuilder cb) -> {
+            Predicate predicate = predicateByAuto(entityManager, sqlQueryEntity, root, cb, stringLike, ranges);
+            order(root, query, cb, orders);
+            return predicate;
+        };
+    }
+
+    public static <ENTITY extends BaseTableEntity> Predicate predicateByAuto(
+            final EntityManager entityManager,
+            final ENTITY sqlQueryEntity,
+            final Root<ENTITY> root,
+            final CriteriaBuilder cb)
+    {
+        return predicateByAuto(entityManager, sqlQueryEntity, root, cb, true, (Range[]) null);
+    }
+
+    public static <ENTITY extends BaseTableEntity> Predicate predicateByAuto(
+            final EntityManager entityManager,
+            final ENTITY sqlQueryEntity,
+            final Root<ENTITY> root,
+            final CriteriaBuilder cb,
+            boolean stringLike,
+            final Range[] ranges)
+    {
+        Throws.ifNull(sqlQueryEntity, "sqlQueryEntity can not be null when building specification");
+
         final Class<ENTITY> type = (Class<ENTITY>) sqlQueryEntity.getClass();
 
-        return (Root<ENTITY> root, CriteriaQuery<?> query, CriteriaBuilder cb) -> {
-            List<Predicate>                   predicates    = new ArrayList<>(10);
-            EntityType<ENTITY>                entityType    = entityManager.getMetamodel().entity(type);
-            Set<Attribute<? super ENTITY, ?>> allAttributes = entityType.getAttributes();
+        List<Predicate>                   predicates    = new ArrayList<>(10);
+        EntityType<ENTITY>                entityType    = entityManager.getMetamodel().entity(type);
+        Set<Attribute<? super ENTITY, ?>> allAttributes = entityType.getAttributes();
 
-            // for each field
-            allAttributes.forEach(field -> {
-                Object queryValue = getValue(sqlQueryEntity, field);
-                if (queryValue == null) return;
+        // for each field
+        allAttributes.forEach(field -> {
+            Object queryValue = getValue(sqlQueryEntity, field);
+            if (queryValue == null) return;
+            if (queryValue instanceof String string && isBlank(string)) return;
+            if (queryValue instanceof Collection<?> collection && isEmpty(collection)) return;
+            if (queryValue instanceof Map<?, ?> map && map.isEmpty()) return;
 
-                if (isJsonField(field)) {
-                    jsonQuery(predicates, root, cb, entityType, field, queryValue);
-                    return;
-                }
+            if (isJsonField(field)) {
+                jsonQuery(predicates, root, cb, entityType, field, queryValue);
+                return;
+            }
 
-                switch (queryValue) {
-                    case List<?>       list          -> predicates.add(cb.in(root.get(attribute(entityType, field))).in(list));
-                    case String        string when stringLike
-                                                    -> predicates.add(cb.like((Path<String>) root.get(attribute(entityType, field)), buildLikeValue(string, LikeType.Contains, false)));
-                    case String        string        -> predicates.add(cb.equal(root.get(attribute(entityType, field)), string));
-                    case Enum<?>       enumVal       -> predicates.add(cb.equal(root.get(attribute(entityType, field)), enumVal));
-                    case Number        number        -> predicates.add(cb.equal(root.get(attribute(entityType, field)), number));
-                    case LocalDateTime localDateTime -> predicates.add(cb.equal(root.get(attribute(entityType, field)), localDateTime));
-                    case Date          date          -> predicates.add(cb.equal(root.get(attribute(entityType, field)), date));
-                    default                          -> predicates.add(cb.equal(root.get(attribute(entityType, field)), queryValue));
-                }
-            });
+            switch (queryValue) {
+                case Collection<?> collection       -> predicates.add(root.get(attribute(entityType, field)).in(collection));
+                case String        string when stringLike
+                                                -> predicates.add(cb.like((Path<String>) root.get(attribute(entityType, field)), buildLikeValue(escapeLike(string), LikeType.Contains, false), '\\'));
+                case String        string        -> predicates.add(cb.equal(root.get(attribute(entityType, field)), string));
+                case Enum<?>       enumVal       -> predicates.add(cb.equal(root.get(attribute(entityType, field)), enumVal));
+                case Number        number        -> predicates.add(cb.equal(root.get(attribute(entityType, field)), number));
+                case LocalDateTime localDateTime -> predicates.add(cb.equal(root.get(attribute(entityType, field)), localDateTime));
+                case Date          date          -> predicates.add(cb.equal(root.get(attribute(entityType, field)), date));
+                default                          -> predicates.add(cb.equal(root.get(attribute(entityType, field)), queryValue));
+            }
+        });
 
-            // range query
-            range(predicates, root, cb, entityType, allAttributes, ranges);
+        // range query
+        range(predicates, root, cb, entityType, allAttributes, ranges);
 
-            // order query
-            order(root, query, cb, orders);
-
-            return predicates.isEmpty() ? cb.conjunction() : cb.and(predicates.toArray(EMPTY_PREDICATE));
-        };
+        return predicates.isEmpty() ? cb.conjunction() : cb.and(predicates.toArray(EMPTY_PREDICATE));
     }
 
     private static Comparable comparable(Object value)
     {
         return value instanceof Comparable<?> comparable ? comparable : null;
+    }
+
+    private static String escapeLike(String value)
+    {
+        if (value == null) return null;
+        return value.replace("\\", "\\\\")
+                    .replace("%", "\\%")
+                    .replace("_", "\\_");
     }
 
     private static <ENTITY extends BaseTableEntity> boolean isJsonField(Attribute<? super ENTITY, ?> attr)
@@ -258,11 +292,27 @@ public class Specifications {
     {
         if (ArrayUtil.isEmpty(hutoolOrders)) return;
 
-        query.orderBy(Stream.of(hutoolOrders)
-                            .map(order -> order.getDirection() == Direction.ASC
-                                          ? cb.asc(root.get(order.getField()))
-                                          : cb.desc(root.get(order.getField())))
-                            .toList());
+        ManagedType<?> managedType = root.getModel();
+        List<jakarta.persistence.criteria.Order> orders = Stream.of(hutoolOrders)
+                            .filter(order -> order != null && !isBlank(order.getField()))
+                            .filter(order -> {
+                                try {
+                                    managedType.getSingularAttribute(order.getField());
+                                    return true;
+                                } catch (IllegalArgumentException e) {
+                                    return false;
+                                }
+                            })
+                            .map(order -> {
+                                Direction direction = order.getDirection();
+                                return (direction == null || direction == Direction.ASC)
+                                        ? cb.asc(root.get(order.getField()))
+                                        : cb.desc(root.get(order.getField()));
+                            })
+                            .toList();
+        if (!orders.isEmpty()) {
+            query.orderBy(orders);
+        }
     }
 
 }

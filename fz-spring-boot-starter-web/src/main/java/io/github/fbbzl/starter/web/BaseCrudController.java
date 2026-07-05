@@ -14,6 +14,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
+import jakarta.validation.groups.Default;
 import lombok.experimental.FieldDefaults;
 import org.fz.erwin.lang.Generics;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,7 +25,6 @@ import org.springframework.web.bind.annotation.*;
 import java.io.Serializable;
 import java.util.Collection;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
 import static cn.hutool.core.util.ObjectUtil.defaultIfNull;
@@ -86,7 +86,7 @@ public abstract class BaseCrudController<
             @RequestBody
             OQ<DTO> req)
     {
-        return service.list(req.getData(), defaultIfNull(limit, this.defaultLimit()), req.getOrders(), req.getRanges());
+        return service.list(req.getData(), Math.min(defaultIfNull(limit, this.defaultLimit()), this.defaultLimit()), req.getOrders(), req.getRanges());
     }
 
     @Operation(description = "[BASE] For paginated query, null fields do not participate in query", summary = "[BASE] Page query")
@@ -117,7 +117,7 @@ public abstract class BaseCrudController<
             @RequestBody
             OQ<DTO> req)
     {
-        return service.tree(rootId, req.getData(), defaultIfNull(limit, this.defaultLimit()), req.getOrders(), req.getRanges());
+        return service.tree(rootId, req.getData(), Math.min(defaultIfNull(limit, this.defaultLimit()), this.defaultLimit()), req.getOrders(), req.getRanges());
     }
 
     @Operation(description = "[BASE] Specify whether primary key data exists", summary = "[BASE] Specifies whether primary key data exists")
@@ -166,24 +166,9 @@ public abstract class BaseCrudController<
             @RequestBody
             Q<DTO> req)
     {
-        if (limit != null) return service.ids(req.getData(), limit);
+        if (limit != null) return service.ids(req.getData(), Math.min(limit, this.defaultLimit()));
         else               return service.ids(req.getData());
     }
-    @Operation(description = "[BASE] Compare current data with incoming data, return field differences", summary = "[BASE] Diff by primary key")
-    @PostMapping("diff/{id}")
-    public List<Map<String, Object>> diff(
-            @NotNull
-            @PathVariable("id")
-            @Parameter(name = "id", description = "the primary key of the record to diff", required = true, example = "1")
-            ID id,
-            @NotNull
-            @Validated(CRUD.R.class)
-            @RequestBody
-            Q<DTO> req)
-    {
-        return service.diff(id, req.getData());
-    }
-
     @AuditMethod
     @Operation(description = "[BASE] Create data", summary = "[BASE] Create data")
     @PostMapping
@@ -240,6 +225,7 @@ public abstract class BaseCrudController<
             @PathVariable("id")
             @Parameter(name = "id", description = "The primary key of the record that needs to be update", required = true, example = "1")
             ID id,
+            @Validated({Default.class})
             @NotNull
             @RequestBody
             Q<DTO> req)

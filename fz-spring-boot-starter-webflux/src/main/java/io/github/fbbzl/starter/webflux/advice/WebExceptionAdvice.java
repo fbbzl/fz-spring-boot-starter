@@ -25,6 +25,7 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.bind.support.WebExchangeBindException;
 import org.springframework.web.server.MethodNotAllowedException;
+import org.springframework.web.server.ResponseStatusException;
 import org.springframework.web.server.ServerWebInputException;
 
 import java.sql.SQLIntegrityConstraintViolationException;
@@ -61,6 +62,17 @@ public class WebExceptionAdvice
         int    httpStatusCode      = exception.getVerb().getHttpStatusCode();
         log.error("business exception occurred: {}", defaultIfBlank(bizExceptionMessage, "business exception"));
         return ResponseEntity.status(httpStatusCode).body(R.fail(String.valueOf(httpStatusCode), bizExceptionMessage, null));
+    }
+
+    /**
+     * ResponseStatusException
+     */
+    @ExceptionHandler(ResponseStatusException.class)
+    public ResponseEntity<R<Void>> handleResponseStatusException(ResponseStatusException exception)
+    {
+        org.springframework.http.HttpStatusCode statusCode = exception.getStatusCode();
+        log.warn("response status exception occurred: {}", exception.getReason());
+        return ResponseEntity.status(statusCode).body(R.fail(String.valueOf(statusCode.value()), exception.getReason(), null));
     }
 
     /**
@@ -133,7 +145,7 @@ public class WebExceptionAdvice
     @ExceptionHandler(DuplicateKeyException.class)
     public Object handleDuplicateKey(DuplicateKeyException ex) {
         log.warn("duplicate key exception occurred", ex);
-        return badRequest("some properties if the data already exists, check the unique fields and try again");
+        return badRequest("some properties of the data already exist, check the unique fields and try again");
     }
 
     @ResponseStatus(HttpStatus.BAD_REQUEST)

@@ -1,5 +1,6 @@
 package io.github.fbbzl.starter.webflux.advice;
 
+import lombok.experimental.UtilityClass;
 import org.springframework.core.Ordered;
 
 /**
@@ -9,12 +10,17 @@ import org.springframework.core.Ordered;
  * @version 1.0
  * @since 2026/4/29
  */
-public interface AdviceOrder
+@UtilityClass
+public final class AdviceOrder
 {
 
-    /** {@link WebFluxResponseBodyResultHandler} */
-    int WEB_RESPONSE_HANDLER = 90;
+    /**
+     * {@link WebFluxResponseBodyResultHandler}
+     */
+    public static final int WEB_RESPONSE_HANDLER = 90;
 
-    /** {@link WebExceptionAdvice} */
-    int WEB_EXCEPTION        = Ordered.LOWEST_PRECEDENCE;
+    /**
+     * {@link WebExceptionAdvice}
+     */
+    public static final int WEB_EXCEPTION = Ordered.LOWEST_PRECEDENCE;
 }

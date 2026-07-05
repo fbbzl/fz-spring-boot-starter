@@ -19,8 +19,9 @@ import static cn.hutool.core.date.DatePattern.NORM_DATETIME_PATTERN;
 
 @Data
 @FieldNameConstants
+@SuppressWarnings("all")
 @FieldDefaults(level = AccessLevel.PROTECTED)
-public abstract class BaseBo<ID> implements Serializable
+public abstract class BaseBo<ID extends Serializable> implements Serializable
 {
 
     ID id;

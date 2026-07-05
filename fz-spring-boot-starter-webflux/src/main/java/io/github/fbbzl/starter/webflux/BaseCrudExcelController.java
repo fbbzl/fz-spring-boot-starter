@@ -1,12 +1,9 @@
 package io.github.fbbzl.starter.webflux;
 
-import com.alibaba.excel.EasyExcelFactory;
-import com.alibaba.excel.write.style.column.LongestMatchColumnWidthStyleStrategy;
 import io.github.fbbzl.starter.audit.frame.annotation.AuditMethod;
-import org.fz.erwin.lang.Generics;
-import org.fz.erwin.exception.Throws;
 import io.github.fbbzl.starter.excel.BaseEo;
 import io.github.fbbzl.starter.excel.ExcelDto;
+import io.github.fbbzl.starter.excel.ExcelResponseEntity;
 import io.github.fbbzl.starter.pojo.bo.BaseBo;
 import io.github.fbbzl.starter.pojo.dto.BaseDto;
 import io.github.fbbzl.starter.pojo.entity.BaseTableEntity;
@@ -18,12 +15,11 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
-import org.springframework.core.io.buffer.DataBuffer;
+import jakarta.validation.groups.Default;
+import org.fz.erwin.lang.Generics;
 import org.springframework.core.io.buffer.DataBufferUtils;
-import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.codec.multipart.FilePart;
-import org.springframework.http.server.reactive.ServerHttpResponse;
 import org.springframework.lang.Nullable;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.ModelAttribute;
@@ -34,12 +30,9 @@ import reactor.core.publisher.Mono;
 import reactor.core.scheduler.Schedulers;
 
 import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.Serializable;
-import java.util.Collection;
+import java.util.Objects;
 
-import static cn.hutool.core.io.FileMagicNumber.XLSX;
-import static cn.hutool.core.text.CharSequenceUtil.appendIfMissing;
 import static cn.hutool.core.util.ObjectUtil.defaultIfNull;
 import static java.util.Collections.emptyList;
 
@@ -65,15 +58,16 @@ public abstract class BaseCrudExcelController<
     @Operation(description = "[BASE] Get an excel template", summary = "[BASE] The Excel template you need to use to get Excel upload data")
     @PostMapping("excel/template")
     @IgnoreResponseWrap
-    public Mono<Void> excelTemplate(
+    public Mono<ExcelResponseEntity> excelTemplate(
             @NotNull
-            @Validated(CRUD.R.class)
+            @Validated({Default.class, CRUD.R.class})
             @Parameter(description = "download excel template request", required = true)
-            @RequestBody Q<ExcelDto<DTO>> req,
-            ServerHttpResponse response)
+            @RequestBody Q<ExcelDto<DTO>> req)
     {
-        ExcelDto<DTO> excelDto = req.getData();
-        return writeExcel(response, emptyList(), excelDto);
+        ExcelDto<DTO> excelDto = Objects.requireNonNull(req.getData(), "excelDto is required");
+        return Mono.fromCallable(() -> ExcelDto.doExportToBytes(emptyList(), excelClass, excelDto))
+                   .subscribeOn(Schedulers.boundedElastic())
+                   .map(bytes -> ExcelResponseEntity.of(bytes, excelDto.fileName()));
     }
 
     @AuditMethod(saveParam = false, saveResult = false)
@@ -85,10 +79,7 @@ public abstract class BaseCrudExcelController<
             @Parameter(description = "excel import object", required = true)
             @ModelAttribute FQ req)
     {
-        FilePart file = req.getSingleFile();
-        Throws.ifNull(file, "upload file is required");
-
-        return readFile(file)
+        return readFile(req.getSingleFile())
                 .publishOn(Schedulers.boundedElastic())
                 .map(bytes -> ExcelDto.doRead(new ByteArrayInputStream(bytes), excelClass))
                 .doOnNext(service::importExcel)
@@ -99,22 +90,23 @@ public abstract class BaseCrudExcelController<
     @Operation(description = "[BASE] Excel export", summary = "[BASE] Excel excel data")
     @PostMapping({"excel/export", "excel/export/{limit}"})
     @IgnoreResponseWrap
-    public Mono<Void> exportExcel(
+    public Mono<ExcelResponseEntity> exportExcel(
             @Nullable
             @Positive(message = "limit must be positive")
             @Parameter(description = "export data limit")
             @PathVariable(value = "limit", required = false)
             Integer limit,
             @NotNull
-            @Validated(CRUD.R.class)
+            @Validated({Default.class, CRUD.R.class})
             @Parameter(description = "export excel request", required = true)
-            @RequestBody OQ<ExcelDto<DTO>> req,
-            ServerHttpResponse response)
+            @RequestBody OQ<ExcelDto<DTO>> req)
     {
-        ExcelDto<DTO> excelDto = req.getData();
-        return Mono.fromCallable(() -> service.exportExcel(excelDto.param(), defaultIfNull(limit, this.defaultLimit()), req.getOrders()))
+        ExcelDto<DTO> excelDto = Objects.requireNonNull(req.getData(), "excelDto is required");
+        int           exportLimit = Math.min(defaultIfNull(limit, this.defaultLimit()), this.defaultLimit());
+        return Mono.fromCallable(() -> service.exportExcel(excelDto.param(), exportLimit, req.getOrders()))
                    .subscribeOn(Schedulers.boundedElastic())
-                   .flatMap(excelData -> writeExcel(response, excelData, excelDto));
+                   .map(excelData -> ExcelDto.doExportToBytes(excelData, excelClass, excelDto))
+                   .map(bytes -> ExcelResponseEntity.of(bytes, excelDto.fileName()));
     }
 
     private Mono<byte[]> readFile(FilePart file)
@@ -130,31 +122,5 @@ public abstract class BaseCrudExcelController<
                                       DataBufferUtils.release(dataBuffer);
                                   }
                               });
-    }
-
-    private Mono<Void> writeExcel(ServerHttpResponse response, Collection<EO> excelData, ExcelDto<?> config)
-    {
-        return Mono.fromCallable(() -> {
-                       ByteArrayOutputStream os = new ByteArrayOutputStream();
-                       EasyExcelFactory.write(os)
-                                       .head(excelClass)
-                                       .sheet(config.sheetName())
-                                       .registerWriteHandler(new LongestMatchColumnWidthStyleStrategy())
-                                       .doWrite(excelData);
-                       return os.toByteArray();
-                   })
-                   .subscribeOn(Schedulers.boundedElastic())
-                   .flatMap(bytes -> {
-                       setExcelResponseHeader(response, config);
-                       DataBuffer buffer = response.bufferFactory().wrap(bytes);
-                       return response.writeWith(Mono.just(buffer));
-                   });
-    }
-
-    private void setExcelResponseHeader(ServerHttpResponse response, ExcelDto<?> excelCfg)
-    {
-        response.getHeaders().setContentType(MediaType.parseMediaType(XLSX.getMimeType()));
-        String filename = appendIfMissing(excelCfg.fileName(), "." + XLSX.getExtension());
-        response.getHeaders().set(HttpHeaders.CONTENT_DISPOSITION, "attachment;filename=" + filename);
     }
 }

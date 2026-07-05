@@ -52,8 +52,8 @@ import cn.hutool.core.lang.RegexPool;
 public class ${className} extends BaseJpaEntity<${primaryKeyType}> {
 <#-- 遍历字段生成实体属性 -->
 <#list fields as field>
-    <#-- 排除父类字段 id, createTime, createBy, updateTime, updateBy, deleted 字段 -->
-    <#if !["id", "createTime", "createBy", "updateTime", "updateBy", "deleted"]?seq_contains(field.name)>
+    <#-- 排除父类字段 id, createTime, createBy, updateTime, updateBy, deleted, deleteAt 字段 -->
+    <#if !["id", "createTime", "createBy", "updateTime", "updateBy", "deleted", "deleteAt"]?seq_contains(field.name)>
 
     /**
      * ${field.comment}

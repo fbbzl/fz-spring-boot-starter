@@ -3,7 +3,6 @@ package io.github.fbbzl.starter.redisson.repeat;
 import cn.hutool.core.util.ReflectUtil;
 import io.github.fbbzl.starter.core.exception.BizException;
 import io.github.fbbzl.starter.core.exception.ExceptionVerb;
-import org.fz.erwin.exception.Throws;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
@@ -13,6 +12,7 @@ import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.reflect.MethodSignature;
+import org.fz.erwin.exception.Throws;
 import org.redisson.api.RBucket;
 import org.redisson.api.RedissonClient;
 import org.springframework.context.expression.MethodBasedEvaluationContext;
@@ -75,7 +75,12 @@ public class RedissonSubmitOnceAspect
         boolean         acquired = bucket.setIfAbsent("1", Duration.ofMillis(submitOnce.windowMillis()));
 
         if (acquired) {
-            return point.proceed();
+            try {
+                return point.proceed();
+            } catch (Throwable t) {
+                bucket.delete();
+                throw t;
+            }
         }
 
         log.warn("submit once blocked, key: {}", key);

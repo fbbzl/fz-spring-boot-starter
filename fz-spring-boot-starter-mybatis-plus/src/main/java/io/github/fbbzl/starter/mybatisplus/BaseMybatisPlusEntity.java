@@ -48,6 +48,8 @@ public abstract class BaseMybatisPlusEntity<ID extends Serializable> implements 
     @TableField(fill = FieldFill.INSERT_UPDATE)
     ID updateBy;
 
+    LocalDateTime deleteAt;
+
     @TableLogic
     @TableField(select = false)
     Boolean deleted;

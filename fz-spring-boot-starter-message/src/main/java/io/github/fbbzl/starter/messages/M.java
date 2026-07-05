@@ -19,7 +19,6 @@ public class M
     public static String of(String code, Object... args)
     {
         MessageSource messageSource = SpringUtil.getBean(MessageSource.class);
-        if (messageSource == null) return code;
         return messageSource.getMessage(code, args, LocaleContextHolder.getLocale());
     }
 }

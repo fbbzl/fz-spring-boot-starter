@@ -20,7 +20,7 @@ import java.lang.annotation.Annotation;
  * @version 1.0
  * @since 2026/4/29
  */
-
+@SuppressWarnings("all")
 @FieldDefaults(level = AccessLevel.PROTECTED)
 abstract sealed class ApplicationResponseAdvice permits WebResponseOperateAdvice, WebResponseWrapAdvice
 {

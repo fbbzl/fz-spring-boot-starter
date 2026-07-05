@@ -111,13 +111,13 @@ public class R<DATA>
             int pageSize,
 
             @Schema(description = "total page count")
-            int totalPage,
+            long totalPage,
 
-            @Schema(description = "total record count")
-            int total,
+        @Schema(description = "total record count")
+        long total,
 
-            @Schema(description = "page records")
-            List<RECORD> records)
+        @Schema(description = "page records")
+        List<RECORD> records)
     {
 
         public PR
@@ -135,10 +135,10 @@ public class R<DATA>
 
         public boolean isLast()
         {
-            return page >= (totalPage - 1);
+            return totalPage > 0 && page >= (totalPage - 1);
         }
 
-        public static <DATA> PR<DATA> of(int page, int pageSize, int total, List<DATA> records)
+        public static <DATA> PR<DATA> of(int page, int pageSize, long total, List<DATA> records)
         {
             int normalizedPageSize = pageSize <= 0 ? DEFAULT_PAGE_SIZE : pageSize;
             return new PR<>(page, normalizedPageSize, PageUtil.totalPage(total, normalizedPageSize), total, records);

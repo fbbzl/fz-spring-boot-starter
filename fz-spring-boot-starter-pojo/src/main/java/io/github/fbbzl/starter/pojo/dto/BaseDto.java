@@ -21,8 +21,9 @@ import static cn.hutool.core.date.DatePattern.NORM_DATETIME_PATTERN;
 
 @Data
 @FieldNameConstants
+@SuppressWarnings("all")
 @FieldDefaults(level = AccessLevel.PROTECTED)
-public abstract class BaseDto<ID> implements Prepare, Serializable
+public abstract class BaseDto<ID extends Serializable> implements Prepare, Serializable
 {
 
     @NotNull(groups = CRUD.U.class, message = "id can not be null when doing update")

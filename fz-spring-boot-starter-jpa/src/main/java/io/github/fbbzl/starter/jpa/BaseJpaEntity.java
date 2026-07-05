@@ -57,4 +57,7 @@ public abstract class BaseJpaEntity<ID extends Serializable> implements BaseTabl
     @Column
     LocalDateTime updateTime;
 
+    @Column
+    LocalDateTime deleteAt;
+
 }

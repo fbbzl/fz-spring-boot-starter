@@ -37,10 +37,6 @@ public class R<DATA>
             DEFAULT_SUCCESS_MESSAGE = "ok",
             DEFAULT_FAIL_MESSAGE    = "fail";
 
-    private static final R<?>
-            DEFAULT_R_SUCCESS = ok(DEFAULT_SUCCESS_MESSAGE, null),
-            DEFAULT_R_FAIL    = fail(DEFAULT_FAIL_MESSAGE);
-
     /**
      * response code
      */
@@ -68,7 +64,7 @@ public class R<DATA>
 
     public static <DATA> R<DATA> ok()
     {
-        return (R<DATA>) DEFAULT_R_SUCCESS;
+        return ok(DEFAULT_SUCCESS_MESSAGE, null);
     }
 
     public static <DATA> R<DATA> ok(DATA data)
@@ -88,7 +84,7 @@ public class R<DATA>
 
     public static <DATA> R<DATA> fail()
     {
-        return (R<DATA>) DEFAULT_R_FAIL;
+        return fail(DEFAULT_FAIL_MESSAGE);
     }
 
     public static <DATA> R<DATA> fail(String message)
@@ -115,13 +111,13 @@ public class R<DATA>
             int pageSize,
 
             @Schema(description = "total page count")
-            int totalPage,
+            long totalPage,
 
-            @Schema(description = "total record count")
-            int total,
+        @Schema(description = "total record count")
+        long total,
 
-            @Schema(description = "page records")
-            List<RECORD> records)
+        @Schema(description = "page records")
+        List<RECORD> records)
     {
 
         public PR
@@ -139,10 +135,10 @@ public class R<DATA>
 
         public boolean isLast()
         {
-            return page >= (totalPage - 1);
+            return totalPage > 0 && page >= (totalPage - 1);
         }
 
-        public static <DATA> PR<DATA> of(int page, int pageSize, int total, List<DATA> records)
+        public static <DATA> PR<DATA> of(int page, int pageSize, long total, List<DATA> records)
         {
             int normalizedPageSize = pageSize <= 0 ? DEFAULT_PAGE_SIZE : pageSize;
             return new PR<>(page, normalizedPageSize, PageUtil.totalPage(total, normalizedPageSize), total, records);

@@ -51,7 +51,7 @@ public class WebRequestAdvice extends RequestBodyAdviceAdapter
             @NonNull Type targetType,
             @NonNull Class<? extends HttpMessageConverter<?>> converterType)
     {
-        if (body instanceof Q<?> req) {
+        if (body instanceof Q<?> req && req.getData() != null) {
             operateTemplate.execute(req.getData());
         }
 

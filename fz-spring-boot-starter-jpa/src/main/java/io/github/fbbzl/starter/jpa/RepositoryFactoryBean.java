@@ -2,12 +2,10 @@ package io.github.fbbzl.starter.jpa;
 
 
 import io.github.fbbzl.starter.jpa.repository.BaseRepositoryImpl;
-import io.github.fbbzl.starter.pojo.entity.BaseTableEntity;
 import jakarta.persistence.EntityManager;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.support.JpaRepositoryFactory;
 import org.springframework.data.jpa.repository.support.JpaRepositoryFactoryBean;
-import org.springframework.data.jpa.repository.support.SimpleJpaRepository;
 import org.springframework.data.repository.core.RepositoryInformation;
 import org.springframework.data.repository.core.RepositoryMetadata;
 import org.springframework.data.repository.core.support.RepositoryFactorySupport;
@@ -34,7 +32,7 @@ public class RepositoryFactoryBean<T extends JpaRepository<S, ID>, S, ID extends
         return new BaseRepositoryFactory(entityManager);
     }
 
-    public static class BaseRepositoryFactory<T extends BaseTableEntity, ID extends Serializable>
+    public static class BaseRepositoryFactory<T extends BaseJpaEntity<ID>, ID extends Serializable>
             extends JpaRepositoryFactory
     {
 
@@ -45,10 +43,10 @@ public class RepositoryFactoryBean<T extends JpaRepository<S, ID>, S, ID extends
 
         @Override
         @SuppressWarnings("unchecked")
-        protected SimpleJpaRepository<T, ID> getTargetRepository(RepositoryInformation information,
-                                                                 EntityManager entityManager)
+        protected BaseRepositoryImpl<T, ID> getTargetRepository(RepositoryInformation information,
+                                                                  EntityManager entityManager)
         {
-            return new BaseRepositoryImpl(information.getDomainType(), entityManager);
+            return new BaseRepositoryImpl<>((Class<T>) information.getDomainType(), entityManager);
         }
 
         @Override

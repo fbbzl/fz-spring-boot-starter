@@ -9,6 +9,7 @@ import cn.hutool.jwt.JWTUtil;
 import cn.hutool.jwt.signers.JWTSigner;
 import cn.hutool.jwt.signers.JWTSignerUtil;
 import io.github.fbbzl.starter.auth.jwt.config.JwtProperties;
+import jakarta.annotation.PostConstruct;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.constraints.NotNull;
 import lombok.AccessLevel;
@@ -20,6 +21,9 @@ import org.springframework.lang.Nullable;
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.time.Instant;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.concurrent.atomic.AtomicReference;
 
 import static cn.hutool.core.text.CharSequenceUtil.EMPTY;
 import static cn.hutool.core.text.CharSequenceUtil.isBlank;
@@ -38,12 +42,20 @@ public class JwtFactory
 {
 
     JwtProperties props;
-    static volatile JwtFactory self;
+    static final AtomicReference<JwtFactory> SELF = new AtomicReference<>();
 
     public JwtFactory(JwtProperties props)
     {
         this.props = props;
-        self = this;
+    }
+
+    @PostConstruct
+    public void init()
+    {
+        JwtFactory old = SELF.getAndSet(this);
+        if (old != null) {
+            log.warn("JwtFactory was already initialized, replacing with new instance (props updated)");
+        }
     }
 
     public JWTSigner getSigner()
@@ -70,8 +82,11 @@ public class JwtFactory
         JwtFactory factory = self();
         Instant    now     = Instant.now();
         Duration   expires = factory.props.getExpires();
+
+        Map<String, Object> payloads = new HashMap<>(BeanUtil.beanToMap(bean));
+
         return JWT.create()
-                  .addPayloads(BeanUtil.beanToMap(bean))
+                  .addPayloads(payloads)
                   .setPayload(ISSUED_AT, now.getEpochSecond())
                   .setPayload(EXPIRES_AT, now.plus(expires).getEpochSecond())
                   .setIssuer(factory.props.getIssuer())
@@ -188,8 +203,19 @@ public class JwtFactory
 
     private static JwtFactory self()
     {
-        Throws.ifNull(self, "jwt factory is not initialized");
-        return self;
+        JwtFactory factory = SELF.get();
+        Throws.ifNull(factory, "jwt factory is not initialized");
+        return factory;
+    }
+
+    static JwtFactory current()
+    {
+        return SELF.get();
+    }
+
+    static void reset()
+    {
+        SELF.set(null);
     }
 
 }
