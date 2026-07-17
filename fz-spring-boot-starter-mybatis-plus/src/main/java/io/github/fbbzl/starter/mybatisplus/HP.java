@@ -79,8 +79,8 @@ public class HP<T extends Serializable> implements IPage<T>
                      .map(order -> {
                          String col = orderField(entityClass, order.getField());
                          if (col == null) return null;
-                         return order.getDirection() == Direction.ASC
-                                ? OrderItem.asc(col) : OrderItem.desc(col);
+                          return order.getDirection() == Direction.DESC
+                                 ? OrderItem.desc(col) : OrderItem.asc(col);
                      })
                      .filter(Objects::nonNull)
                      .toList();

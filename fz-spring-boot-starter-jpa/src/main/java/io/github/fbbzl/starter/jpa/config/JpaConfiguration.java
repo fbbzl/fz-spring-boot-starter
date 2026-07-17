@@ -62,14 +62,14 @@ public class JpaConfiguration
     }
 
     @Bean(AUDITOR_BEAN_NAME)
-    @ConditionalOnMissingBean
+    @ConditionalOnMissingBean(name = AUDITOR_BEAN_NAME)
     public AuditorAware<Long> auditor()
     {
         return () -> Optional.of(0L);
     }
 
     @Bean(DATETIME_PROVIDER_BEAN_NAME)
-    @ConditionalOnMissingBean
+    @ConditionalOnMissingBean(name = DATETIME_PROVIDER_BEAN_NAME)
     public DateTimeProvider dateTimeProvider()
     {
         return () -> Optional.of(LocalDateTime.now());

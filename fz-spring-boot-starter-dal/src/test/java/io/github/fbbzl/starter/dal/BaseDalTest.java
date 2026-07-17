@@ -37,27 +37,33 @@ class BaseDalTest
         public void setId(Long id) { }
 
         @Override
-        public LocalDateTime getCreateTime() { return null; }
+        public LocalDateTime getCreatedAt() { return null; }
 
         @Override
-        public void setCreateTime(LocalDateTime createTime) { }
+        public void setCreatedAt(LocalDateTime createdAt) { }
 
         @Override
-        public Long getCreateBy() { return null; }
+        public Long getCreatedBy() { return null; }
 
         @Override
-        public void setCreateBy(Long createBy) { }
+        public void setCreatedBy(Long createdBy) { }
 
         @Override
-        public LocalDateTime getUpdateTime() { return null; }
+        public LocalDateTime getUpdatedAt() { return null; }
 
         @Override
-        public void setUpdateTime(LocalDateTime updateTime) { }
+        public void setUpdatedAt(LocalDateTime updatedAt) { }
 
         @Override
-        public Long getUpdateBy() { return null; }
+        public Long getUpdatedBy() { return null; }
 
         @Override
-        public void setUpdateBy(Long updateBy) { }
+        public void setUpdatedBy(Long updatedBy) { }
+
+        @Override
+        public LocalDateTime getDeletedAt() { return null; }
+
+        @Override
+        public void setDeletedAt(LocalDateTime deletedAt) { }
     }
 }

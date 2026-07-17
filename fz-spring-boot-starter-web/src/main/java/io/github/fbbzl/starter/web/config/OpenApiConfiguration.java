@@ -12,7 +12,7 @@ import org.springframework.context.annotation.Bean;
  * @since 2025/8/21 14:02
  */
 @AutoConfiguration
-@ConditionalOnWebApplication
+@ConditionalOnWebApplication(type = ConditionalOnWebApplication.Type.SERVLET)
 public class OpenApiConfiguration
 {
     @Bean

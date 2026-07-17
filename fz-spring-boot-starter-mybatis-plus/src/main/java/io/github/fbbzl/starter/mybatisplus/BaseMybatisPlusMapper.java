@@ -281,10 +281,10 @@ public interface BaseMybatisPlusMapper<ENTITY extends BaseMybatisPlusEntity<ID>,
             String column = column(columnMap, order.getField());
             if (isBlank(column)) continue;
 
-            if (order.getDirection() == Direction.ASC)
-                wrapper.orderByAsc(column);
-            else
+            if (order.getDirection() == Direction.DESC)
                 wrapper.orderByDesc(column);
+            else
+                wrapper.orderByAsc(column);
         }
         return wrapper;
     }

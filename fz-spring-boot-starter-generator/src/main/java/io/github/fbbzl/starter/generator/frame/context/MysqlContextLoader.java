@@ -34,7 +34,7 @@ public class MysqlContextLoader
         String tableSql = """
                 SELECT table_name, table_comment
                 FROM information_schema.tables
-                WHERE table_schema = DATABASE()
+                WHERE table_schema = COALESCE(NULLIF(?, ''), DATABASE())
                 AND table_name = ?
                 """;
         DataSource dataSource = jdbcTemplate.getDataSource();
@@ -47,7 +47,7 @@ public class MysqlContextLoader
             throw new DbRuntimeException("database connection failed：" + e.getMessage(), e);
         }
 
-        List<Map<String, Object>> tables = jdbcTemplate.queryForList(tableSql, tableName);
+        List<Map<String, Object>> tables = jdbcTemplate.queryForList(tableSql, schema, tableName);
 
         if (tables.isEmpty()) return null;
 
@@ -59,23 +59,23 @@ public class MysqlContextLoader
                 .setTableName(tableName)
                 .setTableComment(tableComment != null ? tableComment : tableName)
                 .setSchemaName(schema)
-                .setFields(getColumns(tableName))
-                .setIndexes(getIndexesForTable(tableName));
+                .setFields(getColumns(tableName, schema))
+                .setIndexes(getIndexesForTable(tableName, schema));
     }
 
 
-    private List<Field> getColumns(String tableName)
+    private List<Field> getColumns(String tableName, String schema)
     {
         String fieldSql = """
                 SELECT column_name, data_type, column_comment, column_default, is_nullable,
                        character_maximum_length, numeric_precision, numeric_scale
                 FROM information_schema.columns 
-                WHERE table_schema = DATABASE() 
+                WHERE table_schema = COALESCE(NULLIF(?, ''), DATABASE()) 
                 AND table_name = ?
                 ORDER BY ordinal_position
                 """;
 
-        List<Map<String, Object>> columns = jdbcTemplate.queryForList(fieldSql, tableName);
+        List<Map<String, Object>> columns = jdbcTemplate.queryForList(fieldSql, schema, tableName);
         List<Field>               fields  = new ArrayList<>();
 
         for (Map<String, Object> column : columns) {
@@ -111,17 +111,17 @@ public class MysqlContextLoader
         return fields;
     }
 
-    private List<Index> getIndexesForTable(String tableName)
+    private List<Index> getIndexesForTable(String tableName, String schema)
     {
         String indexSql = """
                 SELECT index_name, column_name, non_unique, index_type
                 FROM information_schema.statistics
-                WHERE table_schema = DATABASE()
+                WHERE table_schema = COALESCE(NULLIF(?, ''), DATABASE())
                 AND table_name = ?
                 ORDER BY index_name, seq_in_index
                 """;
 
-        List<Map<String, Object>> indexRows = jdbcTemplate.queryForList(indexSql, tableName);
+        List<Map<String, Object>> indexRows = jdbcTemplate.queryForList(indexSql, schema, tableName);
         Map<String, Index>        indexMap  = new LinkedHashMap<>();
 
         for (Map<String, Object> row : indexRows) {

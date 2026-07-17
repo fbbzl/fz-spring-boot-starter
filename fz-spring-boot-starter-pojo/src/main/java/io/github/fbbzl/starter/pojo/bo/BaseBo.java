@@ -26,10 +26,10 @@ public abstract class BaseBo<ID extends Serializable> implements Serializable
 
     ID id;
     @JsonFormat(pattern = NORM_DATETIME_PATTERN, timezone = "GMT+8")
-    LocalDateTime createTime;
-    ID createBy;
+    LocalDateTime createdAt;
+    ID createdBy;
     @JsonFormat(pattern = NORM_DATETIME_PATTERN, timezone = "GMT+8")
-    LocalDateTime updateTime;
-    ID updateBy;
+    LocalDateTime updatedAt;
+    ID updatedBy;
 
 }

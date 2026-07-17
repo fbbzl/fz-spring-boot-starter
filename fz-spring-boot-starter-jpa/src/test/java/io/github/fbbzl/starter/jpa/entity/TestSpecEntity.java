@@ -4,12 +4,14 @@ import io.github.fbbzl.starter.pojo.entity.BaseTableEntity;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
+import org.hibernate.annotations.SQLRestriction;
 
 import java.time.LocalDateTime;
 
 @Getter
 @Setter
 @Entity
+@SQLRestriction("deleted_at is null")
 @Table(name = "test_spec_entity")
 public class TestSpecEntity implements BaseTableEntity<Long>
 {
@@ -22,11 +24,13 @@ public class TestSpecEntity implements BaseTableEntity<Long>
 
     private Integer age;
 
-    private LocalDateTime createTime;
+    private LocalDateTime createdAt;
 
-    private LocalDateTime updateTime;
+    private LocalDateTime updatedAt;
 
-    private Long createBy;
+    private Long createdBy;
 
-    private Long updateBy;
+    private Long updatedBy;
+
+    private LocalDateTime deletedAt;
 }

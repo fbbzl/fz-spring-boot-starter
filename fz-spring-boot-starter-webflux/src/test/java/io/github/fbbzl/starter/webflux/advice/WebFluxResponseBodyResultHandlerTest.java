@@ -59,6 +59,18 @@ class WebFluxResponseBodyResultHandlerTest
     }
 
     @Test
+    void shouldWrapEmptyMonoIntoR() throws Exception
+    {
+        MockServerWebExchange exchange = MockServerWebExchange.from(MockServerHttpRequest.get("/test/empty-mono"));
+        HandlerResult result = handlerResult("emptyMono", Mono.empty());
+
+        handler.handleResult(exchange, result).block();
+
+        assertThat(exchange.getResponse().getBodyAsString().block())
+                .contains("\"code\":\"200\"", "\"success\":true", "\"message\":\"ok\"");
+    }
+
+    @Test
     void shouldWrapSyncValueIntoR() throws Exception
     {
         MockServerWebExchange exchange = MockServerWebExchange.from(MockServerHttpRequest.get("/test/sync"));
@@ -120,6 +132,12 @@ class WebFluxResponseBodyResultHandlerTest
         Mono<String> mono()
         {
             return Mono.just("mono-value");
+        }
+
+        @GetMapping("/test/empty-mono")
+        Mono<String> emptyMono()
+        {
+            return Mono.empty();
         }
 
         @GetMapping("/test/sync")

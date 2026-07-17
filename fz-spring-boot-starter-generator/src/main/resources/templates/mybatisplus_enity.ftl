@@ -42,8 +42,8 @@ import org.springframework.lang.Nullable;
 public class ${className} extends BaseMybatisPlusEntity<${primaryKeyType}> {
 <#-- 遍历字段生成实体属性 -->
 <#list fields as field>
-    <#-- 排除父类字段 id, createTime, createBy, updateTime, updateBy, deleted, deleteAt 字段 -->
-    <#if !["id", "createTime", "createBy", "updateTime", "updateBy", "deleted", "deleteAt"]?seq_contains(field.name)>
+    <#-- 排除父类字段 id, createdAt, createdBy, updatedAt, updatedBy, deletedAt 字段 -->
+    <#if !["id", "createdAt", "createdBy", "updatedAt", "updatedBy", "deletedAt"]?seq_contains(field.name)>
 
     /**
      * ${field.comment}

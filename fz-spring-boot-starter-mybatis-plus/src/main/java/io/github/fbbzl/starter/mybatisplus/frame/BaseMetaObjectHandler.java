@@ -27,8 +27,8 @@ public abstract class BaseMetaObjectHandler<ID extends Serializable> implements 
     @Override
     public void insertFill(MetaObject metaObject)
     {
-        strictInsertFill(metaObject, BaseMybatisPlusEntity.Fields.createTime, LocalDateTime.class, LocalDateTime.now());
-        strictInsertFill(metaObject, BaseMybatisPlusEntity.Fields.createBy, idType, this.getCurrentUserIdentifier());
+        strictInsertFill(metaObject, BaseMybatisPlusEntity.Fields.createdAt, LocalDateTime.class, LocalDateTime.now());
+        strictInsertFill(metaObject, BaseMybatisPlusEntity.Fields.createdBy, idType, this.getCurrentUserIdentifier());
 
         this.updateFill(metaObject);
     }
@@ -36,7 +36,7 @@ public abstract class BaseMetaObjectHandler<ID extends Serializable> implements 
     @Override
     public void updateFill(MetaObject metaObject)
     {
-        strictUpdateFill(metaObject, BaseMybatisPlusEntity.Fields.updateTime, LocalDateTime.class, LocalDateTime.now());
-        strictUpdateFill(metaObject, BaseMybatisPlusEntity.Fields.updateBy, idType, this.getCurrentUserIdentifier());
+        strictUpdateFill(metaObject, BaseMybatisPlusEntity.Fields.updatedAt, LocalDateTime.class, LocalDateTime.now());
+        strictUpdateFill(metaObject, BaseMybatisPlusEntity.Fields.updatedBy, idType, this.getCurrentUserIdentifier());
     }
 }

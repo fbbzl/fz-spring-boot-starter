@@ -121,6 +121,15 @@ public class WebExceptionAdvice
         return badRequest(exceptionMessage);
     }
 
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    @ExceptionHandler(IllegalArgumentException.class)
+    public Object handleIllegalArgumentException(IllegalArgumentException exception)
+    {
+        String exceptionMessage = getRootCauseMessage(exception);
+        log.error("illegal argument exception occurred: {}", defaultIfBlank(exceptionMessage, "illegal argument exception"));
+        return badRequest(exceptionMessage);
+    }
+
     /**
      * handle jsr303 exception MethodArgumentNotValidException
      */

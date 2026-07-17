@@ -63,10 +63,11 @@ class BaseAuditLogAspectTest
     static class TestAuditLog extends BaseAuditLog<Long> implements Serializable
     {
         private Long          id;
-        private Long          createBy;
-        private Long          updateBy;
-        private LocalDateTime createTime;
-        private LocalDateTime updateTime;
+        private Long          createdBy;
+        private Long          updatedBy;
+        private LocalDateTime createdAt;
+        private LocalDateTime updatedAt;
+        private LocalDateTime deletedAt;
 
         @Override
         public Long getId() { return id; }
@@ -75,28 +76,34 @@ class BaseAuditLogAspectTest
         public void setId(Long id) { this.id = id; }
 
         @Override
-        public Long getCreateBy() { return createBy; }
+        public Long getCreatedBy() { return createdBy; }
 
         @Override
-        public void setCreateBy(Long createBy) { this.createBy = createBy; }
+        public void setCreatedBy(Long createdBy) { this.createdBy = createdBy; }
 
         @Override
-        public Long getUpdateBy() { return updateBy; }
+        public Long getUpdatedBy() { return updatedBy; }
 
         @Override
-        public void setUpdateBy(Long updateBy) { this.updateBy = updateBy; }
+        public void setUpdatedBy(Long updatedBy) { this.updatedBy = updatedBy; }
 
         @Override
-        public LocalDateTime getCreateTime() { return createTime; }
+        public LocalDateTime getCreatedAt() { return createdAt; }
 
         @Override
-        public void setCreateTime(LocalDateTime createTime) { this.createTime = createTime; }
+        public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
 
         @Override
-        public LocalDateTime getUpdateTime() { return updateTime; }
+        public LocalDateTime getUpdatedAt() { return updatedAt; }
 
         @Override
-        public void setUpdateTime(LocalDateTime updateTime) { this.updateTime = updateTime; }
+        public void setUpdatedAt(LocalDateTime updatedAt) { this.updatedAt = updatedAt; }
+
+        @Override
+        public LocalDateTime getDeletedAt() { return deletedAt; }
+
+        @Override
+        public void setDeletedAt(LocalDateTime deletedAt) { this.deletedAt = deletedAt; }
     }
 
     static class TestAuditLogAspect extends BaseAuditLogAspect<Long, TestAuditLog>

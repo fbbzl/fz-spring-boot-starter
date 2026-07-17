@@ -16,19 +16,23 @@ public interface BaseTableEntity<ID extends Serializable> extends Serializable
 
     void setId(ID id);
 
-    LocalDateTime getCreateTime();
+    LocalDateTime getCreatedAt();
 
-    void setCreateTime(LocalDateTime createTime);
+    void setCreatedAt(LocalDateTime createdAt);
 
-    ID getCreateBy();
+    ID getCreatedBy();
 
-    void setCreateBy(ID createBy);
+    void setCreatedBy(ID createdBy);
 
-    LocalDateTime getUpdateTime();
+    LocalDateTime getUpdatedAt();
 
-    void setUpdateTime(LocalDateTime updateTime);
+    void setUpdatedAt(LocalDateTime updatedAt);
 
-    ID getUpdateBy();
+    ID getUpdatedBy();
 
-    void setUpdateBy(ID updateBy);
+    void setUpdatedBy(ID updatedBy);
+
+    LocalDateTime getDeletedAt();
+
+    void setDeletedAt(LocalDateTime deletedAt);
 }

@@ -26,7 +26,7 @@ import static cn.hutool.core.date.DatePattern.NORM_DATETIME_PATTERN;
  */
 
 @AutoConfiguration
-@ConditionalOnWebApplication
+@ConditionalOnWebApplication(type = ConditionalOnWebApplication.Type.SERVLET)
 public class JacksonConfiguration
 {
 

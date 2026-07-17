@@ -27,7 +27,7 @@ import org.springframework.context.annotation.Import;
         WebResponseWrapAdvice.class
 })
 @AutoConfiguration
-@ConditionalOnWebApplication
+@ConditionalOnWebApplication(type = ConditionalOnWebApplication.Type.SERVLET)
 public class WebMvcConfiguration
 {
 

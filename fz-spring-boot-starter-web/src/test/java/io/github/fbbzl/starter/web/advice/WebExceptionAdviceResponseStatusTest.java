@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
 
+import static org.hamcrest.Matchers.containsString;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -47,6 +48,16 @@ class WebExceptionAdviceResponseStatusTest
                .andExpect(jsonPath("$.message").value("non-standard error"));
     }
 
+    @Test
+    void shouldHandleIllegalArgumentExceptionAsBadRequest() throws Exception
+    {
+        mockMvc.perform(get("/test/illegal-argument"))
+               .andExpect(status().isBadRequest())
+               .andExpect(jsonPath("$.code").value("400"))
+               .andExpect(jsonPath("$.success").value(false))
+               .andExpect(jsonPath("$.message").value(containsString("bad input")));
+    }
+
     @RestController
     static class ResponseStatusExceptionTestController
     {
@@ -61,6 +72,12 @@ class WebExceptionAdviceResponseStatusTest
         Object throwNonStandardStatus()
         {
             throw new ResponseStatusException(HttpStatusCode.valueOf(599), "non-standard error");
+        }
+
+        @GetMapping("/test/illegal-argument")
+        Object throwIllegalArgument()
+        {
+            throw new IllegalArgumentException("bad input");
         }
     }
 }

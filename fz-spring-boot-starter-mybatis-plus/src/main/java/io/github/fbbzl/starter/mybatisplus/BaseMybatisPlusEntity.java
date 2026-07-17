@@ -37,20 +37,17 @@ public abstract class BaseMybatisPlusEntity<ID extends Serializable> implements 
     ID id;
 
     @TableField(fill = FieldFill.INSERT)
-    LocalDateTime createTime;
+    LocalDateTime createdAt;
 
     @TableField(fill = FieldFill.INSERT)
-    ID createBy;
+    ID createdBy;
 
     @TableField(fill = FieldFill.INSERT_UPDATE)
-    LocalDateTime updateTime;
+    LocalDateTime updatedAt;
 
     @TableField(fill = FieldFill.INSERT_UPDATE)
-    ID updateBy;
+    ID updatedBy;
 
-    LocalDateTime deleteAt;
-
-    @TableLogic
-    @TableField(select = false)
-    Boolean deleted;
+    @TableLogic(value = "null", delval = "now()")
+    LocalDateTime deletedAt;
 }

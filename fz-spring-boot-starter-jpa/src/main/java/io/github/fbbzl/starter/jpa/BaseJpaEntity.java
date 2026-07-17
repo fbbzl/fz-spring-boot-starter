@@ -7,7 +7,6 @@ import jakarta.validation.constraints.NotNull;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 import lombok.experimental.FieldNameConstants;
-import org.hibernate.annotations.SoftDelete;
 import org.springframework.data.annotation.CreatedBy;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedBy;
@@ -30,7 +29,6 @@ import java.time.LocalDateTime;
 @FieldNameConstants
 @FieldDefaults(level = AccessLevel.PRIVATE)
 @MappedSuperclass
-@SoftDelete
 @EntityListeners(AuditingEntityListener.class)
 public abstract class BaseJpaEntity<ID extends Serializable> implements BaseTableEntity<ID>
 {
@@ -43,21 +41,21 @@ public abstract class BaseJpaEntity<ID extends Serializable> implements BaseTabl
 
     @CreatedBy
     @Column
-    ID createBy;
+    ID createdBy;
 
     @CreatedDate
     @Column
-    LocalDateTime createTime;
+    LocalDateTime createdAt;
 
     @LastModifiedBy
     @Column
-    ID updateBy;
+    ID updatedBy;
 
     @LastModifiedDate
     @Column
-    LocalDateTime updateTime;
+    LocalDateTime updatedAt;
 
     @Column
-    LocalDateTime deleteAt;
+    LocalDateTime deletedAt;
 
 }

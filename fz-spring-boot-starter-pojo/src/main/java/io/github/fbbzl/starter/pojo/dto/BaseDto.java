@@ -29,9 +29,9 @@ public abstract class BaseDto<ID extends Serializable> implements Prepare, Seria
     @NotNull(groups = CRUD.U.class, message = "id can not be null when doing update")
     ID            id;
     @JsonFormat(pattern = NORM_DATETIME_PATTERN, timezone = "GMT+8")
-    LocalDateTime createTime;
-    ID createBy;
+    LocalDateTime createdAt;
+    ID createdBy;
     @JsonFormat(pattern = NORM_DATETIME_PATTERN, timezone = "GMT+8")
-    LocalDateTime updateTime;
-    ID updateBy;
+    LocalDateTime updatedAt;
+    ID updatedBy;
 }

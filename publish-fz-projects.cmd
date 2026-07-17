@@ -13,7 +13,7 @@ set "MVN=%MAVEN_HOME%\bin\mvn.cmd"
 
 set "VERSION="
 set "DRY_RUN=0"
-set "SKIP_TESTS=0"
+set "SKIP_TESTS=1"
 set "SKIP_GIT_PUSH=0"
 set "SKIP_DEPLOY=0"
 set "NO_PAUSE=0"

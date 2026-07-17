@@ -11,7 +11,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnWebApplication;
 import org.springframework.core.MethodParameter;
 import org.springframework.core.annotation.Order;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.converter.HttpMessageConverter;
 import org.springframework.http.converter.StringHttpMessageConverter;
@@ -56,7 +55,7 @@ public final class WebResponseWrapAdvice extends ApplicationResponseAdvice imple
             @NonNull ServerHttpResponse response)
     {
         if (response instanceof ServletServerHttpResponse servletResponse
-            && HttpStatus.valueOf(servletResponse.getServletResponse().getStatus()).isError()) return body;
+            && servletResponse.getServletResponse().getStatus() >= 400) return body;
 
         R<?> res = body instanceof R<?> result ? result : R.ok(body);
         if (StringHttpMessageConverter.class.isAssignableFrom(selectedConverterType)) {

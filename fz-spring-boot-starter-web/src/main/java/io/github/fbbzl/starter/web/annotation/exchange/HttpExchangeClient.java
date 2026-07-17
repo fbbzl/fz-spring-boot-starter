@@ -22,8 +22,8 @@ import org.springframework.http.client.ClientHttpResponse;
 import org.springframework.http.client.SimpleClientHttpRequestFactory;
 import org.springframework.lang.NonNull;
 import org.springframework.retry.support.RetryTemplate;
+import org.springframework.web.client.ResourceAccessException;
 import org.springframework.web.client.RestClient;
-import org.springframework.web.client.RestClientException;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -32,8 +32,6 @@ import java.lang.annotation.Documented;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.Target;
-import java.net.ConnectException;
-import java.net.SocketTimeoutException;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
@@ -110,10 +108,7 @@ public @interface HttpExchangeClient
                     RetryTemplate.builder()
                                  .maxAttempts(retry.maxAttempts())
                                  .fixedBackoff(resolveDuration(retry.backoff(), beanFactory, environment))
-                                 .retryOn(List.of(
-                                         RestClientException.class,
-                                         SocketTimeoutException.class,
-                                         ConnectException.class))
+                                 .retryOn(List.of(ResourceAccessException.class))
                                  .build();
 
             return new RetryInterceptor(retryTemplate);

@@ -135,7 +135,6 @@ public class BaseRepositoryImpl<ENTITY extends BaseJpaEntity<ID>, ID extends Ser
         return delegateRepository.saveAndFlush(entity);
     }
 
-    @Deprecated
     @Transactional
     @Override
     public void deleteInBatch(@NonNull Iterable<ENTITY> entities)
@@ -161,12 +160,14 @@ public class BaseRepositoryImpl<ENTITY extends BaseJpaEntity<ID>, ID extends Ser
     @Override
     public void deleteAll()
     {
-        setDeleteAt();
-
         CriteriaBuilder        cb     = entityManager.getCriteriaBuilder();
-        CriteriaDelete<ENTITY> delete = cb.createCriteriaDelete(entityClass);
-        delete.from(entityClass);
-        entityManager.createQuery(delete).executeUpdate();
+        CriteriaUpdate<ENTITY> update = cb.createCriteriaUpdate(entityClass);
+        Root<ENTITY>           root   = update.from(entityClass);
+
+        update.set(root.get(BaseJpaEntity.Fields.deletedAt), LocalDateTime.now());
+        update.where(cb.isNull(root.get(BaseJpaEntity.Fields.deletedAt)));
+
+        entityManager.createQuery(update).executeUpdate();
     }
 
     @Transactional
@@ -180,36 +181,15 @@ public class BaseRepositoryImpl<ENTITY extends BaseJpaEntity<ID>, ID extends Ser
     {
         if (isEmpty(ids)) return;
 
-        setDeleteAt(ids);
-
-        CriteriaBuilder        cb     = entityManager.getCriteriaBuilder();
-        CriteriaDelete<ENTITY> delete = cb.createCriteriaDelete(entityClass);
-        Root<ENTITY>           root   = delete.from(entityClass);
-        delete.where(root.get(BaseJpaEntity.Fields.id).in(ids));
-        entityManager.createQuery(delete).executeUpdate();
-    }
-
-    private void setDeleteAt(Collection<ID> ids)
-    {
-        if (isEmpty(ids)) return;
-
         CriteriaBuilder        cb     = entityManager.getCriteriaBuilder();
         CriteriaUpdate<ENTITY> update = cb.createCriteriaUpdate(entityClass);
         Root<ENTITY>           root   = update.from(entityClass);
 
-        update.set(root.get(BaseJpaEntity.Fields.deleteAt), LocalDateTime.now());
-        update.where(root.get(BaseJpaEntity.Fields.id).in(ids));
-
-        entityManager.createQuery(update).executeUpdate();
-    }
-
-    private void setDeleteAt()
-    {
-        CriteriaBuilder        cb     = entityManager.getCriteriaBuilder();
-        CriteriaUpdate<ENTITY> update = cb.createCriteriaUpdate(entityClass);
-        Root<ENTITY>           root   = update.from(entityClass);
-
-        update.set(root.get(BaseJpaEntity.Fields.deleteAt), LocalDateTime.now());
+        update.set(root.get(BaseJpaEntity.Fields.deletedAt), LocalDateTime.now());
+        update.where(
+                root.get(BaseJpaEntity.Fields.id).in(ids),
+                cb.isNull(root.get(BaseJpaEntity.Fields.deletedAt))
+        );
 
         entityManager.createQuery(update).executeUpdate();
     }
@@ -311,7 +291,13 @@ public class BaseRepositoryImpl<ENTITY extends BaseJpaEntity<ID>, ID extends Ser
         cq.select(idPath);
 
         Predicate predicate = Specifications.byAuto(entityManager, entity).toPredicate(root, cq, cb);
-        if (predicate != null) cq.where(predicate);
+        Predicate deletedAt = cb.isNull(root.get(BaseJpaEntity.Fields.deletedAt));
+        if (predicate != null) {
+            cq.where(predicate, deletedAt);
+        }
+        else {
+            cq.where(deletedAt);
+        }
 
         return entityManager.createQuery(cq).setMaxResults(limit).getResultList().stream().map(id -> (ID) id).toList();
     }
@@ -356,7 +342,7 @@ public class BaseRepositoryImpl<ENTITY extends BaseJpaEntity<ID>, ID extends Ser
         Root<ENTITY>          root = cq.from(entityClass);
 
         Predicate predicate = root.get(BaseJpaEntity.Fields.id).in(ids);
-        cq.where(predicate);
+        cq.where(predicate, cb.isNull(root.get(BaseJpaEntity.Fields.deletedAt)));
 
         entityManager.createQuery(cq).setLockMode(LockModeType.PESSIMISTIC_WRITE).getResultList();
     }
@@ -373,7 +359,13 @@ public class BaseRepositoryImpl<ENTITY extends BaseJpaEntity<ID>, ID extends Ser
 
         Predicate predicate = Specifications.byAuto(entityManager, entity)
                                             .toPredicate(root, cq, cb);
-        if (predicate != null) cq.where(predicate);
+        Predicate deletedAt = cb.isNull(root.get(BaseJpaEntity.Fields.deletedAt));
+        if (predicate != null) {
+            cq.where(predicate, deletedAt);
+        }
+        else {
+            cq.where(deletedAt);
+        }
 
         entityManager.createQuery(cq)
                      .setLockMode(LockModeType.PESSIMISTIC_WRITE)
@@ -396,7 +388,7 @@ public class BaseRepositoryImpl<ENTITY extends BaseJpaEntity<ID>, ID extends Ser
 
         update.set(fieldPath, incrementExpression);
 
-        update.where(root.get(BaseJpaEntity.Fields.id).in(ids));
+        update.where(root.get(BaseJpaEntity.Fields.id).in(ids), cb.isNull(root.get(BaseJpaEntity.Fields.deletedAt)));
 
         entityManager.createQuery(update).executeUpdate();
     }
@@ -417,7 +409,7 @@ public class BaseRepositoryImpl<ENTITY extends BaseJpaEntity<ID>, ID extends Ser
 
         update.set(fieldPath, decrementExpression);
 
-        update.where(root.get(BaseJpaEntity.Fields.id).in(ids));
+        update.where(root.get(BaseJpaEntity.Fields.id).in(ids), cb.isNull(root.get(BaseJpaEntity.Fields.deletedAt)));
 
         entityManager.createQuery(update).executeUpdate();
     }
@@ -437,6 +429,8 @@ public class BaseRepositoryImpl<ENTITY extends BaseJpaEntity<ID>, ID extends Ser
         Root<ENTITY>          root = cq.from(entityClass);
 
         List<Predicate> predicates = new ArrayList<>(8);
+
+        predicates.add(cb.isNull(root.get(BaseJpaEntity.Fields.deletedAt)));
 
         if (query != null) {
             Predicate autoPredicate = Specifications.byAuto(entityManager, query).toPredicate(root, cq, cb);
@@ -476,8 +470,8 @@ public class BaseRepositoryImpl<ENTITY extends BaseJpaEntity<ID>, ID extends Ser
     {
         if (ArrayUtil.isEmpty(orders)) return Sort.unsorted();
 
-        return Sort.by(Stream.of(orders).map(order -> new Sort.Order(order.getDirection() == Direction.ASC
-                                                                     ? Sort.Direction.ASC
-                                                                     : Sort.Direction.DESC, order.getField())).toList());
+        return Sort.by(Stream.of(orders).map(order -> new Sort.Order(order.getDirection() == Direction.DESC
+                                                                     ? Sort.Direction.DESC
+                                                                     : Sort.Direction.ASC, order.getField())).toList());
     }
 }

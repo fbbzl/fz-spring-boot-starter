@@ -5,6 +5,7 @@ import io.github.fbbzl.starter.jpa.BaseJpaEntity;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.*;
 import org.hibernate.annotations.Comment;
+import org.hibernate.annotations.SQLRestriction;
 import io.github.fbbzl.starter.pojo.validation.group.CRUD;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -48,12 +49,13 @@ import cn.hutool.core.lang.RegexPool;
 @FieldNameConstants
 @FieldDefaults(level = PRIVATE)
 @ToString(callSuper = true, onlyExplicitlyIncluded = true)
+@SQLRestriction("deleted_at is null")
 @Table(name = "${tableName}", schema = "${schemaName}")
 public class ${className} extends BaseJpaEntity<${primaryKeyType}> {
 <#-- 遍历字段生成实体属性 -->
 <#list fields as field>
-    <#-- 排除父类字段 id, createTime, createBy, updateTime, updateBy, deleted, deleteAt 字段 -->
-    <#if !["id", "createTime", "createBy", "updateTime", "updateBy", "deleted", "deleteAt"]?seq_contains(field.name)>
+    <#-- 排除父类字段 id, createdAt, createdBy, updatedAt, updatedBy, deletedAt 字段 -->
+    <#if !["id", "createdAt", "createdBy", "updatedAt", "updatedBy", "deletedAt"]?seq_contains(field.name)>
 
     /**
      * ${field.comment}

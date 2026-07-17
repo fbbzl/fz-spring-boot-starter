@@ -1,8 +1,9 @@
 package io.github.fbbzl.starter.redisson.limiter.aspect;
 
 import cn.hutool.extra.servlet.JakartaServletUtil;
+import io.github.fbbzl.starter.core.exception.BizException;
+import io.github.fbbzl.starter.core.exception.ExceptionVerb;
 import io.github.fbbzl.starter.redisson.annotation.RateLimit;
-import jakarta.servlet.UnavailableException;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
@@ -62,7 +63,7 @@ public class RedissonRateLimitAspect
         if (acquired)
             return point.proceed();
         else
-            throw new UnavailableException(rateLimit.message());
+            throw new BizException(ExceptionVerb.REQUEST_LIMITED, rateLimit.message());
     }
 
     private String buildRateLimitKey(HttpServletRequest request, ProceedingJoinPoint point, RateLimit rateLimit)

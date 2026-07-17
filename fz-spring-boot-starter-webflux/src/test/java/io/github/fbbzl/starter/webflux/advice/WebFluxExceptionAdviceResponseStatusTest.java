@@ -8,6 +8,8 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
 
+import static org.hamcrest.Matchers.containsString;
+
 class WebFluxExceptionAdviceResponseStatusTest
 {
 
@@ -39,6 +41,18 @@ class WebFluxExceptionAdviceResponseStatusTest
                      .jsonPath("$.message").isEqualTo("non-standard error");
     }
 
+    @Test
+    void shouldHandleIllegalArgumentExceptionAsBadRequest()
+    {
+        webTestClient.get().uri("/test/illegal-argument")
+                     .exchange()
+                     .expectStatus().isBadRequest()
+                     .expectBody()
+                     .jsonPath("$.code").isEqualTo("400")
+                     .jsonPath("$.success").isEqualTo(false)
+                     .jsonPath("$.message").value(containsString("bad input"));
+    }
+
     @RestController
     static class ResponseStatusExceptionTestController
     {
@@ -53,6 +67,12 @@ class WebFluxExceptionAdviceResponseStatusTest
         Object throwNonStandardStatus()
         {
             throw new ResponseStatusException(HttpStatusCode.valueOf(599), "non-standard error");
+        }
+
+        @GetMapping("/test/illegal-argument")
+        Object throwIllegalArgument()
+        {
+            throw new IllegalArgumentException("bad input");
         }
     }
 }

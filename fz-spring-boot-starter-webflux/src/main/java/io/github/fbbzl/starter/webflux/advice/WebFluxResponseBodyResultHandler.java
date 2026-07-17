@@ -101,8 +101,14 @@ public class WebFluxResponseBodyResultHandler extends ResponseBodyResultHandler
 
     private Mono<R<?>> wrapAsync(Mono<?> mono, MethodParameter returnType)
     {
-        return mono.flatMap(value -> Mono.fromCallable(() -> wrapValue(value, returnType))
-                                         .subscribeOn(Schedulers.boundedElastic()));
+        return mono.flatMap(value -> wrapValueAsync(value, returnType))
+                   .switchIfEmpty(wrapValueAsync(null, returnType));
+    }
+
+    private Mono<R<?>> wrapValueAsync(@Nullable Object body, MethodParameter returnType)
+    {
+        return Mono.<R<?>>fromCallable(() -> wrapValue(body, returnType))
+                   .subscribeOn(Schedulers.boundedElastic());
     }
 
     private R<?> wrapValue(@Nullable Object body, MethodParameter returnType)

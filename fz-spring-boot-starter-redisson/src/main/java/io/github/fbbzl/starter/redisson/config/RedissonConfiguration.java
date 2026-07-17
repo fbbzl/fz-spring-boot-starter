@@ -67,14 +67,14 @@ public class RedissonConfiguration
     }
 
     @Bean
-    @ConditionalOnWebApplication
+    @ConditionalOnWebApplication(type = ConditionalOnWebApplication.Type.SERVLET)
     public RedissonRateLimitAspect redissonRateLimitAspect(RedissonClient redissonClient)
     {
         return new RedissonRateLimitAspect(redissonClient);
     }
 
     @Bean
-    @ConditionalOnWebApplication
+    @ConditionalOnWebApplication(type = ConditionalOnWebApplication.Type.SERVLET)
     public RedissonSubmitOnceAspect redissonSubmitOnceAspect(RedissonClient redissonClient)
     {
         return new RedissonSubmitOnceAspect(redissonClient);
