@@ -10,6 +10,7 @@ import net.sf.jsqlparser.expression.operators.conditional.AndExpression;
 import net.sf.jsqlparser.expression.operators.conditional.OrExpression;
 import net.sf.jsqlparser.expression.operators.relational.EqualsTo;
 import net.sf.jsqlparser.expression.operators.relational.ExpressionList;
+import net.sf.jsqlparser.expression.operators.relational.ParenthesedExpressionList;
 import net.sf.jsqlparser.expression.operators.relational.IsNullExpression;
 import net.sf.jsqlparser.schema.Column;
 import net.sf.jsqlparser.statement.select.PlainSelect;
@@ -169,10 +170,14 @@ public class LogicDeleteWithDeleteAtInnerInterceptor extends JsqlParserSupport i
             }
             return or;
         }
-        if (expression instanceof Parenthesis parenthesis) {
-            Expression inner = replaceDeletedAtEqualsNull(parenthesis.getExpression());
-            if (inner != parenthesis.getExpression()) {
-                return new Parenthesis().withExpression(inner);
+        if (expression instanceof ParenthesedExpressionList<?> parenthesis) {
+            List<?> expressions = parenthesis.getExpressions();
+            if (expressions.size() == 1) {
+                Expression original = (Expression) expressions.get(0);
+                Expression inner = replaceDeletedAtEqualsNull(original);
+                if (inner != original) {
+                    return new ParenthesedExpressionList<>(inner);
+                }
             }
             return parenthesis;
         }
