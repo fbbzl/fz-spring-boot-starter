@@ -1,9 +1,9 @@
 package io.github.fbbzl.starter.pojo.tree;
 
-import cn.hutool.core.lang.tree.parser.NodeParser;
 import cn.hutool.core.lang.tree.Tree;
 import cn.hutool.core.lang.tree.TreeNodeConfig;
 import cn.hutool.core.lang.tree.TreeUtil;
+import cn.hutool.core.lang.tree.parser.NodeParser;
 import cn.hutool.core.util.ReflectUtil;
 import io.github.fbbzl.starter.pojo.bo.BaseBo;
 
@@ -18,7 +18,7 @@ import static org.apache.commons.lang3.ArrayUtils.EMPTY_STRING_ARRAY;
  * @version 1.0
  * @since 2026/4/4 11:31
  */
-
+@SuppressWarnings("unchecked")
 public interface Treeable<ID extends Serializable>
 {
 
@@ -53,11 +53,9 @@ public interface Treeable<ID extends Serializable>
             ID rootId,
             TreeNodeConfig treeNodeConfig)
     {
-        @SuppressWarnings("unchecked")
         List<BaseBo<ID>> castedList = (List<BaseBo<ID>>) list;
         return build(castedList, rootId, treeNodeConfig, (bo, tree) ->
         {
-            @SuppressWarnings("unchecked")
             Treeable<ID> treeNodeBo = (Treeable<ID>) bo;
             fillTreeNode(tree, treeNodeBo.getNodeId(), treeNodeBo.getNodeParentId(), bo);
         });
@@ -85,12 +83,10 @@ public interface Treeable<ID extends Serializable>
             ID rootId,
             TreeNodeConfig treeNodeConfig)
     {
-        @SuppressWarnings("unchecked")
         List<Object> objectList = (List<Object>) list;
         return build(objectList, rootId, treeNodeConfig, (bo, tree) ->
         {
-            @SuppressWarnings("unchecked")
-            ID id = (ID) ReflectUtil.getFieldValue(bo, DEFAULT_NODE_ID_FIELD);
+            ID id       = (ID) ReflectUtil.getFieldValue(bo, DEFAULT_NODE_ID_FIELD);
             ID parentId = (ID) ReflectUtil.getFieldValue(bo, DEFAULT_NODE_PARENT_ID_FIELD);
             fillTreeNode(tree, id, parentId, bo);
         });
