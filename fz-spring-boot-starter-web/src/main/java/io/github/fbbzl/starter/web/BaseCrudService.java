@@ -7,7 +7,6 @@ import cn.crane4j.core.support.Grouped;
 import cn.crane4j.core.support.OperateTemplate;
 import cn.hutool.core.lang.tree.Tree;
 import cn.hutool.core.lang.tree.TreeNodeConfig;
-import cn.hutool.core.lang.tree.TreeUtil;
 import cn.hutool.db.Page;
 import cn.hutool.db.PageResult;
 import cn.hutool.db.sql.Order;
@@ -48,6 +47,10 @@ import java.util.function.Function;
 import static cn.hutool.core.collection.CollUtil.isEmpty;
 import static cn.hutool.core.collection.CollUtil.newHashSet;
 import static cn.hutool.core.lang.tree.TreeNodeConfig.DEFAULT_CONFIG;
+import static io.github.fbbzl.starter.pojo.tree.Treeable.buildByReflectTreeable;
+import static io.github.fbbzl.starter.pojo.tree.Treeable.buildByTreeable;
+import static io.github.fbbzl.starter.pojo.tree.Treeable.isReflectTreeable;
+import static io.github.fbbzl.starter.pojo.tree.Treeable.isTreeableType;
 import static java.util.Collections.emptyList;
 import static java.util.Collections.emptyMap;
 import static java.util.function.UnaryOperator.identity;
@@ -309,22 +312,19 @@ public abstract class BaseCrudService<
             @Size(max = 1024, message = "the number of ranges cannot exceed 1024")
             Range[] ranges)
     {
-        if (Treeable.class.isAssignableFrom(boClass)) {
+        if (isTreeableType(boClass)) {
             List<BO> list = this.list(dto, limit, orders, ranges);
             operateTemplate.execute(list, asyncBeanOperationExecutor, Grouped.alwaysMatch());
-            return TreeUtil.build(list, rootId, treeNodeConfig(), (bo, tree) ->
-            {
-                tree.setId(bo.getId());
-
-                @SuppressWarnings("unchecked")
-                Treeable<ID> treeNodeBo = (Treeable<ID>) bo;
-                tree.setParentId(treeNodeBo.getNodeParentId());
-
-                tree.putExtra("data", bo);
-            });
+            return buildByTreeable(list, rootId, treeNodeConfig());
         }
 
-        log.warn("Tree query ignored because BO type [{}] does not implement [{}]", boClass.getName(), Treeable.class.getName());
+        if (isReflectTreeable(boClass)) {
+            List<BO> list = this.list(dto, limit, orders, ranges);
+            operateTemplate.execute(list, asyncBeanOperationExecutor, Grouped.alwaysMatch());
+            return buildByReflectTreeable(list, rootId, treeNodeConfig());
+        }
+
+        log.warn("Tree query ignored because BO type [{}] is neither treeable nor reflect-treeable", boClass.getName());
         return emptyList();
     }
 
