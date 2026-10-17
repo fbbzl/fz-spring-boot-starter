@@ -28,6 +28,7 @@ import org.springframework.web.context.request.ServletRequestAttributes;
 
 import java.lang.reflect.Method;
 import java.time.Duration;
+import java.util.UUID;
 
 import static cn.hutool.core.convert.Convert.toStr;
 import static cn.hutool.core.util.ObjectUtil.defaultIfNull;
@@ -72,13 +73,14 @@ public class RedissonSubmitOnceAspect
 
         String          key      = buildSubmitOnceKey(request, submitOnce, identity);
         RBucket<String> bucket   = redissonClient.getBucket(key);
-        boolean         acquired = bucket.setIfAbsent("1", Duration.ofMillis(submitOnce.windowMillis()));
+        String          marker   = UUID.randomUUID().toString();
+        boolean         acquired = bucket.setIfAbsent(marker, Duration.ofMillis(submitOnce.windowMillis()));
 
         if (acquired) {
             try {
                 return point.proceed();
             } catch (Throwable t) {
-                bucket.delete();
+                bucket.compareAndSet(marker, null);
                 throw t;
             }
         }

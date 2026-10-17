@@ -13,6 +13,8 @@ import org.springframework.core.ResolvableType;
 import org.springframework.core.io.buffer.DataBuffer;
 import org.springframework.core.io.buffer.DefaultDataBufferFactory;
 import org.springframework.http.MediaType;
+import org.springframework.http.codec.DecoderHttpMessageReader;
+import org.springframework.mock.http.server.reactive.MockServerHttpRequest;
 import reactor.core.publisher.Flux;
 
 import java.nio.charset.StandardCharsets;
@@ -51,7 +53,7 @@ class Crane4jJsonDecoderTest
     }
 
     @Test
-    void shouldAssembleQRequestData()
+    void shouldReadAndAssembleSingleQRequestBody()
     {
         String json = """
                 {
@@ -59,12 +61,10 @@ class Crane4jJsonDecoderTest
                   "timestamp": 0
                 }
                 """;
-        DataBuffer     buffer = new DefaultDataBufferFactory().wrap(json.getBytes(StandardCharsets.UTF_8));
         ResolvableType type   = ResolvableType.forClassWithGenerics(Q.class, TestDto.class);
-
-        Object result = decoder.decode(Flux.just(buffer), type, MediaType.APPLICATION_JSON, Map.of())
-                               .single()
-                               .block();
+        MockServerHttpRequest request = MockServerHttpRequest.post("/test")
+                .contentType(MediaType.APPLICATION_JSON).body(json);
+        Object result = new DecoderHttpMessageReader<>(decoder).readMono(type, request, Map.of()).block();
 
         assertThat(result).isInstanceOf(Q.class);
         Q<?> q = (Q<?>) result;

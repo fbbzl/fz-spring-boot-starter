@@ -46,7 +46,6 @@ import static org.springframework.http.MediaType.MULTIPART_FORM_DATA_VALUE;
 public class QuestOperationCustomizer implements GlobalOperationCustomizer, GlobalOpenApiCustomizer
 {
     private static final String FILES_PROPERTY      = "files";
-    private static final String WILDCARD_MEDIA_TYPE = "*/*";
     private static final String HTTP_BAD_REQUEST    = "400";
     private static final String HTTP_SERVER_ERROR   = "500";
     private static final String REF_SEPARATOR       = "/";
@@ -225,21 +224,13 @@ public class QuestOperationCustomizer implements GlobalOperationCustomizer, Glob
 
     private void applyErrorResponseExample(ApiResponse apiResponse, String statusCode)
     {
-        Content content = apiResponse.getContent();
-        if (MapUtil.isEmpty(content)) {
-            content = new Content();
-            apiResponse.setContent(content);
+        if (CharSequenceUtil.isNotBlank(apiResponse.get$ref()) || MapUtil.isNotEmpty(apiResponse.getContent())) {
+            return;
         }
 
-        MediaType mediaType = content.get(APPLICATION_JSON_VALUE);
-        if (mediaType == null) {
-            mediaType = content.get(WILDCARD_MEDIA_TYPE);
-        }
-        if (mediaType == null) {
-            mediaType = new MediaType();
-        }
-
-        content.remove(WILDCARD_MEDIA_TYPE);
+        Content content = new Content();
+        apiResponse.setContent(content);
+        MediaType mediaType = new MediaType();
         content.addMediaType(APPLICATION_JSON_VALUE, mediaType);
         mediaType.setSchema(errorResponseSchema());
 
@@ -635,7 +626,8 @@ public class QuestOperationCustomizer implements GlobalOperationCustomizer, Glob
 
     private void applyExample(MediaType mediaType, Schema<?> schema, String contentType)
     {
-        if (!isJsonContentType(contentType) || schema == null) {
+        if (!isJsonContentType(contentType) || schema == null
+            || !isNullExample(mediaType.getExample()) || MapUtil.isNotEmpty(mediaType.getExamples())) {
             return;
         }
 
