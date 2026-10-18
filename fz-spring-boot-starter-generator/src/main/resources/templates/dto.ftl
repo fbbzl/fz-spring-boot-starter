@@ -7,6 +7,8 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.experimental.FieldDefaults;
 import io.github.fbbzl.starter.pojo.dto.BaseDto;
+import io.github.fbbzl.starter.pojo.validation.group.CRUD;
+import jakarta.validation.groups.Default;
 import org.springframework.lang.Nullable;
 import lombok.experimental.FieldNameConstants;
 
@@ -41,13 +43,13 @@ public class ${className}Dto extends BaseDto<${primaryKeyType}> {
     <#if !["id", "createdAt", "createdBy", "updatedAt", "updatedBy", "deletedAt"]?seq_contains(field.name)>
 
     <#if field.isNullable == "NO">
-    @NotNull(message = "{${className}.${field.name}.null}")
+    @NotNull(groups = {Default.class, CRUD.C.class}, message = "{${className}.${field.name}.null}")
     <#else>
     @Nullable
     </#if>
     @Schema(description = "${field.comment}"<#if field.example??>, example = "${field.example?j_string}"</#if><#if field.minLength??>, minLength = ${field.minLength?c}</#if><#if field.maxLength??>, maxLength = ${field.maxLength?c}</#if>)
     <#if field.lengthValidation??>
-    @Length(min = ${field.minLength!1}, max = ${field.maxLength?c})
+    @Length(groups = {Default.class, CRUD.C.class}, min = ${field.minLength!1}, max = ${field.maxLength?c})
     </#if>
     ${field.javaType} ${field.name};
     </#if>

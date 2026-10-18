@@ -45,6 +45,7 @@ import static java.util.Collections.emptyList;
  * @since 2020/1/3/001 13:30
  */
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
+@Transactional
 public class BaseRepositoryImpl<ENTITY extends BaseJpaEntity<ID>, ID extends Serializable>
         implements BaseRepository<ENTITY, ID>, JpaRepositoryImplementation<ENTITY, ID>
 {

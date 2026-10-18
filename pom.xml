@@ -45,6 +45,7 @@
         <module>fz-spring-boot-starter-jpa</module>
         <module>fz-spring-boot-starter-message</module>
         <module>fz-spring-boot-starter-mybatis-plus</module>
+        <module>fz-spring-boot-starter-openapi</module>
         <module>fz-spring-boot-starter-pojo</module>
         <module>fz-spring-boot-starter-redisson</module>
         <module>fz-spring-boot-starter-web</module>
@@ -161,6 +162,12 @@
             <dependency>
                 <groupId>io.github.fbbzl</groupId>
                 <artifactId>fz-spring-boot-starter-pojo</artifactId>
+                <version>${revision}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>io.github.fbbzl</groupId>
+                <artifactId>fz-spring-boot-starter-openapi</artifactId>
                 <version>${revision}</version>
             </dependency>
 

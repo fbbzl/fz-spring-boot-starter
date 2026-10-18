@@ -22,8 +22,13 @@ import org.fz.erwin.exception.Throws;
 import org.springframework.aop.support.AopUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.lang.Nullable;
+import org.springframework.util.ClassUtils;
 
-import java.io.Serializable;
+import java.io.*;
+import java.nio.file.Path;
+import java.util.Arrays;
+import java.util.List;
+import java.util.stream.Stream;
 
 /**
  *
@@ -36,6 +41,16 @@ import java.io.Serializable;
 public abstract class BaseAuditLogAspect<ID extends Serializable, AUDIT_LOG extends BaseAuditLog<ID>>
 {
     private static final int MAX_AUDIT_TEXT_LENGTH = 10000;
+
+    // Web APIs are optional: audit must also load in applications without either web stack.
+    private static final List<Class<?>> WEB_TYPES = Stream.of(
+                    "jakarta.servlet.ServletRequest", "jakarta.servlet.ServletResponse", "jakarta.servlet.http.Part",
+                    "org.springframework.core.io.InputStreamSource", "org.springframework.http.HttpMessage",
+                    "org.springframework.web.context.request.WebRequest", "org.springframework.web.server.ServerWebExchange",
+                    "org.springframework.http.codec.multipart.Part")
+            .filter(name -> ClassUtils.isPresent(name, BaseAuditLogAspect.class.getClassLoader()))
+            .<Class<?>>map(name -> ClassUtils.resolveClassName(name, BaseAuditLogAspect.class.getClassLoader()))
+            .toList();
 
     @Autowired(required = false)
     BaseDal<AUDIT_LOG, ID> auditDal;
@@ -66,7 +81,8 @@ public abstract class BaseAuditLogAspect<ID extends Serializable, AUDIT_LOG exte
             auditLog.setMethod(joinPoint.getSignature().getName());
 
             if (audit.saveParam() && ArrayUtil.isNotEmpty(joinPoint.getArgs())) {
-                auditLog.setParam(StrUtil.subPre(JSONUtil.toJsonStr(joinPoint.getArgs()), MAX_AUDIT_TEXT_LENGTH));
+                Object[] params = Arrays.stream(joinPoint.getArgs()).filter(value -> !isInfrastructure(value)).toArray();
+                auditLog.setParam(StrUtil.subPre(JSONUtil.toJsonStr(params), MAX_AUDIT_TEXT_LENGTH));
             }
 
             if (err != null) {
@@ -74,7 +90,7 @@ public abstract class BaseAuditLogAspect<ID extends Serializable, AUDIT_LOG exte
                 auditLog.setErrorMsg(ExceptionUtil.getRootCauseMessage(err));
             }
 
-            if (audit.saveResult() && jsonResult != null) {
+            if (audit.saveResult() && jsonResult != null && !isInfrastructure(jsonResult)) {
                 auditLog.setResult(StrUtil.subPre(JSONUtil.toJsonStr(jsonResult), MAX_AUDIT_TEXT_LENGTH));
             }
 
@@ -83,6 +99,16 @@ public abstract class BaseAuditLogAspect<ID extends Serializable, AUDIT_LOG exte
         catch (Exception exp) {
             log.error("error occur", exp);
         }
+    }
+
+    private static boolean isInfrastructure(@Nullable Object value)
+    {
+        if (value == null) return false;
+        Class<?> type = value.getClass().isArray() ? value.getClass().getComponentType() : value.getClass();
+        return InputStream.class.isAssignableFrom(type) || OutputStream.class.isAssignableFrom(type)
+               || Reader.class.isAssignableFrom(type) || Writer.class.isAssignableFrom(type)
+               || File.class.isAssignableFrom(type) || Path.class.isAssignableFrom(type)
+               || WEB_TYPES.stream().anyMatch(webType -> webType.isAssignableFrom(type));
     }
 
     protected String getModule(JoinPoint joinPoint)
