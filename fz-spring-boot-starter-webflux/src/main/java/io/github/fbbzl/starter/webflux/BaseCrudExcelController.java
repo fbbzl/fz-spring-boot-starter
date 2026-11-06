@@ -11,8 +11,6 @@ import io.github.fbbzl.starter.pojo.validation.group.CRUD;
 import io.github.fbbzl.starter.webflux.Q.FQ;
 import io.github.fbbzl.starter.webflux.Q.OQ;
 import io.github.fbbzl.starter.webflux.annotation.IgnoreResponseWrap;
-import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.Parameter;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
 import jakarta.validation.groups.Default;
@@ -55,13 +53,15 @@ public abstract class BaseCrudExcelController<
 
     Class<EO> excelClass = Generics.getGenericSuperType(this.getClass(), BaseCrudExcelController.class, 5);
 
-    @Operation(description = "[BASE] Get an excel template", summary = "[BASE] The Excel template you need to use to get Excel upload data")
+    /**
+     * [BASE] Get an excel template
+     */
     @PostMapping("excel/template")
     @IgnoreResponseWrap
     public Mono<ExcelResponseEntity> excelTemplate(
             @NotNull
             @Validated({Default.class, CRUD.R.class})
-            @Parameter(description = "download excel template request", required = true)
+            // download excel template request
             @RequestBody Q<ExcelDto<DTO>> req)
     {
         ExcelDto<DTO> excelDto = Objects.requireNonNull(req.getData(), "excelDto is required");
@@ -70,13 +70,15 @@ public abstract class BaseCrudExcelController<
                    .map(bytes -> ExcelResponseEntity.of(bytes, excelDto.fileName()));
     }
 
+    /**
+     * [BASE] Excel to import
+     */
     @AuditMethod(saveParam = false, saveResult = false)
-    @Operation(description = "[BASE] Excel to import", summary = "[BASE] Excel data to import data")
     @PostMapping(value = "excel/import", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public Mono<R<Void>> importExcel(
             @NotNull
             @Validated(CRUD.C.class)
-            @Parameter(description = "excel import object", required = true)
+            // excel import object
             @ModelAttribute FQ req)
     {
         return readFile(req.getSingleFile())
@@ -86,19 +88,21 @@ public abstract class BaseCrudExcelController<
                 .thenReturn(R.ok());
     }
 
+    /**
+     * [BASE] Excel export
+     */
     @AuditMethod(saveParam = false, saveResult = false)
-    @Operation(description = "[BASE] Excel export", summary = "[BASE] Excel excel data")
     @PostMapping({"excel/export", "excel/export/{limit}"})
     @IgnoreResponseWrap
     public Mono<ExcelResponseEntity> exportExcel(
             @Nullable
             @Positive(message = "limit must be positive")
-            @Parameter(description = "export data limit")
+            // export data limit
             @PathVariable(value = "limit", required = false)
             Integer limit,
             @NotNull
             @Validated({Default.class, CRUD.R.class})
-            @Parameter(description = "export excel request", required = true)
+            // export excel request
             @RequestBody OQ<ExcelDto<DTO>> req)
     {
         ExcelDto<DTO> excelDto = Objects.requireNonNull(req.getData(), "excelDto is required");

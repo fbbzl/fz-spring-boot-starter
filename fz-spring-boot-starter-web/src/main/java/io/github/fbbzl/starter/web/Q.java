@@ -7,7 +7,6 @@ import cn.hutool.db.sql.Order;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.github.fbbzl.starter.dal.Range;
 import io.github.fbbzl.starter.pojo.validation.group.CRUD;
-import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
@@ -31,7 +30,7 @@ import static lombok.AccessLevel.PROTECTED;
 @Setter
 @ToString
 @NoArgsConstructor(access = PROTECTED)
-@Schema(description = "generic request objects")
+// generic request objects
 @FieldDefaults(level = PRIVATE)
 public class Q<DATA>
 {
@@ -39,7 +38,6 @@ public class Q<DATA>
     /**
      * request data
      */
-    @Schema(description = "request data")
     @Valid
     @NotNull(
             groups = {
@@ -56,11 +54,10 @@ public class Q<DATA>
     /**
      * request timestamp
      */
-    @Schema(description = "request timestamp")
     long timestamp = System.currentTimeMillis();
 
     @Size(max = 64, message = "{Q.requestId.size}")
-    @Schema(description = "request identifier")
+    // request identifier
     @Nullable
     String requestId;
 
@@ -77,14 +74,14 @@ public class Q<DATA>
     @Getter
     @Setter
     @ToString
-    @Schema(description = "generic range query request objects")
+    // generic range query request objects
     @FieldDefaults(level = PRIVATE)
     public static class RQ<DATA> extends Q<DATA>
     {
 
         @Valid
         @Size(max = 128, message = "{RQ.ranges.size}")
-        @Schema(description = "range query conditions")
+        // range query conditions
         @Nullable
         BaseRange[] ranges;
 
@@ -103,26 +100,25 @@ public class Q<DATA>
         @Getter
         @Setter
         @ToString
-        @Schema(description = "range query condition")
         @FieldDefaults(level = PRIVATE)
         public static class BaseRange implements Range
         {
 
             @Size(max = 128, message = "{RQ.BaseRange.field.size}")
             @NotNull(message = "{RQ.BaseRange.field}")
-            @Schema(description = "range query field")
+            // range query field
             @Nullable
             String field;
 
-            @Schema(description = "range query start value")
+            // range query start value
             @Nullable
             Object start;
 
-            @Schema(description = "range query end value")
+            // range query end value
             @Nullable
             Object end;
 
-            @Schema(description = "whether the range query is closed interval")
+            // whether the range query is closed interval
             @Nullable
             Boolean close = Boolean.TRUE;
 
@@ -149,13 +145,13 @@ public class Q<DATA>
     @Getter
     @Setter
     @ToString
-    @Schema(description = "generic ordered request objects")
+    // generic ordered request objects
     @FieldDefaults(level = PRIVATE)
     public static class OQ<DATA> extends RQ<DATA>
     {
 
         @Size(max = 128, message = "{OQ.orders.size}")
-        @Schema(description = "orders")
+        // orders
         @Nullable
         Order[] orders;
 
@@ -183,13 +179,13 @@ public class Q<DATA>
     @Getter
     @Setter
     @ToString
-    @Schema(description = "generic paging request objects")
+    // generic paging request objects
     @FieldDefaults(level = PRIVATE)
     public static class PQ<DATA> extends Q<DATA>
     {
 
         @NotNull(message = "{PQ.page.page}")
-        @Schema(description = "paging parameters page numbers start from 0")
+        // paging parameters page numbers start from 0
         @Nullable
         Page page;
 
@@ -207,13 +203,13 @@ public class Q<DATA>
      */
     @Data
     @FieldDefaults(level = PRIVATE)
-    @Schema(description = "generic the file upload request objects")
+    // generic the file upload request objects
     @EqualsAndHashCode(callSuper = false)
     public static class FQ
     {
 
         @Size(min = 1, max = 128, message = "{FQ.files.size}")
-        @Schema(description = "uploaded files")
+        // uploaded files
         @Nullable
         MultipartFile[] files;
 

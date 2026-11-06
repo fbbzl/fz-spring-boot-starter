@@ -10,8 +10,6 @@ import io.github.fbbzl.starter.pojo.validation.group.CRUD;
 import io.github.fbbzl.starter.webflux.Q.OQ;
 import io.github.fbbzl.starter.webflux.Q.PQ;
 import io.github.fbbzl.starter.webflux.R.PR;
-import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.Parameter;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
 import jakarta.validation.groups.Default;
@@ -51,125 +49,143 @@ public abstract class BaseCrudController<
 
     Class<ENTITY> entityClass = Generics.getGenericSuperType(this.getClass(), BaseCrudController.class, 1);
 
-    @Operation(description = "[BASE] Based on the primary key query, it does not contain data that has been logically deleted", summary = "[BASE] Query by primary key")
+    /**
+     * [BASE] Based on the primary key query, it does not contain data that has been logically deleted
+     */
     @GetMapping("{id}")
     public BO byId(
             @NotNull
             @PathVariable("id")
-            @Parameter(name = "id", description = "the primary key of the query", required = true, example = "1")
+            // the primary key of the query
             ID id)
     {
         return service.byId(id);
     }
 
-    @Operation(description = "[BASE] Query by primary key set", summary = "[BASE] Query by primary key set")
+    /**
+     * [BASE] Query by primary key set
+     */
     @PostMapping("ids")
     public List<BO> byIds(
             @NotNull
             @Validated(CRUD.R.class)
-            @Parameter(description = "request contains ids", required = true, example = "1,2,3")
+            // request contains ids
             @RequestBody
             Q<Set<ID>> req)
     {
         return service.byIds(req.getData());
     }
 
-    @Operation(description = "[BASE] List query, null fields do not participate in the query", summary = "[BASE] List Query")
+    /**
+     * [BASE] List query, null fields do not participate in the query
+     */
     @PostMapping({"list", "list/{limit}"})
     public List<BO> list(
             @Nullable
             @Positive(message = "limit must be positive")
-            @Parameter(description = "list data limit")
+            // list data limit
             @PathVariable(value = "limit", required = false)
             Integer limit,
             @NotNull
             @Validated(CRUD.R.class)
-            @Parameter(description = "request", required = true)
+            // request
             @RequestBody
             OQ<DTO> req)
     {
         return service.list(req.getData(), Math.min(defaultIfNull(limit, this.defaultLimit()), this.defaultLimit()), req.getOrders(), req.getRanges());
     }
 
-    @Operation(description = "[BASE] For paginated query, null fields do not participate in query", summary = "[BASE] Page query")
+    /**
+     * [BASE] For paginated query, null fields do not participate in query
+     */
     @PostMapping("page")
     public PR<BO> page(
             @NotNull
             @Validated(CRUD.R.class)
-            @Parameter(description = "pagination request", required = true)
+            // pagination request
             @RequestBody
             PQ<DTO> req)
     {
         return PR.of(service.page(req.getPage(), req.getData()));
     }
 
-    @Operation(description = "[BASE] For tree query, null fields do not participate in query", summary = "[BASE] Tree query, If it weren't be a tree type data, there would be no result")
+    /**
+     * [BASE] For tree query, null fields do not participate in query
+     */
     @PostMapping({"tree/{rootId}", "tree/{rootId}/{limit}"})
     public List<Tree<ID>> tree(
             @NotNull
             @PathVariable("rootId")
-            @Parameter(name = "rootId", description = "the root-id of the tree", required = true, example = "1")
+            // the root-id of the tree
             ID rootId,
             @Nullable
             @Positive(message = "limit must be positive")
-            @Parameter(description = "tree data limit")
+            // tree data limit
             @PathVariable(value = "limit", required = false)
             Integer limit,
             @NotNull
             @Validated(CRUD.R.class)
-            @Parameter(description = "tree request", required = true)
+            // tree request
             @RequestBody
             OQ<DTO> req)
     {
         return service.tree(rootId, req.getData(), Math.min(defaultIfNull(limit, this.defaultLimit()), this.defaultLimit()), req.getOrders(), req.getRanges());
     }
 
-    @Operation(description = "[BASE] Specify whether primary key data exists", summary = "[BASE] Specifies whether primary key data exists")
+    /**
+     * [BASE] Specify whether primary key data exists
+     */
     @GetMapping("exists/{id}")
     public boolean exists(
             @NotNull
             @PathVariable("id")
-            @Parameter(name = "id", description = "the primary key of the query", required = true, example = "1")
+            // the primary key of the query
             ID id)
     {
         return service.exists(id);
     }
 
-    @Operation(description = "[BASE] Specify whether the condition data exists, and null fields will not participate in the query", summary = "[BASE] Specifies whether conditional data exists")
+    /**
+     * [BASE] Specify whether the condition data exists, and null fields will not participate in the query
+     */
     @PostMapping("exists")
     public boolean exists(
             @NotNull
             @Validated(CRUD.R.class)
-            @Parameter(description = "request data", required = true)
+            // request data
             @RequestBody
             Q<DTO> req)
     {
         return service.exists(req.getData());
     }
 
-    @Operation(description = "[BASE] Count by condition, null fields do not participate in the query", summary = "[BASE] Count by condition")
+    /**
+     * [BASE] Count by condition, null fields do not participate in the query
+     */
     @PostMapping("count")
     public long count(
             @NotNull
             @Validated(CRUD.R.class)
-            @Parameter(description = "count request data", required = true)
+            // count request data
             @RequestBody
             Q<DTO> req)
     {
         return service.count(req.getData());
     }
 
-    @Operation(description = "[BASE] Query IDs by condition, null fields do not participate", summary = "[BASE] Query IDs by condition")
+    /**
+     * [BASE] Query IDs by condition, null fields do not participate
+     */
     @PostMapping({"ids/query", "ids/query/{limit}"})
     public List<ID> ids(
             @Nullable
             @Positive(message = "limit must be positive")
-            @Parameter(description = "ids query limit")
+            // ids query limit
             @PathVariable(value = "limit", required = false)
             Integer limit,
             @NotNull
             @Validated(CRUD.R.class)
-            @Parameter(description = "query request data", required = true)
+            // query request data
             @RequestBody
             Q<DTO> req)
     {
@@ -177,25 +193,29 @@ public abstract class BaseCrudController<
         else               return service.ids(req.getData());
     }
     @AuditMethod
-    @Operation(description = "[BASE] Create data", summary = "[BASE] Create data")
+    /**
+     * [BASE] Create data
+     */
     @PostMapping
     public BO create(
             @NotNull
             @Validated(CRUD.C.class)
-            @Parameter(description = "creating data", required = true)
+            // creating data
             @RequestBody
             Q<DTO> req)
     {
         return service.create(req.getData());
     }
 
+    /**
+     * [BASE] Create data batch
+     */
     @AuditMethod(saveParam = false, saveResult = false)
-    @Operation(description = "[BASE] Create data batch", summary = "[BASE] Create data batch")
     @PostMapping("batch")
     public List<BO> createBatch(
             @NotNull
             @Validated(CRUD.C.class)
-            @Parameter(description = "creating batch data", required = true)
+            // creating batch data
             @RequestBody
             Q<Collection<DTO>> req)
     {
@@ -203,25 +223,29 @@ public abstract class BaseCrudController<
     }
 
     @AuditMethod
-    @Operation(description = "[BASE] Update without null fields", summary = "[BASE] Do update ignore null field value")
+    /**
+     * [BASE] Update without null fields
+     */
     @PutMapping
     public int update(
             @NotNull
             @Validated(CRUD.U.class)
-            @Parameter(name = "req", description = "updating data", required = true)
+            // updating data
             @RequestBody
             Q<DTO> req)
     {
         return service.update(req.getData());
     }
 
+    /**
+     * [BASE] Batch updates without null fields
+     */
     @AuditMethod(saveParam = false, saveResult = false)
-    @Operation(description = "[BASE] Batch updates without null fields", summary = "[BASE] Do batch update ignore null field value")
     @PutMapping("batch")
     public int updateBatch(
             @NotNull
             @Validated(CRUD.U.class)
-            @Parameter(name = "req", description = "batch updating data", required = true)
+            // batch updating data
             @RequestBody
             Q<Collection<DTO>> req)
     {
@@ -229,12 +253,14 @@ public abstract class BaseCrudController<
     }
 
     @AuditMethod
-    @Operation(description = "[BASE] Update by map without null fields", summary = "[BASE] Do update by map ignore null field value")
+    /**
+     * [BASE] Update by map without null fields
+     */
     @PatchMapping("{id}")
     public BO patch(
             @NotNull
             @PathVariable("id")
-            @Parameter(name = "id", description = "The primary key of the record that needs to be update", required = true, example = "1")
+            // The primary key of the record that needs to be update
             ID id,
             @Validated({Default.class})
             @NotNull
@@ -247,24 +273,25 @@ public abstract class BaseCrudController<
     }
 
     @AuditMethod
-    @Operation(description = "[BASE] Deleting data is a logical deletion, but this tombstone deletion is equivalent to physical deletion, and the tombstone is only to maximize the value of the data", summary = "[BASE] Delete data by primary key")
+    /**
+     * [BASE] Deleting data is a logical deletion, but this tombstone deletion is equivalent to physical deletion, and the tombstone is only to maximize the value of the data
+     */
     @DeleteMapping("{id}")
     public void delete(
             @NotNull
             @PathVariable("id")
-            @Parameter(name = "id", description = "The primary key of the record that needs to be deleted", required = true, example = "1")
+            // The primary key of the record that needs to be deleted
             ID id)
     {
         service.delete(id);
     }
 
     @AuditMethod
-    @Operation(description = "[BASE] Deleting data is a logical deletion, but this tombstone deletion is equivalent to physical deletion, and the tombstone is only to maximize the value of the data", summary = "[BASE] Delete data by primary key set")
     @DeleteMapping("ids")
     public void delete(
             @NotNull
             @Validated(CRUD.D.class)
-            @Parameter(description = "request ids", required = true, example = "1,2,3")
+            // request ids
             @RequestBody
             Q<Set<ID>> req)
     {

@@ -13,7 +13,6 @@ import io.github.fbbzl.starter.web.BaseCrudController;
 </#if>
 import io.github.fbbzl.starter.web.annotation.RestRequestController;
 import io.github.fbbzl.starter.audit.frame.annotation.AuditModule;
-import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.extern.slf4j.Slf4j;
 import lombok.experimental.FieldDefaults;
 import lombok.RequiredArgsConstructor;
@@ -22,7 +21,7 @@ import org.springframework.validation.annotation.Validated;
 import static lombok.AccessLevel.PRIVATE;
 
 /**
- * ${className} controller
+ * ${tableComment?replace("*/", "* /")} controller
  *
  * @author ${author}
  * @version 1.0
@@ -34,7 +33,6 @@ import static lombok.AccessLevel.PRIVATE;
 @AuditModule("${tableComment}")
 @RequiredArgsConstructor
 @RestRequestController(mapping = "${requestMapping}")
-@Tag(name = "${tableComment}API", description = "api for ${tableComment}")
 @FieldDefaults(level = PRIVATE, makeFinal = true)
 <#if excel>
 public class ${className}Controller extends BaseCrudExcelController<${primaryKeyType}, ${className}, ${className}Service, ${className}Dto, ${className}Bo, ${className}Eo> {}

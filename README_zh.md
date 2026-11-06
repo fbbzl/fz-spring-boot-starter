@@ -47,7 +47,7 @@
 <dependency>
     <groupId>io.github.fbbzl</groupId>
     <artifactId>fz-spring-boot-starter-web</artifactId>
-    <version>1.3.88_3.5.16</version>
+    <version>3.5.11_3.5.16</version>
 </dependency>
 ```
 
@@ -131,7 +131,6 @@ fz:
 | Hutool | 5.8.46 |
 | Guava | 33.6.0 |
 | Sa-Token | 1.45.0 |
-| SpringDoc OpenAPI | 2.8.17 |
 | Lombok | 1.18.46 |
 
 ---

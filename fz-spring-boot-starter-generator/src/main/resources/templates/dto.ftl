@@ -1,12 +1,13 @@
 package ${moduleName}.controller.dto;
 
-import io.swagger.v3.oas.annotations.media.*;
 import jakarta.validation.constraints.*;
 import lombok.AccessLevel;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.experimental.FieldDefaults;
 import io.github.fbbzl.starter.pojo.dto.BaseDto;
+import io.github.fbbzl.starter.pojo.validation.group.CRUD;
+import jakarta.validation.groups.Default;
 import org.springframework.lang.Nullable;
 import lombok.experimental.FieldNameConstants;
 
@@ -22,7 +23,7 @@ import cn.hutool.core.lang.RegexPool;
 </#list></#if>
 
 /**
- * ${className} dto
+ * ${tableComment?replace("*/", "* /")} dto
  *
  * @author ${author}
  * @version 1.0
@@ -32,22 +33,31 @@ import cn.hutool.core.lang.RegexPool;
 @Data
 @FieldNameConstants
 @EqualsAndHashCode(callSuper = false)
-@Schema(description = "${tableComment} dto")
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class ${className}Dto extends BaseDto<${primaryKeyType}> {
 <#-- 遍历字段生成实体属性 -->
 <#list fields as field>
     <#-- 排除父类字段 id, createdAt, createdBy, updatedAt, updatedBy, deletedAt 字段 -->
     <#if !["id", "createdAt", "createdBy", "updatedAt", "updatedBy", "deletedAt"]?seq_contains(field.name)>
-
+    /**
+     * ${field.comment?replace("*/", "* /")}
+<#if field.example??>
+     * Example: ${field.example?j_string?replace("*/", "* /")}
+</#if>
+<#if field.minLength??>
+     * Min length: ${field.minLength?c}
+</#if>
+<#if field.maxLength??>
+     * Max length: ${field.maxLength?c}
+</#if>
+     */
     <#if field.isNullable == "NO">
-    @NotNull(message = "{${className}.${field.name}.null}")
+    @NotNull(groups = {Default.class, CRUD.C.class}, message = "{${className}.${field.name}.null}")
     <#else>
     @Nullable
     </#if>
-    @Schema(description = "${field.comment}"<#if field.example??>, example = "${field.example?j_string}"</#if><#if field.minLength??>, minLength = ${field.minLength?c}</#if><#if field.maxLength??>, maxLength = ${field.maxLength?c}</#if>)
     <#if field.lengthValidation??>
-    @Length(min = ${field.minLength!1}, max = ${field.maxLength?c})
+    @Length(groups = {Default.class, CRUD.C.class}, min = ${field.minLength!1}, max = ${field.maxLength?c})
     </#if>
     ${field.javaType} ${field.name};
     </#if>
