@@ -131,7 +131,6 @@ fz:
 | Hutool | 5.8.46 |
 | Guava | 33.6.0 |
 | Sa-Token | 1.45.0 |
-| SpringDoc OpenAPI | 2.8.17 |
 | Lombok | 1.18.46 |
 
 ---

@@ -11,8 +11,6 @@ import io.github.fbbzl.starter.pojo.validation.group.CRUD;
 import io.github.fbbzl.starter.web.Q.FQ;
 import io.github.fbbzl.starter.web.Q.OQ;
 import io.github.fbbzl.starter.web.annotation.IgnoreResponseWrap;
-import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.Parameter;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
 import jakarta.validation.groups.Default;
@@ -52,7 +50,9 @@ public abstract class BaseCrudExcelController<
 
     Class<EO> excelClass = Generics.getGenericSuperType(this.getClass(), BaseCrudExcelController.class, 5);
 
-    @Operation(description = "[BASE] Get an excel template", summary = "[BASE] The Excel template you need to use to get Excel upload data")
+    /**
+     * [BASE] Get an excel template
+     */
     @IgnoreResponseWrap
     @PostMapping("excel/template")
     public ExcelResponseEntity excelTemplate(
@@ -65,8 +65,10 @@ public abstract class BaseCrudExcelController<
         return ExcelResponseEntity.of(bytes, excelDto.fileName());
     }
 
+    /**
+     * [BASE] Excel to import
+     */
     @AuditMethod(saveParam = false, saveResult = false)
-    @Operation(description = "[BASE] Excel to import", summary = "[BASE] Excel data to import data")
     @PostMapping("excel/import")
     public void importExcel(
             @NotNull
@@ -81,14 +83,16 @@ public abstract class BaseCrudExcelController<
         }
     }
 
+    /**
+     * [BASE] Excel export
+     */
     @AuditMethod(saveParam = false, saveResult = false)
-    @Operation(description = "[BASE] Excel export", summary = "[BASE] Excel excel data")
     @IgnoreResponseWrap
     @PostMapping({"excel/export", "excel/export/{limit}"})
     public ExcelResponseEntity exportExcel(
             @Nullable
             @Positive(message = "limit must be positive")
-            @Parameter(name = "limit", description = "export data limit")
+            // export data limit
             @PathVariable(value = "limit", required = false)
             Integer limit,
             @NotNull

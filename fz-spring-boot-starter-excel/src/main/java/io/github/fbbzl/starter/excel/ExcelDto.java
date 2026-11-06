@@ -2,7 +2,6 @@ package io.github.fbbzl.starter.excel;
 
 import com.alibaba.excel.EasyExcelFactory;
 import com.alibaba.excel.write.style.column.LongestMatchColumnWidthStyleStrategy;
-import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 
@@ -18,18 +17,18 @@ import java.util.List;
  * @since 2026/1/21 23:53
  */
 
-@Schema(description = "excel download general settings object")
+// excel download general settings object
 public record ExcelDto<PARAM>(
-        @Schema(description = "query param")
+        // query param
         PARAM param,
 
         @NotNull(message = "{ExcelDto.fileName}")
         @Size(max = 255, message = "{ExcelDto.fileName.length}")
-        @Schema(description = "file name")
+        // file name
         String fileName,
 
         @Size(max = 255, message = "{ExcelDto.sheetName.length}")
-        @Schema(description = "sheet name")
+        // sheet name
         String sheetName
 ) {
 

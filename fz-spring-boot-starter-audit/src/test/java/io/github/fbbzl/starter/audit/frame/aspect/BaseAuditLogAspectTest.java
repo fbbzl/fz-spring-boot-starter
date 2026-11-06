@@ -3,16 +3,22 @@ package io.github.fbbzl.starter.audit.frame.aspect;
 import io.github.fbbzl.starter.audit.BaseAuditLog;
 import io.github.fbbzl.starter.audit.frame.annotation.AuditMethod;
 import io.github.fbbzl.starter.audit.frame.annotation.AuditModule;
+import cn.hutool.json.JSONUtil;
 import org.aspectj.lang.JoinPoint;
 import org.junit.jupiter.api.Test;
+import org.springframework.core.io.InputStreamResource;
 
+import java.io.InputStream;
 import java.io.Serializable;
+import java.nio.file.Path;
 import java.time.LocalDateTime;
+import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.verifyNoInteractions;
 
 class BaseAuditLogAspectTest
 {
@@ -32,6 +38,54 @@ class BaseAuditLogAspectTest
         aspect.doAfterThrowing(joinPoint, audit, new OutOfMemoryError("oom"));
 
         assertThat(logged).isTrue();
+    }
+
+    @Test
+    void shouldSkipDirectInfrastructureWithoutReadingOrChangingBusinessFields()
+    {
+        InputStream stream = mock(InputStream.class);
+        Map<String, String> business = Map.of("password", "user-managed", "name", "ordinary");
+        Object[] args = {stream, new InputStreamResource(stream), Path.of("example.txt"), business};
+        TestAuditLogAspect aspect = new TestAuditLogAspect(new AtomicBoolean());
+
+        aspect.doAfterReturning(joinPoint(args), options(true, true), stream);
+
+        assertThat(aspect.saved.getParam()).isEqualTo(JSONUtil.toJsonStr(new Object[]{business}));
+        assertThat(aspect.saved.getResult()).isNull();
+        assertThat(args[0]).isSameAs(stream);
+        assertThat(business.get("password")).isEqualTo("user-managed");
+        verifyNoInteractions(stream);
+    }
+
+    @Test
+    void shouldKeepSaveOptionsAndTextLimits()
+    {
+        TestAuditLogAspect aspect = new TestAuditLogAspect(new AtomicBoolean());
+        String text = "x".repeat(11000);
+        aspect.doAfterReturning(joinPoint(new Object[]{text}), options(true, true), text);
+        assertThat(aspect.saved.getParam()).hasSize(10000);
+        assertThat(aspect.saved.getResult()).hasSize(10000);
+
+        aspect.doAfterReturning(joinPoint(new Object[]{text}), options(false, false), text);
+        assertThat(aspect.saved.getParam()).isNull();
+        assertThat(aspect.saved.getResult()).isNull();
+    }
+
+    private JoinPoint joinPoint(Object[] args)
+    {
+        JoinPoint joinPoint = mock(JoinPoint.class);
+        when(joinPoint.getTarget()).thenReturn(new AnnotatedService());
+        when(joinPoint.getSignature()).thenReturn(new TestSignature());
+        when(joinPoint.getArgs()).thenReturn(args);
+        return joinPoint;
+    }
+
+    private AuditMethod options(boolean params, boolean result)
+    {
+        AuditMethod audit = mock(AuditMethod.class);
+        when(audit.saveParam()).thenReturn(params);
+        when(audit.saveResult()).thenReturn(result);
+        return audit;
     }
 
     @AuditModule("test-module")
@@ -109,6 +163,7 @@ class BaseAuditLogAspectTest
     static class TestAuditLogAspect extends BaseAuditLogAspect<Long, TestAuditLog>
     {
         private final AtomicBoolean logged;
+        private TestAuditLog saved;
 
         TestAuditLogAspect(AtomicBoolean logged) { this.logged = logged; }
 
@@ -121,6 +176,7 @@ class BaseAuditLogAspectTest
         @Override
         public void save(TestAuditLog audit)
         {
+            saved = audit;
             logged.set(true);
         }
     }

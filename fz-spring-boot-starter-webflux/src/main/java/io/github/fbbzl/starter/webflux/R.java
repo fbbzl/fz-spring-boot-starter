@@ -2,7 +2,6 @@ package io.github.fbbzl.starter.webflux;
 
 import cn.hutool.core.util.PageUtil;
 import cn.hutool.db.PageResult;
-import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 import lombok.experimental.FieldNameConstants;
@@ -28,7 +27,7 @@ import static lombok.AccessLevel.PROTECTED;
 @SuppressWarnings("unchecked")
 @NoArgsConstructor(access = PRIVATE)
 @AllArgsConstructor(access = PRIVATE)
-@Schema(description = "generic response")
+// generic response
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class R<DATA>
 {
@@ -40,26 +39,24 @@ public class R<DATA>
     /**
      * response code
      */
-    @Schema(description = "response code")
     String code;
 
     /**
      * success tag
      */
-    @Schema(description = "if is success, true:success, false:fail")
+    // if is success, true:success, false:fail
     Boolean success;
 
     /**
      * response message
      */
-    @Schema(description = "response message")
     String message;
 
     /**
      * the response data
      */
     @Setter(PROTECTED)
-    @Schema(description = "response data")
+    // response data
     DATA data;
 
     public static <DATA> R<DATA> ok()
@@ -102,21 +99,21 @@ public class R<DATA>
         return new R<>(code, false, message, data);
     }
 
-    @Schema(description = "generic page request")
+    // generic page request
     public record PR<RECORD>(
-            @Schema(description = "pageNumber, start with 0")
+            // pageNumber, start with 0
             int page,
 
-            @Schema(description = "pageSize")
+            // pageSize
             int pageSize,
 
-            @Schema(description = "total page count")
+            // total page count
             long totalPage,
 
-        @Schema(description = "total record count")
+        // total record count
         long total,
 
-        @Schema(description = "page records")
+        // page records
         List<RECORD> records)
     {
 

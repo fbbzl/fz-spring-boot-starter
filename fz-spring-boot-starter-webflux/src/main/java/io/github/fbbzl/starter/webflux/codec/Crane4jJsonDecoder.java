@@ -68,6 +68,17 @@ public class Crane4jJsonDecoder extends AbstractDecoder<Object>
                        .flatMap(this::assembleIfNeeded);
     }
 
+    @Override
+    public Mono<Object> decodeToMono(
+            org.reactivestreams.Publisher<DataBuffer> inputStream,
+            ResolvableType elementType,
+            MimeType mimeType,
+            Map<String, Object> hints)
+    {
+        return delegate.decodeToMono(inputStream, elementType, mimeType, hints)
+                       .flatMap(this::assembleIfNeeded);
+    }
+
     private Mono<Object> assembleIfNeeded(Object body)
     {
         if (body instanceof Q<?> q && q.getData() != null) {
