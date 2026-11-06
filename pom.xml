@@ -45,7 +45,6 @@
         <module>fz-spring-boot-starter-jpa</module>
         <module>fz-spring-boot-starter-message</module>
         <module>fz-spring-boot-starter-mybatis-plus</module>
-        <module>fz-spring-boot-starter-openapi</module>
         <module>fz-spring-boot-starter-pojo</module>
         <module>fz-spring-boot-starter-redisson</module>
         <module>fz-spring-boot-starter-web</module>
@@ -77,7 +76,6 @@
 
         <!--spring boot-->
         <spring-boot.version>3.5.16</spring-boot.version>
-        <swagger-annotations-jakarta.version>2.2.55</swagger-annotations-jakarta.version>
 
         <!--util group-->
         <erwin.version>1.2.16</erwin.version>
@@ -103,12 +101,6 @@
 
         <!--javassist-->
         <javassist.version>3.33.0-GA</javassist.version>
-
-        <!--openapi-->
-        <springdoc-openapi-starter-webmvc-ui.version>2.9.1</springdoc-openapi-starter-webmvc-ui.version>
-
-        <!--webflux-->
-        <springdoc-openapi-starter-webflux-ui.version>${springdoc-openapi-starter-webmvc-ui.version}</springdoc-openapi-starter-webflux-ui.version>
     </properties>
 
     <dependencies>
@@ -167,12 +159,6 @@
 
             <dependency>
                 <groupId>io.github.fbbzl</groupId>
-                <artifactId>fz-spring-boot-starter-openapi</artifactId>
-                <version>${revision}</version>
-            </dependency>
-
-            <dependency>
-                <groupId>io.github.fbbzl</groupId>
                 <artifactId>fz-spring-boot-starter-redisson</artifactId>
                 <version>${revision}</version>
             </dependency>
@@ -201,12 +187,6 @@
                 <version>${mybatis-plus-bom.version}</version>
                 <type>pom</type>
                 <scope>import</scope>
-            </dependency>
-
-            <dependency>
-                <groupId>io.swagger.core.v3</groupId>
-                <artifactId>swagger-annotations-jakarta</artifactId>
-                <version>${swagger-annotations-jakarta.version}</version>
             </dependency>
 
             <dependency>
@@ -261,30 +241,6 @@
                     <exclusion>
                         <groupId>cn.hutool</groupId>
                         <artifactId>hutool-core</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
-
-            <dependency>
-                <groupId>org.springdoc</groupId>
-                <artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
-                <version>${springdoc-openapi-starter-webmvc-ui.version}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>org.springframework.boot</groupId>
-                        <artifactId>spring-boot-starter-logging</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
-
-            <dependency>
-                <groupId>org.springdoc</groupId>
-                <artifactId>springdoc-openapi-starter-webflux-ui</artifactId>
-                <version>${springdoc-openapi-starter-webflux-ui.version}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>org.springframework.boot</groupId>
-                        <artifactId>spring-boot-starter-logging</artifactId>
                     </exclusion>
                 </exclusions>
             </dependency>
